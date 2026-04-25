@@ -1,0 +1,52 @@
+{
+  "name": "ghc-orchestrator",
+  "version": "0.1.0",
+  "description": "Copilot-native agent orchestration platform — orchestrate GitHub Copilot, don't replace it",
+  "type": "module",
+  "bin": {
+    "ghc-orch": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "agents/",
+    "plugin/"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --watch src/daemon.ts",
+    "start": "tsx src/daemon.ts",
+    "cli": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "copilot",
+    "orchestrator",
+    "agent",
+    "mcp",
+    "vscode"
+  ],
+  "author": "bodonnell",
+  "license": "MIT",
+  "dependencies": {
+    "@github/copilot-sdk": "^0.2.2",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "better-sqlite3": "^12.6.2",
+    "express": "^5.2.1",
+    "ulid": "^2.3.0",
+    "yaml": "^2.7.1",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.3"
+  }
+}
