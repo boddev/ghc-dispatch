@@ -15,6 +15,7 @@ export type { Task, TaskResult, Checkpoint, OrchestratorEvent } from './control-
 // Store
 export { TaskRepo } from './store/task-repo.js';
 export { EventRepo } from './store/event-repo.js';
+export { ConversationRepo } from './store/conversation-repo.js';
 export { getDb, closeDb, createTestDb } from './store/db.js';
 
 // Execution
@@ -31,6 +32,11 @@ export { MultiRepoCoordinator } from './execution/multi-repo.js';
 
 // Wiki
 export { WikiManager } from './wiki/wiki-manager.js';
+
+// Memory
+export { MemoryManager } from './memory/memory-manager.js';
+export { EpisodicWriter } from './memory/episodic-writer.js';
+export { ProactiveExtractor } from './memory/proactive-extractor.js';
 
 // Config
 export { loadConfig } from './config.js';

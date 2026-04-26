@@ -6,6 +6,7 @@ import type { SessionPool } from '../execution/session-pool.js';
 import type { AgentLoader } from '../execution/agent-loader.js';
 import type { SessionRunner } from '../execution/session-runner.js';
 import type { EventBus } from '../control-plane/event-bus.js';
+import type { MemoryManager } from '../memory/memory-manager.js';
 
 export interface ApiDeps {
   taskManager: TaskManager;
@@ -15,6 +16,7 @@ export interface ApiDeps {
   agentLoader: AgentLoader;
   sessionRunner: SessionRunner;
   eventBus: EventBus;
+  memoryManager: MemoryManager;
 }
 
 export function createApi(deps: ApiDeps): express.Express {
@@ -154,6 +156,129 @@ export function createApi(deps: ApiDeps): express.Express {
 
     deps.eventBus.onAny(handler);
     req.on('close', () => { deps.eventBus.off('*', handler); });
+  });
+
+  // --- Memory: Conversations ---
+  app.post('/api/conversations', (req, res) => {
+    try {
+      const msg = deps.memoryManager.recordMessage({
+        channel: req.body.channel ?? 'api',
+        threadId: req.body.threadId,
+        speaker: req.body.speaker ?? 'anonymous',
+        speakerType: req.body.speakerType ?? 'user',
+        role: req.body.role ?? 'user',
+        content: req.body.content,
+        metadata: req.body.metadata,
+      });
+      res.status(201).json(msg);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/conversations', (req, res) => {
+    const channel = req.query.channel as string | undefined;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const messages = channel
+      ? deps.memoryManager.conversations.getRecentByChannel(channel, limit)
+      : deps.memoryManager.conversations.getRecent(limit);
+    res.json(messages);
+  });
+
+  app.get('/api/conversations/search', (req, res) => {
+    const q = req.query.q as string;
+    if (!q) { res.status(400).json({ error: 'Query parameter "q" required' }); return; }
+    const channel = req.query.channel as string | undefined;
+    const limit = parseInt(req.query.limit as string) || 30;
+    const messages = channel
+      ? deps.memoryManager.conversations.searchInChannel(channel, q, limit)
+      : deps.memoryManager.conversations.search(q, limit);
+    res.json(messages);
+  });
+
+  app.get('/api/conversations/threads', (req, res) => {
+    const channel = req.query.channel as string | undefined;
+    const limit = parseInt(req.query.limit as string) || 30;
+    const threads = channel
+      ? deps.memoryManager.conversations.getThreadsByChannel(channel, limit)
+      : deps.memoryManager.conversations.getThreads(limit);
+    res.json(threads);
+  });
+
+  app.get('/api/conversations/thread/:channel/:threadId', (req, res) => {
+    const messages = deps.memoryManager.conversations.getByThread(
+      req.params.channel, req.params.threadId, 200,
+    );
+    res.json(messages);
+  });
+
+  // --- Memory: Relevance Suggestions ---
+  app.post('/api/memory/suggest', (req, res) => {
+    const { message, channel, limit } = req.body;
+    if (!message) { res.status(400).json({ error: '"message" required' }); return; }
+    const suggestions = deps.memoryManager.getRelevanceSuggestions(
+      message, channel ?? 'api', limit ?? 10,
+    );
+    res.json(suggestions);
+  });
+
+  app.post('/api/memory/context', (req, res) => {
+    const { message, speakers, channel } = req.body;
+    if (!message) { res.status(400).json({ error: '"message" required' }); return; }
+    const context = deps.memoryManager.buildContextForConversation(
+      message, speakers ?? [], channel ?? 'api',
+    );
+    res.json({ context });
+  });
+
+  // --- Memory: Facts ---
+  app.get('/api/memory/facts', (req, res) => {
+    const entity = req.query.entity as string | undefined;
+    const type = req.query.type as string | undefined;
+    const q = req.query.q as string | undefined;
+    const limit = parseInt(req.query.limit as string) || 30;
+
+    if (entity) {
+      res.json(deps.memoryManager.proactive.getFactsByEntity(entity));
+    } else if (q) {
+      res.json(deps.memoryManager.proactive.searchFacts(q, limit));
+    } else if (type) {
+      res.json(deps.memoryManager.proactive.getFactsByType(type, limit));
+    } else {
+      res.json(deps.memoryManager.proactive.getRecentFacts(limit));
+    }
+  });
+
+  app.get('/api/memory/entities', (req, res) => {
+    res.json(deps.memoryManager.proactive.getAllEntities());
+  });
+
+  app.get('/api/memory/profile/:entity', (req, res) => {
+    const profile = deps.memoryManager.proactive.getEntityProfile(req.params.entity);
+    res.json({ entity: req.params.entity, profile });
+  });
+
+  // --- Memory: Episodic Summaries ---
+  app.get('/api/memory/episodes', (req, res) => {
+    const date = req.query.date as string | undefined;
+    const channel = req.query.channel as string | undefined;
+    const q = req.query.q as string | undefined;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    if (q) {
+      res.json(deps.memoryManager.episodic.searchSummaries(q, limit));
+    } else if (date) {
+      res.json(deps.memoryManager.episodic.getSummariesByDate(date));
+    } else if (channel) {
+      res.json(deps.memoryManager.episodic.getSummariesByChannel(channel, limit));
+    } else {
+      res.json(deps.memoryManager.episodic.getRecentSummaries(limit));
+    }
+  });
+
+  // --- Memory: Stats ---
+  app.get('/api/memory/stats', (req, res) => {
+    res.json(deps.memoryManager.getStats());
   });
 
   return app;

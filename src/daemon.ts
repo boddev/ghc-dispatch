@@ -24,6 +24,9 @@ import { AgentLoader } from './execution/agent-loader.js';
 import { WorktreeManager } from './execution/worktree-manager.js';
 import { ArtifactCollector } from './execution/artifact-collector.js';
 import { SessionRunner } from './execution/session-runner.js';
+import { ConversationRepo } from './store/conversation-repo.js';
+import { WikiManager } from './wiki/wiki-manager.js';
+import { MemoryManager } from './memory/memory-manager.js';
 import { createApi } from './surfaces/api.js';
 import { loadConfig } from './config.js';
 import { paths, ensureDataDirs } from './paths.js';
@@ -75,6 +78,13 @@ export async function startDaemon(): Promise<void> {
 
   const worktreeManager = new WorktreeManager(paths.worktreesDir);
   const artifactCollector = new ArtifactCollector(join(paths.dataDir, 'artifacts'));
+
+  // --- Memory System ---
+  const conversationRepo = new ConversationRepo(db);
+  const wikiManager = new WikiManager(paths.wikiDir);
+  const memoryManager = new MemoryManager(db, conversationRepo, wikiManager);
+  memoryManager.startBackgroundProcessing();
+  console.log(`   Memory: conversation log + episodic writer + proactive extractor`);
 
   const sessionRunner = new SessionRunner(
     taskManager, agentLoader, sessionPool, worktreeManager,
@@ -140,6 +150,7 @@ export async function startDaemon(): Promise<void> {
   const api = createApi({
     taskManager, approvalManager, scheduler,
     sessionPool, agentLoader, sessionRunner, eventBus,
+    memoryManager,
   });
 
   const server = api.listen(config.apiPort, () => {
@@ -154,6 +165,7 @@ export async function startDaemon(): Promise<void> {
     console.log('\n🛑 Shutting down...');
     clearInterval(schedulerInterval);
     clearInterval(gcInterval);
+    memoryManager.stopBackgroundProcessing();
     server.close();
     await sessionPool.releaseAll();
     if (copilotAdapter.isRunning()) await copilotAdapter.stop();

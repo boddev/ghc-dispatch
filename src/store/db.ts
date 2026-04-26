@@ -96,5 +96,56 @@ function runMigrations(database: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_approvals_task ON approvals(task_id);
     CREATE INDEX IF NOT EXISTS idx_approvals_status ON approvals(status);
+
+    CREATE TABLE IF NOT EXISTS conversations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel TEXT NOT NULL,
+      thread_id TEXT,
+      speaker TEXT NOT NULL,
+      speaker_type TEXT NOT NULL DEFAULT 'user',
+      role TEXT NOT NULL DEFAULT 'user',
+      content TEXT NOT NULL,
+      metadata TEXT NOT NULL DEFAULT '{}',
+      timestamp TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_conv_channel ON conversations(channel);
+    CREATE INDEX IF NOT EXISTS idx_conv_thread ON conversations(thread_id);
+    CREATE INDEX IF NOT EXISTS idx_conv_speaker ON conversations(speaker);
+    CREATE INDEX IF NOT EXISTS idx_conv_timestamp ON conversations(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_conv_channel_thread ON conversations(channel, thread_id);
+
+    CREATE TABLE IF NOT EXISTS memory_facts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entity_slug TEXT NOT NULL,
+      entity_type TEXT NOT NULL DEFAULT 'user',
+      fact TEXT NOT NULL,
+      source_channel TEXT,
+      source_conversation_id INTEGER,
+      confidence REAL NOT NULL DEFAULT 1.0,
+      extracted_at TEXT NOT NULL,
+      FOREIGN KEY (source_conversation_id) REFERENCES conversations(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_facts_entity ON memory_facts(entity_slug);
+    CREATE INDEX IF NOT EXISTS idx_facts_type ON memory_facts(entity_type);
+
+    CREATE TABLE IF NOT EXISTS episodic_summaries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL,
+      channel TEXT,
+      thread_id TEXT,
+      summary TEXT NOT NULL,
+      topics TEXT NOT NULL DEFAULT '[]',
+      entities TEXT NOT NULL DEFAULT '[]',
+      decisions TEXT NOT NULL DEFAULT '[]',
+      message_count INTEGER NOT NULL DEFAULT 0,
+      first_message_id INTEGER,
+      last_message_id INTEGER,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_episodic_date ON episodic_summaries(date);
+    CREATE INDEX IF NOT EXISTS idx_episodic_channel ON episodic_summaries(channel);
   `);
 }
