@@ -2,10 +2,10 @@
 
 **A Copilot-native agent orchestration platform.**
 
-Orchestrate GitHub Copilot — don't replace it. GHC Orchestrator adds OpenClaw-level workflow orchestration, MAX-style background automation, MCP-based extensibility, and VS Code Agents App observability on top of the GitHub Copilot SDK, preserving the full quality of Copilot's internal agent loop.
+Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orchestration, background automation, MCP-based extensibility, and VS Code Agents App observability on top of the GitHub Copilot SDK, preserving the full quality of Copilot's internal agent loop.
 
 ```
-❌  Agent (OpenClaw) → Copilot (model)        ← degrades quality
+❌  Generic agent → Copilot (model)            ← degrades quality
 ✅  Orchestrator → Copilot (agent runtime) → tools  ← full Copilot quality
 ```
 
@@ -33,30 +33,29 @@ Orchestrate GitHub Copilot — don't replace it. GHC Orchestrator adds OpenClaw-
 - [Configuration](#configuration)
 - [Project Structure](#project-structure)
 - [Development](#development)
-- [Comparison](#comparison)
 
 ---
 
 ## Why
 
-GitHub Copilot produces the best results when it runs as a **full agent system** — context, tools, orchestration, and model tuning all working together. Tools like OpenClaw treat Copilot as a raw model, replacing its best parts and degrading quality.
+GitHub Copilot produces the best results when it runs as a **full agent system** — context, tools, orchestration, and model tuning all working together. Generic agent frameworks that treat Copilot as a raw model replace its best parts and degrade quality.
 
-GHC Orchestrator takes a different approach: **keep Copilot as the execution brain** and add orchestration *around* it. You get the workflow power of an orchestration platform with the code quality of native Copilot.
+GHC Dispatch takes a different approach: **keep Copilot as the execution brain** and add orchestration *around* it. You get the workflow power of an orchestration platform with the code quality of native Copilot.
 
-### Key Differentiators
+### Key Features
 
-| Feature | OpenClaw | MAX | GHC Orchestrator |
-|---------|----------|-----|------------------|
-| Copilot quality preserved | ❌ | ✅ | ✅ |
-| Task DAG execution | ❌ | ❌ | ✅ |
-| Priority scheduler | ❌ | ❌ | ✅ |
-| Policy engine (RBAC) | ❌ | ❌ | ✅ |
-| Approval workflows | ❌ | ❌ | ✅ |
-| Event-sourced audit trail | ❌ | ❌ | ✅ |
-| VS Code Agents App | ❌ | ❌ | ✅ |
-| MCP Apps dashboard | ❌ | ❌ | ✅ |
-| Multi-repo coordination | ❌ | ❌ | ✅ |
-| Multi-surface (CLI/API/Discord/VS Code) | Web | Telegram/TUI | ✅ All |
+| Feature | GHC Dispatch |
+|---------|-------------|
+| Copilot quality preserved | ✅ |
+| Task DAG execution | ✅ |
+| Priority scheduler | ✅ |
+| Policy engine (RBAC) | ✅ |
+| Approval workflows | ✅ |
+| Event-sourced audit trail | ✅ |
+| VS Code Agents App | ✅ |
+| MCP Apps dashboard | ✅ |
+| Multi-repo coordination | ✅ |
+| Multi-surface (CLI/API/Discord/VS Code) | ✅ |
 
 ---
 
@@ -363,7 +362,7 @@ and cloud resource management. Always validate changes in staging first.
 | `tools` | No | Tool allowlist (omit to give all tools) |
 | `mcpServers` | No | MCP servers to connect |
 
-The agent format is compatible with [MAX](https://github.com/burkeholland/max) and [VS Code Agent Plugins](https://code.visualstudio.com/docs/copilot/customization/agent-plugins).
+The agent format is compatible with [VS Code Agent Plugins](https://code.visualstudio.com/docs/copilot/customization/agent-plugins).
 
 ---
 
@@ -597,7 +596,7 @@ Each repository gets an isolated git worktree per task (`git worktree add`), so 
 
 ## Wiki Memory
 
-GHC Orchestrator includes a wiki-based memory system inspired by [MAX](https://github.com/burkeholland/max). It stores knowledge as interlinked markdown pages — organized like a personal Obsidian vault.
+GHC Orchestrator includes a wiki-based memory system. It stores knowledge as interlinked markdown pages — organized like a personal Obsidian vault.
 
 ### Features
 
@@ -910,26 +909,6 @@ npm test
 | Validation | Zod | Runtime + static type safety |
 | MCP | `@modelcontextprotocol/sdk` | Standard agent-tool protocol |
 | Testing | Vitest | Fast, ESM-native |
-
----
-
-## Comparison
-
-### vs MAX
-
-MAX is the closest project — a personal AI assistant by Burke Holland built on the same Copilot SDK. GHC Orchestrator differs in:
-
-- **Scheduler** — MAX dispatches immediately; GHC has priority queues with admission control
-- **Policies** — MAX has no permission model; GHC has a full policy engine with RBAC
-- **Approvals** — MAX auto-approves everything; GHC has first-class approval workflows
-- **DAG execution** — MAX runs tasks linearly; GHC supports arbitrary dependency graphs
-- **Event sourcing** — MAX logs to SQLite; GHC has an append-only event store powering audit trails and replay
-- **VS Code** — MAX targets Telegram/TUI; GHC targets VS Code Agents App with MCP Apps dashboards
-- **Multi-repo** — MAX works on one repo at a time; GHC coordinates across repositories
-
-### vs OpenClaw
-
-OpenClaw replaces Copilot's internal agent loop with its own, which degrades output quality. GHC Orchestrator preserves Copilot's full agent runtime and orchestrates *around* it.
 
 ---
 
