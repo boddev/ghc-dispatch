@@ -28,6 +28,8 @@ Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orch
 - [Multi-Repo Coordination](#multi-repo-coordination)
 - [Wiki Memory](#wiki-memory)
 - [Memory System](#memory-system)
+- [Skills](#skills)
+- [Automation](#automation)
 - [VS Code Integration](#vs-code-integration)
 - [Discord Integration](#discord-integration)
 - [Event Store & Observability](#event-store--observability)
@@ -271,6 +273,33 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | `GET` | `/api/memory/profile/:entity` | Get everything known about an entity |
 | `GET` | `/api/memory/episodes` | Query episodic summaries (`?q=auth&date=2026-04-26`) |
 | `GET` | `/api/memory/stats` | Memory system statistics |
+
+### Skills
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/skills` | List all skills (grouped: userInstalled / systemCreated) |
+| `GET` | `/api/skills/:id` | Get skill details |
+| `GET` | `/api/skills/:id/content` | Read SKILL.md content |
+| `POST` | `/api/skills/create` | Create a system skill (name, description, instructions) |
+| `POST` | `/api/skills/install/github` | Install from GitHub repo (repoUrl) |
+| `POST` | `/api/skills/install/registry` | Install from skills.sh (name) |
+| `POST` | `/api/skills/:id/enable` | Enable a skill |
+| `POST` | `/api/skills/:id/disable` | Disable a skill |
+| `DELETE` | `/api/skills/:id` | Remove a skill |
+
+### Automation
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/automation` | List all automation jobs (`?type=cron`) |
+| `GET` | `/api/automation/:id` | Get job details |
+| `POST` | `/api/automation` | Create a new automation job |
+| `POST` | `/api/automation/:id/enable` | Enable a job |
+| `POST` | `/api/automation/:id/disable` | Disable a job |
+| `POST` | `/api/automation/:id/run` | Manually trigger a job |
+| `DELETE` | `/api/automation/:id` | Remove a job |
+| `POST` | `/api/webhooks/:path` | Incoming webhook trigger |
 
 ### SSE Event Stream
 
@@ -752,6 +781,155 @@ curl -X POST http://localhost:7878/api/memory/context \
 
 ---
 
+## Skills
+
+GHC Dispatch has a full skill management system. Skills are SKILL.md instruction files that teach agents how to use external tools.
+
+### Skill Categories
+
+| Category | Description | Example |
+|----------|-------------|---------|
+| **User-installed** | Manually installed by the user from registries or repos | `kubectl`, `terraform` |
+| **System-created** | Autonomously created by dispatch when it learns a new tool | `docker-compose`, `azure-cli` |
+| **Registry** | Installed from skills.sh community library | Official skill packages |
+| **GitHub** | Installed from any public GitHub repository | Custom org skills |
+
+### Installing Skills
+
+```bash
+# From skills.sh registry
+curl -X POST http://localhost:7878/api/skills/install/registry \
+  -H "Content-Type: application/json" \
+  -d '{"name":"kubernetes"}'
+
+# From any GitHub repo
+curl -X POST http://localhost:7878/api/skills/install/github \
+  -H "Content-Type: application/json" \
+  -d '{"repoUrl":"https://github.com/org/my-skill"}'
+```
+
+### Self-Learning
+
+When dispatch encounters a task that requires unknown tools, it can research the CLI tools available on the machine and create a SKILL.md automatically:
+
+```bash
+# System creates skill autonomously
+curl -X POST http://localhost:7878/api/skills/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Docker Compose",
+    "description": "Manages multi-container Docker applications",
+    "instructions": "Use docker compose commands to manage containers..."
+  }'
+```
+
+System-created skills are tracked separately from user-installed skills, so you always know what was installed manually vs what the system taught itself.
+
+### Managing Skills
+
+```bash
+# List all skills (grouped by origin)
+curl http://localhost:7878/api/skills
+
+# Read a skill's SKILL.md content
+curl http://localhost:7878/api/skills/kubernetes/content
+
+# Disable a skill without removing it
+curl -X POST http://localhost:7878/api/skills/kubernetes/disable
+
+# Remove a skill entirely
+curl -X DELETE http://localhost:7878/api/skills/kubernetes
+```
+
+---
+
+## Automation
+
+GHC Dispatch supports three types of automation triggers for scheduling and reactive execution.
+
+### Trigger Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Cron** | Periodic execution on a schedule | "Run tests every hour" |
+| **Webhook** | HTTP endpoint that triggers on incoming requests | "Deploy when CI passes" |
+| **Event** | React to internal system events | "Create review task when any task completes" |
+
+### Cron Jobs
+
+```bash
+# Run nightly test suite
+curl -X POST http://localhost:7878/api/automation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nightly tests",
+    "type": "cron",
+    "schedule": "daily",
+    "action": "create_task",
+    "actionConfig": {
+      "title": "Run nightly test suite",
+      "agent": "@coder",
+      "priority": "high"
+    }
+  }'
+
+# Supported schedules: "every 5 minutes", "every 2 hours", "hourly", "daily"
+```
+
+### Webhooks
+
+```bash
+# Create a webhook for CI notifications
+curl -X POST http://localhost:7878/api/automation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "CI complete",
+    "type": "webhook",
+    "webhookPath": "ci-notify",
+    "action": "create_task",
+    "actionConfig": {
+      "title": "CI passed — run integration tests",
+      "agent": "@coder"
+    }
+  }'
+
+# Trigger it from your CI pipeline
+curl -X POST http://localhost:7878/api/webhooks/ci-notify \
+  -H "Content-Type: application/json" \
+  -d '{"commit":"abc123","branch":"main"}'
+```
+
+### Event-Driven Triggers
+
+```bash
+# Auto-create a review task whenever any task completes
+curl -X POST http://localhost:7878/api/automation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Auto-review",
+    "type": "event",
+    "eventType": "task.completed",
+    "action": "create_task",
+    "actionConfig": {
+      "title": "Review completed work",
+      "agent": "@coder"
+    }
+  }'
+```
+
+Supported event types: `task.created`, `task.queued`, `task.started`, `task.completed`, `task.failed`, `task.cancelled`, `approval.requested`, `approval.decided`
+
+### Action Types
+
+| Action | Description |
+|--------|-------------|
+| `create_task` | Create a new orchestrator task with configurable title, agent, priority |
+| `run_command` | Execute a shell command |
+| `http_request` | Make an HTTP request to an external URL |
+| `log` | Log a message (useful for testing triggers) |
+
+---
+
 ## VS Code Integration
 
 GHC Orchestrator integrates with VS Code through two mechanisms:
@@ -947,6 +1125,12 @@ ghc-orchestrator/
 │   │   ├── episodic-writer.ts           # Conversation → wiki summaries
 │   │   └── proactive-extractor.ts       # Fact extraction from messages
 │   │
+│   ├── skills/
+│   │   └── skill-manager.ts             # Skill install/create/manage/search
+│   │
+│   ├── automation/
+│   │   └── automation-scheduler.ts      # Cron, webhooks, event triggers
+│   │
 │   └── wiki/
 │       └── wiki-manager.ts              # Wiki knowledge base
 │
@@ -963,7 +1147,7 @@ ghc-orchestrator/
 │   └── hooks/hooks.json
 │
 └── tests/
-    └── unit/                            # 138 tests across 13 suites
+    └── unit/                            # 164 tests across 15 suites
         ├── task-model.test.ts
         ├── task-manager.test.ts
         ├── event-store.test.ts
@@ -976,7 +1160,9 @@ ghc-orchestrator/
         ├── discord.test.ts
         ├── task-dag.test.ts
         ├── conversation-repo.test.ts
-        └── memory-manager.test.ts
+        ├── memory-manager.test.ts
+        ├── skill-manager.test.ts
+        └── automation-scheduler.test.ts
 ```
 
 ---
@@ -1015,9 +1201,11 @@ npm test
  ✓ tests/unit/task-dag.test.ts         (12 tests)
  ✓ tests/unit/conversation-repo.test.ts (11 tests)
  ✓ tests/unit/memory-manager.test.ts   (13 tests)
+ ✓ tests/unit/skill-manager.test.ts    (10 tests)
+ ✓ tests/unit/automation-scheduler.test.ts (16 tests)
 
- Test Files  13 passed (13)
-      Tests  138 passed (138)
+ Test Files  15 passed (15)
+      Tests  164 passed (164)
 ```
 
 ### Technology Stack
