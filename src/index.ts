@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * GHC Orchestrator CLI
+ * dispatch — GHC Orchestrator CLI
  *
  * Usage:
- *   ghc-orch create <title> [--agent @coder] [--priority high] [--repo owner/repo]
- *   ghc-orch status <task-id>
- *   ghc-orch list [--status running] [--limit 20]
- *   ghc-orch cancel <task-id>
- *   ghc-orch retry <task-id>
- *   ghc-orch events <task-id>
- *   ghc-orch stats
+ *   dispatch --create <title> [--agent @coder] [--priority high] [--repo path]
+ *   dispatch --status <task-id>
+ *   dispatch --list [--status running] [--limit 20]
+ *   dispatch --cancel <task-id>
+ *   dispatch --retry <task-id>
+ *   dispatch --enqueue <task-id>
+ *   dispatch --events <task-id>
+ *   dispatch --stats
+ *   dispatch --start
+ *   dispatch --help
  */
 
 import { getDb, closeDb } from './store/db.js';
@@ -53,140 +56,168 @@ function printTaskDetail(task: any): void {
 `);
 }
 
-async function main() {
-  const args = process.argv.slice(2);
-  const command = args[0];
+const HELP_TEXT = `
+  dispatch — GHC Orchestrator CLI
 
-  if (!command || command === 'help' || command === '--help') {
-    console.log(`
-  GHC Orchestrator CLI
+  Usage: dispatch --<command> [arguments] [options]
 
   Commands:
-    create <title>          Create a new task
-      --agent <agent>         Agent to assign (default: @general-purpose)
-      --priority <priority>   Priority: critical|high|normal|low (default: normal)
-      --repo <repo>           Target repository
-      --description <desc>    Task description
+    --create <title>           Create a new task
+        --agent <agent>          Agent to assign (default: @general-purpose)
+        --priority <level>       critical | high | normal | low (default: normal)
+        --repo <path>            Target repository path
+        --description <text>     Task description
 
-    status <task-id>        Show task details
-    list                    List all tasks
-      --status <status>       Filter by status
-      --limit <n>             Max results (default: 20)
+    --status <task-id>         Show task details
+    --list                     List all tasks
+        --filter-status <s>      Filter by status (pending|running|completed|failed|...)
+        --limit <n>              Max results (default: 20)
 
-    cancel <task-id>        Cancel a task
-    retry <task-id>         Retry a failed task
-    enqueue <task-id>       Queue a pending task for execution
-    events <task-id>        Show event history for a task
-    stats                   Show task statistics
-`);
+    --cancel <task-id>         Cancel a task
+        --reason <text>          Cancellation reason
+
+    --retry <task-id>          Retry a failed task
+    --enqueue <task-id>        Queue a pending task for execution
+    --events <task-id>         Show event history for a task
+    --stats                    Show task statistics
+    --start                    Start the orchestrator daemon
+    --help                     Show this help message
+    --version                  Show version
+
+  Examples:
+    dispatch --create "Fix auth bug" --agent @coder --priority high
+    dispatch --list --filter-status running
+    dispatch --status 01KQ3ECDV5CJMS9DACYVJGM69K
+    dispatch --cancel 01KQ3ECDV5CJMS9DACYVJGM69K --reason "No longer needed"
+    dispatch --start
+`;
+
+function getFlag(args: string[], flag: string): string | undefined {
+  const idx = args.indexOf(flag);
+  if (idx === -1 || idx + 1 >= args.length) return undefined;
+  const val = args[idx + 1];
+  // Don't return the next flag as a value
+  if (val.startsWith('--')) return undefined;
+  return val;
+}
+
+function hasFlag(args: string[], flag: string): boolean {
+  return args.includes(flag);
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+
+  // No arguments or help
+  if (args.length === 0 || hasFlag(args, '--help') || hasFlag(args, '-h')) {
+    console.log(HELP_TEXT);
+    return;
+  }
+
+  if (hasFlag(args, '--version') || hasFlag(args, '-v')) {
+    console.log('dispatch 0.1.0');
+    return;
+  }
+
+  // --start: launch the daemon
+  if (hasFlag(args, '--start')) {
+    const { startDaemon } = await import('./daemon.js');
+    await startDaemon();
     return;
   }
 
   const tm = createOrchestrator();
 
   try {
-    switch (command) {
-      case 'create': {
-        const title = args[1];
-        if (!title) { console.error('Error: title required'); process.exit(1); }
-        const agent = getFlag(args, '--agent') ?? '@general-purpose';
-        const priority = (getFlag(args, '--priority') ?? 'normal') as Priority;
-        const repo = getFlag(args, '--repo');
-        const description = getFlag(args, '--description') ?? '';
-        const task = tm.createTask({ title, description, agent, priority, repo });
-        console.log(`✅ Task created: ${task.id}`);
-        printTaskDetail(task);
-        break;
-      }
+    if (hasFlag(args, '--create')) {
+      const title = getFlag(args, '--create');
+      if (!title) { console.error('Error: --create requires a title.  Usage: dispatch --create "task title"'); process.exit(1); }
+      const agent = getFlag(args, '--agent') ?? '@general-purpose';
+      const priority = (getFlag(args, '--priority') ?? 'normal') as Priority;
+      const repo = getFlag(args, '--repo');
+      const description = getFlag(args, '--description') ?? '';
+      const task = tm.createTask({ title, description, agent, priority, repo });
+      console.log(`✅ Task created: ${task.id}`);
+      printTaskDetail(task);
+    }
 
-      case 'status': {
-        const id = args[1];
-        if (!id) { console.error('Error: task-id required'); process.exit(1); }
-        const task = tm.getTask(id);
-        if (!task) { console.error(`Task not found: ${id}`); process.exit(1); }
-        printTaskDetail(task);
-        break;
-      }
+    else if (hasFlag(args, '--status')) {
+      const id = getFlag(args, '--status');
+      if (!id) { console.error('Error: --status requires a task ID.  Usage: dispatch --status <task-id>'); process.exit(1); }
+      const task = tm.getTask(id);
+      if (!task) { console.error(`Task not found: ${id}`); process.exit(1); }
+      printTaskDetail(task);
+    }
 
-      case 'list': {
-        const status = getFlag(args, '--status') as TaskStatus | undefined;
-        const limit = parseInt(getFlag(args, '--limit') ?? '20', 10);
-        const tasks = tm.listTasks(status, limit);
-        if (tasks.length === 0) {
-          console.log('  No tasks found.');
-        } else {
-          console.log(`  ${'ID'.padEnd(28)} ${'STATUS'.padEnd(10)} ${'PRIORITY'.padEnd(8)} ${'AGENT'.padEnd(18)} TITLE`);
-          console.log(`  ${'─'.repeat(90)}`);
-          tasks.forEach(printTask);
-          console.log(`  ${tasks.length} task(s)`);
-        }
-        break;
+    else if (hasFlag(args, '--list')) {
+      const status = getFlag(args, '--filter-status') as TaskStatus | undefined;
+      const limit = parseInt(getFlag(args, '--limit') ?? '20', 10);
+      const tasks = tm.listTasks(status, limit);
+      if (tasks.length === 0) {
+        console.log('  No tasks found.');
+      } else {
+        console.log(`  ${'ID'.padEnd(28)} ${'STATUS'.padEnd(10)} ${'PRIORITY'.padEnd(8)} ${'AGENT'.padEnd(18)} TITLE`);
+        console.log(`  ${'─'.repeat(90)}`);
+        tasks.forEach(printTask);
+        console.log(`  ${tasks.length} task(s)`);
       }
+    }
 
-      case 'cancel': {
-        const id = args[1];
-        if (!id) { console.error('Error: task-id required'); process.exit(1); }
-        const reason = getFlag(args, '--reason') ?? 'Cancelled via CLI';
-        const task = tm.cancelTask(id, reason);
-        console.log(`🚫 Task cancelled: ${task.id}`);
-        break;
+    else if (hasFlag(args, '--cancel')) {
+      const id = getFlag(args, '--cancel');
+      if (!id) { console.error('Error: --cancel requires a task ID.  Usage: dispatch --cancel <task-id>'); process.exit(1); }
+      const reason = getFlag(args, '--reason') ?? 'Cancelled via CLI';
+      const task = tm.cancelTask(id, reason);
+      console.log(`🚫 Task cancelled: ${task.id}`);
+    }
+
+    else if (hasFlag(args, '--retry')) {
+      const id = getFlag(args, '--retry');
+      if (!id) { console.error('Error: --retry requires a task ID.  Usage: dispatch --retry <task-id>'); process.exit(1); }
+      const task = tm.retryTask(id);
+      console.log(`🔄 Task re-queued: ${task.id} (retry ${task.retryCount})`);
+    }
+
+    else if (hasFlag(args, '--enqueue')) {
+      const id = getFlag(args, '--enqueue');
+      if (!id) { console.error('Error: --enqueue requires a task ID.  Usage: dispatch --enqueue <task-id>'); process.exit(1); }
+      const task = tm.enqueueTask(id);
+      console.log(`📋 Task queued: ${task.id}`);
+    }
+
+    else if (hasFlag(args, '--events')) {
+      const id = getFlag(args, '--events');
+      if (!id) { console.error('Error: --events requires a task ID.  Usage: dispatch --events <task-id>'); process.exit(1); }
+      const events = tm.getTaskEvents(id);
+      if (events.length === 0) {
+        console.log('  No events found.');
+      } else {
+        events.forEach(e => {
+          console.log(`  [${e.timestamp}] ${e.payload.type}`);
+          if ('content' in e.payload && e.payload.content) {
+            console.log(`    ${(e.payload as any).content.substring(0, 120)}`);
+          }
+        });
       }
+    }
 
-      case 'retry': {
-        const id = args[1];
-        if (!id) { console.error('Error: task-id required'); process.exit(1); }
-        const task = tm.retryTask(id);
-        console.log(`🔄 Task re-queued: ${task.id} (retry ${task.retryCount})`);
-        break;
+    else if (hasFlag(args, '--stats')) {
+      const stats = tm.getStats();
+      console.log('\n  Task Statistics:');
+      for (const [status, count] of Object.entries(stats)) {
+        console.log(`    ${status.padEnd(12)} ${count}`);
       }
+      console.log();
+    }
 
-      case 'enqueue': {
-        const id = args[1];
-        if (!id) { console.error('Error: task-id required'); process.exit(1); }
-        const task = tm.enqueueTask(id);
-        console.log(`📋 Task queued: ${task.id}`);
-        break;
-      }
-
-      case 'events': {
-        const id = args[1];
-        if (!id) { console.error('Error: task-id required'); process.exit(1); }
-        const events = tm.getTaskEvents(id);
-        if (events.length === 0) {
-          console.log('  No events found.');
-        } else {
-          events.forEach(e => {
-            console.log(`  [${e.timestamp}] ${e.payload.type}`);
-            if ('content' in e.payload && e.payload.content) {
-              console.log(`    ${(e.payload as any).content.substring(0, 120)}`);
-            }
-          });
-        }
-        break;
-      }
-
-      case 'stats': {
-        const stats = tm.getStats();
-        console.log('\n  Task Statistics:');
-        for (const [status, count] of Object.entries(stats)) {
-          console.log(`    ${status.padEnd(12)} ${count}`);
-        }
-        console.log();
-        break;
-      }
-
-      default:
-        console.error(`Unknown command: ${command}. Run with --help for usage.`);
-        process.exit(1);
+    else {
+      const unknown = args.find(a => a.startsWith('--'));
+      console.error(`Unknown command: ${unknown ?? args[0]}\nRun dispatch --help for usage.`);
+      process.exit(1);
     }
   } finally {
     closeDb();
   }
-}
-
-function getFlag(args: string[], flag: string): string | undefined {
-  const idx = args.indexOf(flag);
-  return idx !== -1 && idx + 1 < args.length ? args[idx + 1] : undefined;
 }
 
 main().catch(err => {

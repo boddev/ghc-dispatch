@@ -4,7 +4,7 @@
   "description": "Copilot-native agent orchestration platform — orchestrate GitHub Copilot, don't replace it",
   "type": "module",
   "bin": {
-    "ghc-orch": "dist/index.js"
+    "dispatch": "dist/index.js"
   },
   "files": [
     "dist/**/*.js",

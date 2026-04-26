@@ -112,16 +112,18 @@ GHC Orchestrator takes a different approach: **keep Copilot as the execution bra
 git clone https://github.com/your-org/ghc-orchestrator.git
 cd ghc-orchestrator
 npm install
+npm run build
+npm link          # Makes 'dispatch' available globally in your terminal
 ```
 
 ### Start the Daemon
 
 ```bash
 # With real Copilot SDK (requires active subscription)
-npm start
+dispatch --start
 
 # With mock Copilot (for testing without subscription)
-GHC_MOCK_COPILOT=1 npm start
+GHC_MOCK_COPILOT=1 dispatch --start
 ```
 
 Output:
@@ -144,7 +146,7 @@ Output:
 
 ```bash
 # Via CLI
-npm run cli -- create "Fix the auth bug" --agent @coder --priority high
+dispatch --create "Fix the auth bug" --agent @coder --priority high
 
 # Via API
 curl -X POST http://localhost:7878/api/tasks \
@@ -157,20 +159,22 @@ curl -X POST http://localhost:7878/api/tasks \
 ## CLI Reference
 
 ```
-npm run cli -- <command> [options]
+dispatch --<command> [arguments] [options]
 ```
 
 | Command | Description |
 |---------|-------------|
-| `create <title>` | Create a new task |
-| `status <task-id>` | Show task details |
-| `list` | List all tasks |
-| `enqueue <task-id>` | Queue a pending task for execution |
-| `cancel <task-id>` | Cancel a task |
-| `retry <task-id>` | Retry a failed task |
-| `events <task-id>` | Show event history for a task |
-| `stats` | Show task statistics |
-| `help` | Show usage information |
+| `--create <title>` | Create a new task |
+| `--status <task-id>` | Show task details |
+| `--list` | List all tasks |
+| `--enqueue <task-id>` | Queue a pending task for execution |
+| `--cancel <task-id>` | Cancel a task |
+| `--retry <task-id>` | Retry a failed task |
+| `--events <task-id>` | Show event history for a task |
+| `--stats` | Show task statistics |
+| `--start` | Start the orchestrator daemon |
+| `--version` | Show version |
+| `--help` | Show usage information |
 
 ### Create Options
 
@@ -181,17 +185,33 @@ npm run cli -- <command> [options]
 | `--repo <path>` | Target repository path | — |
 | `--description <text>` | Task description | — |
 
+### List Options
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--filter-status <status>` | Filter by task status | *(all)* |
+| `--limit <n>` | Max results | `20` |
+
 ### Examples
 
 ```bash
 # Create a high-priority coding task
-npm run cli -- create "Refactor auth module" --agent @coder --priority high --repo ~/dev/myapp
+dispatch --create "Refactor auth module" --agent @coder --priority high --repo ~/dev/myapp
 
 # List only running tasks
-npm run cli -- list --status running
+dispatch --list --filter-status running
+
+# View task details
+dispatch --status 01KQ3ECDV5CJMS9DACYVJGM69K
+
+# Cancel a task with a reason
+dispatch --cancel 01KQ3ECDV5CJMS9DACYVJGM69K --reason "No longer needed"
 
 # View event history
-npm run cli -- events 01KQ3ECDV5CJMS9DACYVJGM69K
+dispatch --events 01KQ3ECDV5CJMS9DACYVJGM69K
+
+# Start the daemon
+dispatch --start
 ```
 
 ---
@@ -538,9 +558,9 @@ Tasks with `dependsOn` fields are automatically structured into a DAG:
 
 ```bash
 # Create tasks with dependencies
-TASK_A=$(npm run cli -- create "Build frontend" | grep -oP '01K\w+')
-TASK_B=$(npm run cli -- create "Build backend" | grep -oP '01K\w+')
-npm run cli -- create "Deploy" --depends-on $TASK_A,$TASK_B
+TASK_A=$(dispatch --create "Build frontend" | grep -oP '01K\w+')
+TASK_B=$(dispatch --create "Build backend" | grep -oP '01K\w+')
+dispatch --create "Deploy" --depends-on $TASK_A,$TASK_B
 ```
 
 ---
@@ -849,7 +869,7 @@ ghc-orchestrator/
 |--------|-------------|
 | `npm start` | Start the daemon |
 | `npm run dev` | Start with auto-reload (watch mode) |
-| `npm run cli` | Run CLI commands |
+| `npm run cli` | Run CLI commands (alternative to `dispatch`) |
 | `npm test` | Run all tests |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run build` | Compile TypeScript to `dist/` |
