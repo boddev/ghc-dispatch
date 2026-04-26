@@ -44,18 +44,18 @@ export class TaskRepo {
     const row = {
       id,
       title: input.title,
-      description: input.description,
+      description: input.description ?? '',
       status: 'pending' as const,
-      priority: input.priority,
-      agent: input.agent,
+      priority: input.priority ?? 'normal',
+      agent: input.agent ?? '@general-purpose',
       repo: input.repo ?? null,
       parentTaskId: input.parentTaskId ?? null,
-      dependsOn: JSON.stringify(input.dependsOn),
-      createdBy: input.createdBy,
+      dependsOn: JSON.stringify(input.dependsOn ?? []),
+      createdBy: input.createdBy ?? 'cli',
       createdAt: now,
       updatedAt: now,
-      maxRetries: input.maxRetries,
-      metadata: JSON.stringify(input.metadata),
+      maxRetries: input.maxRetries ?? 3,
+      metadata: JSON.stringify(input.metadata ?? {}),
     };
     this.stmts.insert.run(row);
     return this.getById(id)!;
