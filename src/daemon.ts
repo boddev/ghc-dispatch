@@ -27,6 +27,8 @@ import { SessionRunner } from './execution/session-runner.js';
 import { ConversationRepo } from './store/conversation-repo.js';
 import { WikiManager } from './wiki/wiki-manager.js';
 import { MemoryManager } from './memory/memory-manager.js';
+import { SkillManager } from './skills/skill-manager.js';
+import { AutomationScheduler } from './automation/automation-scheduler.js';
 import { createApi } from './surfaces/api.js';
 import { loadConfig } from './config.js';
 import { paths, ensureDataDirs } from './paths.js';
@@ -85,6 +87,19 @@ export async function startDaemon(): Promise<void> {
   const memoryManager = new MemoryManager(db, conversationRepo, wikiManager);
   memoryManager.startBackgroundProcessing();
   console.log(`   Memory: conversation log + episodic writer + proactive extractor`);
+
+  // --- Skills ---
+  const bundledSkillsDir = join(import.meta.dirname ?? '.', '..', 'skills');
+  const skillManager = new SkillManager(db, paths.skillsDir, bundledSkillsDir);
+  const skillCount = skillManager.listAll().length;
+  const systemSkills = skillManager.listSystemCreated().length;
+  console.log(`   Skills: ${skillCount} installed (${systemSkills} system-created)`);
+
+  // --- Automation ---
+  const automationScheduler = new AutomationScheduler(db, eventBus, taskManager);
+  automationScheduler.startAll();
+  const autoJobs = automationScheduler.listEnabled().length;
+  console.log(`   Automation: ${autoJobs} active job(s)`);
 
   const sessionRunner = new SessionRunner(
     taskManager, agentLoader, sessionPool, worktreeManager,
@@ -150,7 +165,7 @@ export async function startDaemon(): Promise<void> {
   const api = createApi({
     taskManager, approvalManager, scheduler,
     sessionPool, agentLoader, sessionRunner, eventBus,
-    memoryManager,
+    memoryManager, skillManager, automationScheduler,
   });
 
   const server = api.listen(config.apiPort, () => {
@@ -166,6 +181,7 @@ export async function startDaemon(): Promise<void> {
     clearInterval(schedulerInterval);
     clearInterval(gcInterval);
     memoryManager.stopBackgroundProcessing();
+    automationScheduler.stopAll();
     server.close();
     await sessionPool.releaseAll();
     if (copilotAdapter.isRunning()) await copilotAdapter.stop();

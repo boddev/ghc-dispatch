@@ -38,6 +38,12 @@ export { MemoryManager } from './memory/memory-manager.js';
 export { EpisodicWriter } from './memory/episodic-writer.js';
 export { ProactiveExtractor } from './memory/proactive-extractor.js';
 
+// Skills
+export { SkillManager } from './skills/skill-manager.js';
+
+// Automation
+export { AutomationScheduler } from './automation/automation-scheduler.js';
+
 // Config
 export { loadConfig } from './config.js';
 export type { Config } from './config.js';

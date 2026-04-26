@@ -7,6 +7,8 @@ import type { AgentLoader } from '../execution/agent-loader.js';
 import type { SessionRunner } from '../execution/session-runner.js';
 import type { EventBus } from '../control-plane/event-bus.js';
 import type { MemoryManager } from '../memory/memory-manager.js';
+import type { SkillManager } from '../skills/skill-manager.js';
+import type { AutomationScheduler } from '../automation/automation-scheduler.js';
 
 export interface ApiDeps {
   taskManager: TaskManager;
@@ -17,6 +19,8 @@ export interface ApiDeps {
   sessionRunner: SessionRunner;
   eventBus: EventBus;
   memoryManager: MemoryManager;
+  skillManager: SkillManager;
+  automationScheduler: AutomationScheduler;
 }
 
 export function createApi(deps: ApiDeps): express.Express {
@@ -279,6 +283,144 @@ export function createApi(deps: ApiDeps): express.Express {
   // --- Memory: Stats ---
   app.get('/api/memory/stats', (req, res) => {
     res.json(deps.memoryManager.getStats());
+  });
+
+  // --- Skills ---
+  app.get('/api/skills', (req, res) => {
+    const origin = req.query.origin as string | undefined;
+    const q = req.query.q as string | undefined;
+    if (q) {
+      res.json(deps.skillManager.search(q));
+    } else if (origin) {
+      res.json(deps.skillManager.listByOrigin(origin as any));
+    } else {
+      res.json({
+        userInstalled: deps.skillManager.listUserInstalled(),
+        systemCreated: deps.skillManager.listSystemCreated(),
+      });
+    }
+  });
+
+  app.get('/api/skills/:id', (req, res) => {
+    const skill = deps.skillManager.get(req.params.id);
+    if (!skill) { res.status(404).json({ error: 'Skill not found' }); return; }
+    res.json(skill);
+  });
+
+  app.get('/api/skills/:id/content', (req, res) => {
+    const content = deps.skillManager.readSkillContent(req.params.id);
+    if (content === null) { res.status(404).json({ error: 'Skill not found' }); return; }
+    res.json({ id: req.params.id, content });
+  });
+
+  app.post('/api/skills/create', (req, res) => {
+    try {
+      const { name, description, instructions } = req.body;
+      if (!name || !instructions) { res.status(400).json({ error: '"name" and "instructions" required' }); return; }
+      const skill = deps.skillManager.createSkill(name, description ?? '', instructions);
+      res.status(201).json(skill);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/skills/install/github', async (req, res) => {
+    try {
+      const { repoUrl, name } = req.body;
+      if (!repoUrl) { res.status(400).json({ error: '"repoUrl" required' }); return; }
+      const skill = await deps.skillManager.installFromGitHub(repoUrl, name);
+      if (!skill) { res.status(400).json({ error: 'Failed to install skill' }); return; }
+      res.status(201).json(skill);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/skills/install/registry', async (req, res) => {
+    try {
+      const { name } = req.body;
+      if (!name) { res.status(400).json({ error: '"name" required' }); return; }
+      const skill = await deps.skillManager.installFromRegistry(name);
+      if (!skill) { res.status(400).json({ error: 'Failed to install skill from registry' }); return; }
+      res.status(201).json(skill);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/skills/:id/enable', (req, res) => {
+    const ok = deps.skillManager.setEnabled(req.params.id, true);
+    if (!ok) { res.status(404).json({ error: 'Skill not found' }); return; }
+    res.json({ id: req.params.id, enabled: true });
+  });
+
+  app.post('/api/skills/:id/disable', (req, res) => {
+    const ok = deps.skillManager.setEnabled(req.params.id, false);
+    if (!ok) { res.status(404).json({ error: 'Skill not found' }); return; }
+    res.json({ id: req.params.id, enabled: false });
+  });
+
+  app.delete('/api/skills/:id', (req, res) => {
+    const ok = deps.skillManager.remove(req.params.id);
+    if (!ok) { res.status(404).json({ error: 'Skill not found' }); return; }
+    res.json({ id: req.params.id, removed: true });
+  });
+
+  // --- Automation ---
+  app.get('/api/automation', (req, res) => {
+    const type = req.query.type as string | undefined;
+    if (type) {
+      res.json(deps.automationScheduler.listByType(type as any));
+    } else {
+      res.json(deps.automationScheduler.listAll());
+    }
+  });
+
+  app.get('/api/automation/:id', (req, res) => {
+    const job = deps.automationScheduler.getById(req.params.id);
+    if (!job) { res.status(404).json({ error: 'Job not found' }); return; }
+    res.json(job);
+  });
+
+  app.post('/api/automation', (req, res) => {
+    try {
+      const job = deps.automationScheduler.create(req.body);
+      res.status(201).json(job);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/automation/:id/enable', (req, res) => {
+    const ok = deps.automationScheduler.setEnabled(req.params.id, true);
+    if (!ok) { res.status(404).json({ error: 'Job not found' }); return; }
+    res.json({ id: req.params.id, enabled: true });
+  });
+
+  app.post('/api/automation/:id/disable', (req, res) => {
+    const ok = deps.automationScheduler.setEnabled(req.params.id, false);
+    if (!ok) { res.status(404).json({ error: 'Job not found' }); return; }
+    res.json({ id: req.params.id, enabled: false });
+  });
+
+  app.post('/api/automation/:id/run', async (req, res) => {
+    const job = deps.automationScheduler.getById(req.params.id);
+    if (!job) { res.status(404).json({ error: 'Job not found' }); return; }
+    const result = await deps.automationScheduler.executeJob(job, req.body);
+    res.json(result);
+  });
+
+  app.delete('/api/automation/:id', (req, res) => {
+    const ok = deps.automationScheduler.remove(req.params.id);
+    if (!ok) { res.status(404).json({ error: 'Job not found' }); return; }
+    res.json({ id: req.params.id, removed: true });
+  });
+
+  // --- Webhook ingress ---
+  app.post('/api/webhooks/:path', async (req, res) => {
+    const result = await deps.automationScheduler.handleWebhook(req.params.path, req.body ?? {});
+    if (!result) { res.status(404).json({ error: 'No webhook handler for this path' }); return; }
+    res.json(result);
   });
 
   return app;

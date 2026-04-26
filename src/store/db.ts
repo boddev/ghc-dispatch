@@ -147,5 +147,45 @@ function runMigrations(database: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_episodic_date ON episodic_summaries(date);
     CREATE INDEX IF NOT EXISTS idx_episodic_channel ON episodic_summaries(channel);
+
+    CREATE TABLE IF NOT EXISTS skills (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      origin TEXT NOT NULL DEFAULT 'user',
+      source TEXT,
+      source_url TEXT,
+      dir_path TEXT NOT NULL,
+      installed_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      metadata TEXT NOT NULL DEFAULT '{}'
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_skills_origin ON skills(origin);
+    CREATE INDEX IF NOT EXISTS idx_skills_name ON skills(name);
+
+    CREATE TABLE IF NOT EXISTS automation_jobs (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      schedule TEXT,
+      webhook_path TEXT,
+      event_type TEXT,
+      action TEXT NOT NULL,
+      action_config TEXT NOT NULL DEFAULT '{}',
+      enabled INTEGER NOT NULL DEFAULT 1,
+      last_run_at TEXT,
+      next_run_at TEXT,
+      run_count INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      metadata TEXT NOT NULL DEFAULT '{}'
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_auto_type ON automation_jobs(type);
+    CREATE INDEX IF NOT EXISTS idx_auto_enabled ON automation_jobs(enabled);
+    CREATE INDEX IF NOT EXISTS idx_auto_next_run ON automation_jobs(next_run_at);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_auto_webhook ON automation_jobs(webhook_path) WHERE webhook_path IS NOT NULL;
   `);
 }
