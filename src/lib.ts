@@ -26,6 +26,8 @@ export type { AgentDefinition } from './execution/agent-loader.js';
 export { WorktreeManager } from './execution/worktree-manager.js';
 export { ArtifactCollector } from './execution/artifact-collector.js';
 export { SessionRunner } from './execution/session-runner.js';
+export { TaskDag, buildDagFromTasks, executeDag } from './execution/task-dag.js';
+export { MultiRepoCoordinator } from './execution/multi-repo.js';
 
 // Wiki
 export { WikiManager } from './wiki/wiki-manager.js';
