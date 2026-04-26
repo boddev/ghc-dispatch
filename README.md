@@ -27,6 +27,7 @@ Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orch
 - [DAG Execution](#dag-execution)
 - [Multi-Repo Coordination](#multi-repo-coordination)
 - [Wiki Memory](#wiki-memory)
+- [Memory System](#memory-system)
 - [VS Code Integration](#vs-code-integration)
 - [Discord Integration](#discord-integration)
 - [Event Store & Observability](#event-store--observability)
@@ -248,6 +249,28 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | `GET` | `/api/agents` | List loaded agent definitions |
 | `GET` | `/api/stats` | Task stats, queue depth, session count |
 | `GET` | `/api/health` | Health check (status, version, uptime) |
+
+### Conversations
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/conversations` | Log a message (channel, speaker, content) |
+| `GET` | `/api/conversations` | List recent messages (`?channel=cli&limit=50`) |
+| `GET` | `/api/conversations/search` | Search messages (`?q=JWT&channel=discord`) |
+| `GET` | `/api/conversations/threads` | List conversation threads (`?channel=cli`) |
+| `GET` | `/api/conversations/thread/:channel/:threadId` | Get all messages in a thread |
+
+### Memory
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/memory/suggest` | Get relevance suggestions for a message |
+| `POST` | `/api/memory/context` | Build context string for a conversation |
+| `GET` | `/api/memory/facts` | Query extracted facts (`?entity=alice&q=TypeScript`) |
+| `GET` | `/api/memory/entities` | List all known entities with fact counts |
+| `GET` | `/api/memory/profile/:entity` | Get everything known about an entity |
+| `GET` | `/api/memory/episodes` | Query episodic summaries (`?q=auth&date=2026-04-26`) |
+| `GET` | `/api/memory/stats` | Memory system statistics |
 
 ### SSE Event Stream
 
@@ -639,6 +662,96 @@ wiki.forget('burke', 'Prefers TypeScript');
 
 ---
 
+## Memory System
+
+GHC Dispatch has a three-part memory system that learns from every conversation, works across all channels, and proactively surfaces relevant context.
+
+### Conversation Log
+
+Every message across every channel is stored in SQLite with full metadata — channel, thread, speaker identity, speaker type (user/agent/system), and timestamp. This enables cross-channel awareness: if you discuss JWT tokens in Discord, that context is available when you're working on auth in the CLI.
+
+```bash
+# Search across all channels
+curl "http://localhost:7878/api/conversations/search?q=JWT"
+
+# Search within a specific channel
+curl "http://localhost:7878/api/conversations/search?q=JWT&channel=discord"
+
+# List conversation threads
+curl "http://localhost:7878/api/conversations/threads?channel=discord"
+```
+
+### Episodic Memory
+
+A background writer periodically summarizes idle conversation threads into wiki pages at `conversations/YYYY-MM-DD.md`. Each summary includes:
+
+- **Condensed digest** — speaker-attributed message summary
+- **Topics** — automatically extracted (authentication, deployment, testing, etc.)
+- **Entities** — speakers, @mentions, and repository references cross-linked as `[[wiki links]]`
+- **Decisions** — statements matching decision patterns ("decided to...", "let's...", "agreed to...")
+
+Summaries are searchable — ask "what did we discuss about deployment last week?" and get the relevant episodic summaries.
+
+```bash
+# Search episodic summaries
+curl "http://localhost:7878/api/memory/episodes?q=deployment"
+
+# Get summaries for a specific date
+curl "http://localhost:7878/api/memory/episodes?date=2026-04-26"
+```
+
+### Proactive Memory
+
+The system analyzes every message to extract facts about users and agents:
+
+| Category | Example Extraction |
+|----------|-------------------|
+| Preferences | "I prefer TypeScript" → `prefers TypeScript over JavaScript` |
+| Identity | "I work at Microsoft" → `works at Microsoft` |
+| Work patterns | "I usually start at 9am" → `schedule: 9am` |
+| Tools | "Switched to Vitest" → `mentioned switching to/from Vitest` |
+| Projects | "myapp deploys to Vercel" → `deploys to Vercel` |
+
+Facts are extracted for **both users and agents**. The more `@coder` runs, the better dispatch understands its patterns and can service it. Facts are stored in the `memory_facts` database table and simultaneously filed into wiki entity pages.
+
+```bash
+# See everything known about a user
+curl "http://localhost:7878/api/memory/profile/alice"
+
+# List all known entities
+curl "http://localhost:7878/api/memory/entities"
+
+# Search facts
+curl "http://localhost:7878/api/memory/facts?q=TypeScript"
+```
+
+### Cross-Channel Relevance
+
+When you send a message, dispatch can suggest related context from past conversations in **any** channel, extracted facts, episodic summaries, and wiki pages:
+
+```bash
+# Get suggestions for a current message
+curl -X POST http://localhost:7878/api/memory/suggest \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Fix the JWT token expiry","channel":"cli"}'
+
+# Response includes:
+# - Past messages from Discord about JWT (cross-channel)
+# - Extracted fact: "alice prefers refresh token rotation"
+# - Episodic summary: "2026-04-25 discussion about auth token lifecycle"
+# - Wiki page: [[authentication]] — project auth documentation
+```
+
+The `buildContextForConversation` endpoint assembles a full context string with participant profiles and relevant history, ready to inject into an agent prompt:
+
+```bash
+curl -X POST http://localhost:7878/api/memory/context \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Set up the project","speakers":["alice"],"channel":"vscode"}'
+```
+
+---
+
 ## VS Code Integration
 
 GHC Orchestrator integrates with VS Code through two mechanisms:
@@ -826,10 +939,16 @@ ghc-orchestrator/
 │   ├── store/
 │   │   ├── db.ts                        # SQLite connection + migrations
 │   │   ├── task-repo.ts                 # Task persistence
-│   │   └── event-repo.ts               # Event persistence
+│   │   ├── event-repo.ts               # Event persistence
+│   │   └── conversation-repo.ts         # Cross-channel conversation log
+│   │
+│   ├── memory/
+│   │   ├── memory-manager.ts            # Orchestrates all memory subsystems
+│   │   ├── episodic-writer.ts           # Conversation → wiki summaries
+│   │   └── proactive-extractor.ts       # Fact extraction from messages
 │   │
 │   └── wiki/
-│       └── wiki-manager.ts              # Wiki memory system
+│       └── wiki-manager.ts              # Wiki knowledge base
 │
 ├── agents/                              # Built-in agent definitions
 │   ├── orchestrator.agent.md
@@ -844,7 +963,7 @@ ghc-orchestrator/
 │   └── hooks/hooks.json
 │
 └── tests/
-    └── unit/                            # 114 tests across 11 suites
+    └── unit/                            # 138 tests across 13 suites
         ├── task-model.test.ts
         ├── task-manager.test.ts
         ├── event-store.test.ts
@@ -855,7 +974,9 @@ ghc-orchestrator/
         ├── approval-manager.test.ts
         ├── wiki-manager.test.ts
         ├── discord.test.ts
-        └── task-dag.test.ts
+        ├── task-dag.test.ts
+        ├── conversation-repo.test.ts
+        └── memory-manager.test.ts
 ```
 
 ---
@@ -892,9 +1013,11 @@ npm test
  ✓ tests/unit/wiki-manager.test.ts     (10 tests)
  ✓ tests/unit/discord.test.ts           (6 tests)
  ✓ tests/unit/task-dag.test.ts         (12 tests)
+ ✓ tests/unit/conversation-repo.test.ts (11 tests)
+ ✓ tests/unit/memory-manager.test.ts   (13 tests)
 
- Test Files  11 passed (11)
-      Tests  114 passed (114)
+ Test Files  13 passed (13)
+      Tests  138 passed (138)
 ```
 
 ### Technology Stack
