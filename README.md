@@ -975,26 +975,60 @@ The `src/mcp/apps/task-board.html` file is an interactive dashboard rendered ins
 
 ## Discord Integration
 
-GHC Orchestrator includes a Discord adapter for managing tasks from Discord servers.
+GHC Dispatch includes a full Discord bot built on [discord.js](https://discord.js.org/). It connects to your Discord server, listens in configured channels, handles commands and natural language, and pushes event notifications.
 
-### Command Format
+### Setup
 
+1. Create a bot at the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Enable the **Message Content Intent** under Bot settings
+3. Invite the bot to your server with `Send Messages`, `Read Message History`, and `Embed Links` permissions
+4. Configure environment variables:
+
+```bash
+DISCORD_BOT_TOKEN=your-bot-token-here
+DISCORD_ALLOWED_CHANNELS=channel-id-1,channel-id-2   # empty = all channels
+DISCORD_COMMAND_PREFIX=!dispatch                       # default
 ```
-!task create "Fix the auth bug" --agent @coder --priority high
-!task list
-!task status <task-id>
-!task cancel <task-id>
-```
 
-### Integration
+5. Start dispatch: `dispatch --start`
 
-The adapter parses `!task` commands and can be connected to the existing Copilot CLI Discord bridge extension. Task results are formatted with status emoji and markdown for readability:
+### Commands
 
-```
-🔄 **Fix the auth bug**
-ID: `01KQ3ECDV5CJMS9DACYVJGM69K`
-Status: running | Agent: @coder | Priority: high
-```
+| Command | Description |
+|---------|-------------|
+| `!dispatch create "title" [--agent @coder] [--priority high]` | Create a task |
+| `!dispatch list [--status running]` | List tasks |
+| `!dispatch status <task-id>` | Show task details |
+| `!dispatch cancel <task-id>` | Cancel a task |
+| `!dispatch retry <task-id>` | Retry a failed task |
+| `!dispatch enqueue <task-id>` | Queue a pending task |
+| `!dispatch approve <approval-id>` | Approve a request |
+| `!dispatch reject <approval-id>` | Reject a request |
+| `!dispatch agents` | List available agents |
+| `!dispatch skills` | List installed skills (user vs system) |
+| `!dispatch stats` | System statistics |
+| `!dispatch recall <topic>` | Search memory across all channels |
+| `!dispatch help` | Full command reference |
+
+### Natural Language
+
+Mention the bot (`@dispatch`) or send a DM. Action-oriented messages automatically create tasks:
+
+> **You:** @dispatch fix the login bug in the auth module
+> **Dispatch:** 📋 Created task: `01KQ5...` — fix the login bug in the auth module
+> 💡 **Related context:**
+> > [alice]: The JWT token expires after 15 minutes *(from cli)*
+
+### Event Notifications
+
+The bot pushes notifications back to Discord when:
+- ✅ A task created from Discord completes
+- ❌ A task created from Discord fails
+- ⚠️ An approval is requested (with approve/reject instructions)
+
+### Cross-Channel Awareness
+
+All Discord messages are logged to the conversation memory system. Context from CLI, VS Code, or API conversations is surfaced in Discord replies. Use `!dispatch recall <topic>` to explicitly search across all channels.
 
 ---
 
@@ -1112,7 +1146,8 @@ ghc-orchestrator/
 │   │
 │   ├── surfaces/
 │   │   ├── api.ts                       # Express REST API + SSE
-│   │   └── discord.ts                   # Discord command adapter
+│   │   ├── discord.ts                   # Discord command parser utilities
+│   │   └── discord-bot.ts              # Full Discord bot (discord.js)
 │   │
 │   ├── store/
 │   │   ├── db.ts                        # SQLite connection + migrations
@@ -1147,7 +1182,7 @@ ghc-orchestrator/
 │   └── hooks/hooks.json
 │
 └── tests/
-    └── unit/                            # 164 tests across 15 suites
+    └── unit/                            # 165 tests across 15 suites
         ├── task-model.test.ts
         ├── task-manager.test.ts
         ├── event-store.test.ts
@@ -1205,7 +1240,7 @@ npm test
  ✓ tests/unit/automation-scheduler.test.ts (16 tests)
 
  Test Files  15 passed (15)
-      Tests  164 passed (164)
+      Tests  165 passed (165)
 ```
 
 ### Technology Stack
