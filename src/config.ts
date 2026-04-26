@@ -8,6 +8,9 @@ const ConfigSchema = z.object({
   retryBackoffMs: z.coerce.number().int().min(100).default(2000),
   worktreeRetentionMinutes: z.coerce.number().int().min(0).default(60),
   logRetentionDays: z.coerce.number().int().min(1).default(30),
+  discordBotToken: z.string().optional(),
+  discordAllowedChannels: z.string().default(''),
+  discordCommandPrefix: z.string().default('!dispatch'),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -21,5 +24,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     retryBackoffMs: env.RETRY_BACKOFF_MS,
     worktreeRetentionMinutes: env.WORKTREE_RETENTION_MINUTES,
     logRetentionDays: env.LOG_RETENTION_DAYS,
+    discordBotToken: env.DISCORD_BOT_TOKEN,
+    discordAllowedChannels: env.DISCORD_ALLOWED_CHANNELS,
+    discordCommandPrefix: env.DISCORD_COMMAND_PREFIX,
   });
 }

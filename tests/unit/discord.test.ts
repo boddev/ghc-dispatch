@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDiscordCommand, formatTaskForDiscord } from '../../src/surfaces/discord.js';
 
-describe('Discord Adapter', () => {
+describe('Discord Utilities (legacy adapter)', () => {
   describe('parseDiscordCommand', () => {
     it('parses create command', () => {
       const result = parseDiscordCommand('!task create "Fix the auth bug" --agent @coder --priority high');
@@ -57,5 +57,13 @@ describe('Discord Adapter', () => {
       expect(result).toContain('✅');
       expect(result).toContain('Deployed successfully');
     });
+  });
+});
+
+describe('Discord Bot module', () => {
+  it('exports DiscordBot class', async () => {
+    const mod = await import('../../src/surfaces/discord-bot.js');
+    expect(mod.DiscordBot).toBeDefined();
+    expect(typeof mod.DiscordBot).toBe('function');
   });
 });

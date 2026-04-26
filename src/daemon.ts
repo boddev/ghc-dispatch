@@ -29,6 +29,7 @@ import { WikiManager } from './wiki/wiki-manager.js';
 import { MemoryManager } from './memory/memory-manager.js';
 import { SkillManager } from './skills/skill-manager.js';
 import { AutomationScheduler } from './automation/automation-scheduler.js';
+import { DiscordBot } from './surfaces/discord-bot.js';
 import { createApi } from './surfaces/api.js';
 import { loadConfig } from './config.js';
 import { paths, ensureDataDirs } from './paths.js';
@@ -172,8 +173,27 @@ export async function startDaemon(): Promise<void> {
     console.log(`\n✅ GHC Orchestrator running on http://localhost:${config.apiPort}`);
     console.log(`   API: http://localhost:${config.apiPort}/api`);
     console.log(`   SSE: http://localhost:${config.apiPort}/api/events/stream`);
-    console.log(`   Health: http://localhost:${config.apiPort}/api/health\n`);
+    console.log(`   Health: http://localhost:${config.apiPort}/api/health`);
   });
+
+  // --- Discord Bot ---
+  let discordBot: DiscordBot | null = null;
+  if (config.discordBotToken) {
+    discordBot = new DiscordBot({
+      taskManager, approvalManager, sessionRunner,
+      skillManager, memoryManager, eventBus, config,
+    });
+    try {
+      await discordBot.start();
+    } catch (err: any) {
+      console.warn(`   ⚠️  Discord bot failed to start: ${err.message}`);
+      discordBot = null;
+    }
+  } else {
+    console.log('   Discord: not configured (set DISCORD_BOT_TOKEN to enable)');
+  }
+
+  console.log('');
 
   // --- Graceful Shutdown ---
   const shutdown = async () => {
@@ -182,6 +202,7 @@ export async function startDaemon(): Promise<void> {
     clearInterval(gcInterval);
     memoryManager.stopBackgroundProcessing();
     automationScheduler.stopAll();
+    if (discordBot) await discordBot.stop();
     server.close();
     await sessionPool.releaseAll();
     if (copilotAdapter.isRunning()) await copilotAdapter.stop();

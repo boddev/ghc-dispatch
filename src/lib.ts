@@ -44,6 +44,9 @@ export { SkillManager } from './skills/skill-manager.js';
 // Automation
 export { AutomationScheduler } from './automation/automation-scheduler.js';
 
+// Surfaces
+export { DiscordBot } from './surfaces/discord-bot.js';
+
 // Config
 export { loadConfig } from './config.js';
 export type { Config } from './config.js';
