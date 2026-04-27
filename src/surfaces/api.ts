@@ -13,6 +13,7 @@ import type { ModelManager } from '../execution/model-manager.js';
 import type { ProactiveCheckIn } from '../automation/proactive-checkin.js';
 import type { GitHubEventHandler } from '../automation/github-events.js';
 import type { BrowserEngine } from '../browser/browser-engine.js';
+import type { HotReloader } from '../execution/hot-reloader.js';
 
 export interface ApiDeps {
   taskManager: TaskManager;
@@ -29,6 +30,7 @@ export interface ApiDeps {
   checkIn: ProactiveCheckIn;
   githubEvents: GitHubEventHandler;
   browserEngine: BrowserEngine;
+  hotReloader: HotReloader;
 }
 
 export function createApi(deps: ApiDeps): express.Express {
@@ -567,6 +569,35 @@ export function createApi(deps: ApiDeps): express.Express {
       currentUrl: deps.browserEngine.getCurrentUrl(),
       history: deps.browserEngine.getHistory(),
     });
+  });
+
+  // --- Hot Reload / Restart / Update ---
+  app.post('/api/reload', (req, res) => {
+    const result = deps.hotReloader.reloadAll();
+    res.json({ message: `Reloaded: ${result.agents} agents, ${result.skills} skills`, ...result });
+  });
+
+  app.get('/api/reload/status', (req, res) => {
+    res.json(deps.hotReloader.getStats());
+  });
+
+  app.post('/api/restart', async (req, res) => {
+    res.json({ message: 'Restarting dispatch daemon...', pid: process.pid });
+    // Give response time to send, then restart
+    setTimeout(async () => {
+      const { selfRestart } = await import('../execution/self-manage.js');
+      selfRestart(process.cwd());
+    }, 500);
+  });
+
+  app.post('/api/update', async (req, res) => {
+    try {
+      const { selfUpdate } = await import('../execution/self-manage.js');
+      const result = selfUpdate(process.cwd());
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   return app;

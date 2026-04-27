@@ -88,6 +88,10 @@ const HELP_TEXT = `
     --model <name> --agent <a> Switch model for a specific agent
     --models                   List all available models
 
+    --reload                   Hot-reload agents and skills
+    --update                   Update dispatch to the latest version
+    --restart                  Restart the daemon (spawns replacement process)
+
     --start                    Start the orchestrator daemon
     --help                     Show this help message
     --version                  Show version
@@ -98,6 +102,9 @@ const HELP_TEXT = `
     dispatch --model claude-opus-4.7
     dispatch --model gpt-5.4 --agent @coder
     dispatch --models
+    dispatch --reload
+    dispatch --update
+    dispatch --restart
     dispatch --list --filter-status running
     dispatch --status 01KQ3ECDV5CJMS9DACYVJGM69K
     dispatch --cancel 01KQ3ECDV5CJMS9DACYVJGM69K --reason "No longer needed"
@@ -135,6 +142,46 @@ async function main() {
   if (hasFlag(args, '--start')) {
     const { startDaemon } = await import('./daemon.js');
     await startDaemon();
+    return;
+  }
+
+  // --update: self-update
+  if (hasFlag(args, '--update')) {
+    console.log('🔄 Checking for updates...');
+    const { selfUpdate } = await import('./execution/self-manage.js');
+    const result = selfUpdate(process.cwd());
+    if (result.success) {
+      console.log(`✅ Updated: ${result.previousVersion} → ${result.newVersion} (via ${result.method})`);
+      if (result.output) console.log(result.output);
+    } else {
+      console.error(`❌ Update failed: ${result.output}`);
+    }
+    return;
+  }
+
+  // --restart: restart the daemon
+  if (hasFlag(args, '--restart')) {
+    const { selfRestart } = await import('./execution/self-manage.js');
+    selfRestart(process.cwd());
+    return;
+  }
+
+  // --reload: hot-reload agents and skills via API
+  if (hasFlag(args, '--reload')) {
+    try {
+      const resp = await fetch('http://localhost:7878/api/reload', { method: 'POST' });
+      const data = await resp.json() as any;
+      console.log(`✅ Reloaded: ${data.agents} agents, ${data.skills} skills`);
+    } catch {
+      // Fallback: direct reload if daemon isn't running
+      const { AgentLoader } = await import('./execution/agent-loader.js');
+      const { SkillManager } = await import('./skills/skill-manager.js');
+      const { join } = await import('node:path');
+      const { paths: p } = await import('./paths.js');
+      const bundledDir = join(import.meta.dirname ?? '.', '..', 'agents');
+      const al = new AgentLoader([bundledDir, p.agentsDir]);
+      console.log(`✅ Reloaded ${al.list().length} agents (daemon not running — local reload only)`);
+    }
     return;
   }
 

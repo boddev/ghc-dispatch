@@ -34,6 +34,7 @@ import { DiscordBot } from './surfaces/discord-bot.js';
 import { ProactiveCheckIn } from './automation/proactive-checkin.js';
 import { GitHubEventHandler } from './automation/github-events.js';
 import { BrowserEngine } from './browser/browser-engine.js';
+import { HotReloader } from './execution/hot-reloader.js';
 import { createApi } from './surfaces/api.js';
 import { loadConfig } from './config.js';
 import { paths, ensureDataDirs } from './paths.js';
@@ -132,6 +133,12 @@ export async function startDaemon(): Promise<void> {
     screenshotDir: join(paths.dataDir, 'screenshots'),
   });
 
+  // --- Hot Reload ---
+  const hotReloader = new HotReloader(agentLoader, skillManager, [
+    bundledAgentsDir, paths.agentsDir, paths.skillsDir,
+  ]);
+  hotReloader.start();
+
   // --- Scheduler Loop ---
   const schedulerInterval = setInterval(() => {
     const taskId = scheduler.dequeue();
@@ -192,7 +199,7 @@ export async function startDaemon(): Promise<void> {
     taskManager, approvalManager, scheduler,
     sessionPool, agentLoader, sessionRunner, eventBus,
     memoryManager, skillManager, automationScheduler, modelManager,
-    checkIn, githubEvents, browserEngine,
+    checkIn, githubEvents, browserEngine, hotReloader,
   });
 
   const server = api.listen(config.apiPort, () => {
@@ -229,6 +236,7 @@ export async function startDaemon(): Promise<void> {
     memoryManager.stopBackgroundProcessing();
     automationScheduler.stopAll();
     checkIn.stop();
+    hotReloader.stop();
     await browserEngine.close();
     if (discordBot) await discordBot.stop();
     server.close();
