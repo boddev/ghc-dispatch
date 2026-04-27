@@ -30,6 +30,9 @@ Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orch
 - [Memory System](#memory-system)
 - [Skills](#skills)
 - [Automation](#automation)
+- [Proactive Check-Ins](#proactive-check-ins)
+- [GitHub Events](#github-events)
+- [Email & Calendar](#email--calendar)
 - [Model Switching](#model-switching)
 - [VS Code Integration](#vs-code-integration)
 - [Discord Integration](#discord-integration)
@@ -945,6 +948,104 @@ Supported event types: `task.created`, `task.queued`, `task.started`, `task.comp
 
 ---
 
+## Proactive Check-Ins
+
+Dispatch periodically evaluates system state and reaches out with relevant information — like a coworker who notices things and taps your shoulder.
+
+### What Gets Checked
+
+| Check | Trigger |
+|-------|---------|
+| Failed tasks | Tasks that failed but haven't been retried |
+| Expiring approvals | Approvals expiring within 15 minutes |
+| Stuck tasks | Tasks running for over 30 minutes |
+| Stale queue | Tasks waiting in queue for 10+ minutes |
+| Recurring failures | Same agent failing 3+ times |
+| Daily summary | Conversation activity across channels |
+
+### Configuration
+
+Check-ins run every 30 minutes by default. They push notifications to any registered handler (Discord, VS Code, console).
+
+```bash
+# Trigger a check-in on demand
+curl http://localhost:7878/api/checkin
+```
+
+---
+
+## GitHub Events
+
+Point your GitHub repo webhook settings at dispatch to automatically react to repository events.
+
+### Setup
+
+1. Go to your GitHub repo → Settings → Webhooks → Add webhook
+2. Set Payload URL to: `http://your-dispatch-host:7878/api/webhooks/github`
+3. Set Content type to: `application/json`
+4. Select events: Push, Pull requests, Issues, Check runs, Workflow runs
+
+### Supported Events
+
+| Event | Action | What Dispatch Does |
+|-------|--------|-------------------|
+| `pull_request.opened` | PR opened | Creates a review task |
+| `issues.opened` | Issue created | Creates an investigation task (bug label → high priority) |
+| `check_run.completed` (failure) | CI failed | Creates a high-priority fix task |
+| `workflow_run.completed` (failure) | GitHub Actions failed | Creates a high-priority fix task |
+| `push` | Code pushed | Logged to memory |
+| `issue_comment` | Comment added | Logged to memory |
+| `release.published` | New release | Logged to memory |
+
+All events are logged to the conversation memory system (channel: `github`) for cross-channel awareness.
+
+---
+
+## Email & Calendar
+
+Dispatch includes skills for both Google Workspace and Microsoft 365. Copilot agent sessions can use these skills to read email, send messages, manage calendar events, and access files.
+
+### Google Workspace (via gogcli)
+
+**Prerequisites:** Install `gogcli` — `brew install steipete/tap/gogcli`
+
+```bash
+# Gmail: search unread emails
+gog gmail search 'is:unread newer_than:1d' --max 10 --json
+
+# Calendar: today's events
+gog calendar events --time-min "$(date -I)" --json
+
+# Drive: search files
+gog drive search "quarterly report" --json
+```
+
+### Microsoft 365 (via Graph API)
+
+**Prerequisites:** `mgc` CLI or Azure AD token via `az account get-access-token`
+
+```bash
+# Outlook: unread emails
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://graph.microsoft.com/v1.0/me/messages?\$filter=isRead eq false&\$top=10"
+
+# Calendar: today's events
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=$(date -u +%Y-%m-%dT00:00:00Z)&endDateTime=$(date -u +%Y-%m-%dT23:59:59Z)"
+
+# OneDrive: search files
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://graph.microsoft.com/v1.0/me/drive/root/search(q='report')"
+```
+
+Both skills are SKILL.md files in `skills/` — Copilot agents learn to use them automatically when loaded into a session.
+
+### Browser Automation
+
+Dispatch does not include its own browser automation engine. Browser automation is available through the Copilot agent runtime — VS Code 1.115+ includes an integrated browser for agents, and Copilot CLI sessions can use web fetch and browser tools natively.
+
+---
+
 ## Model Switching
 
 Switch models at runtime without editing config files or restarting the daemon.
@@ -1268,7 +1369,9 @@ ghc-orchestrator/
 │   │   └── skill-manager.ts             # Skill install/create/manage/search
 │   │
 │   ├── automation/
-│   │   └── automation-scheduler.ts      # Cron, webhooks, event triggers
+│   │   ├── automation-scheduler.ts      # Cron, webhooks, event triggers
+│   │   ├── proactive-checkin.ts         # Periodic system health check-ins
+│   │   └── github-events.ts            # GitHub webhook event handler
 │   │
 │   └── wiki/
 │       └── wiki-manager.ts              # Wiki knowledge base
@@ -1286,23 +1389,14 @@ ghc-orchestrator/
 │   └── hooks/hooks.json
 │
 ├── dispatch-vscode/                     # VS Code Extension
-│   ├── package.json                     # Extension manifest (views, commands, config)
-│   ├── src/
-│   │   ├── extension.ts                 # Entry point (activation, commands, SSE)
-│   │   ├── client.ts                    # HTTP/SSE client for dispatch daemon
-│   │   ├── providers/                   # TreeView data providers
-│   │   │   ├── task-tree.ts
-│   │   │   ├── agent-tree.ts
-│   │   │   ├── skill-tree.ts
-│   │   │   ├── automation-tree.ts
-│   │   │   └── approval-tree.ts
-│   │   └── panels/
-│   │       └── task-detail.ts           # Webview panel for task detail
-│   └── media/
-│       └── dispatch-icon.svg
+│   ├── ...
+│
+├── skills/                              # Bundled skills
+│   ├── google-workspace/SKILL.md        # Gmail, Calendar, Drive via gogcli
+│   └── microsoft-365/SKILL.md           # Outlook, Calendar, OneDrive via Graph API
 │
 └── tests/
-    └── unit/                            # 184 tests across 16 suites
+    └── unit/                            # 198 tests across 18 suites
         ├── task-model.test.ts
         ├── task-manager.test.ts
         ├── event-store.test.ts
@@ -1360,9 +1454,11 @@ npm test
  ✓ tests/unit/skill-manager.test.ts    (10 tests)
  ✓ tests/unit/automation-scheduler.test.ts (16 tests)
  ✓ tests/unit/model-manager.test.ts    (19 tests)
+ ✓ tests/unit/proactive-checkin.test.ts (5 tests)
+ ✓ tests/unit/github-events.test.ts    (9 tests)
 
- Test Files  16 passed (16)
-      Tests  184 passed (184)
+ Test Files  18 passed (18)
+      Tests  198 passed (198)
 ```
 
 ### Technology Stack
