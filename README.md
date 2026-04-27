@@ -932,44 +932,54 @@ Supported event types: `task.created`, `task.queued`, `task.started`, `task.comp
 
 ## VS Code Integration
 
-GHC Orchestrator integrates with VS Code through two mechanisms:
+GHC Dispatch integrates with VS Code through three mechanisms: a dedicated **VS Code Extension**, an **Agent Plugin**, and **Agents App** session visibility.
 
-### 1. Agent Plugin
+### 1. VS Code Extension (`dispatch-vscode/`)
 
-The `plugin/` directory is a ready-to-use [VS Code Agent Plugin](https://code.visualstudio.com/docs/copilot/customization/agent-plugins):
+A full extension that adds a "Dispatch" icon to the activity bar with 5 sidebar panels:
+
+| Panel | Contents |
+|-------|----------|
+| **Tasks** | Real-time task list grouped by status (running → queued → pending → ...). Click any task to open a detail webview with events, actions, and result. |
+| **Agents** | Loaded agent definitions with model info |
+| **Skills** | Skills grouped by User-Installed vs System-Created. Right-click to enable/disable. |
+| **Automation** | Cron jobs, webhooks, and event triggers with run counts |
+| **Approvals** | Pending approval requests with Approve/Reject context actions |
+
+**Commands** (Command Palette):
+- `Dispatch: Create Task` — input wizard for title, agent, priority
+- `Dispatch: Show Stats` — task counts, queue, sessions, memory stats
+- `Dispatch: Recall Memory` — cross-channel memory search with results picker
+- `Dispatch: Memory Explorer` — browse facts, entities, episodes, conversations
+
+**Status Bar**: Always-visible badge showing running/queued task count.
+
+**Real-time**: SSE connection to the daemon pushes live task state changes. VS Code notifications fire for task completion/failure and approval requests (with Approve/Reject buttons).
+
+**Setup**: Start the daemon (`dispatch --start`), install the extension, the Dispatch icon appears in the activity bar.
+
+### 2. Agent Plugin
+
+The `plugin/` directory is a [VS Code Agent Plugin](https://code.visualstudio.com/docs/copilot/customization/agent-plugins) that adds MCP tools, agents, and skills to VS Code chat:
 
 ```
 plugin/
 ├── plugin.json          # Plugin manifest
 ├── .mcp.json            # MCP server configuration
 ├── agents/              # Agent definitions
-├── skills/
-│   └── orchestrator/
-│       └── SKILL.md     # Usage instructions for Copilot
-└── hooks/
-    └── hooks.json       # Lifecycle hooks
+├── skills/orchestrator/ # Usage instructions for Copilot
+└── hooks/hooks.json     # Lifecycle hooks
 ```
 
-Install by pointing VS Code at the plugin directory. Your agents, skills, and the MCP server are automatically available in VS Code chat and the Agents App.
+### 3. Agents App Session Visibility
 
-### 2. MCP Apps Dashboard
+When dispatch creates real Copilot SDK sessions (not mock), those sessions appear automatically in the VS Code Agents App sidebar. The Agents App provides:
+- Session list with progress tracking
+- Inline diff review and PR creation
+- Agent Debug Log panel
+- Worktree isolation per session (v1.117+)
 
-The `src/mcp/apps/task-board.html` file is an interactive dashboard rendered inside VS Code's chat panel via [MCP Apps](https://code.visualstudio.com/blogs/2026/01/26/mcp-apps-support):
-
-- **Kanban board** — tasks organized by status (Queued / Running / Completed / Failed)
-- **Live statistics** — queue depth, running count, session utilization
-- **Approval panel** — approve or reject pending requests inline
-- **Auto-refresh** — toggleable 3-second polling
-
-### Agents App Mapping
-
-| Orchestrator Concept | VS Code Agents App |
-|---------------------|--------------------|
-| Task | Agent Session |
-| Subtask | Nested Session |
-| Agent (`@coder`) | Agent Worker |
-| Task output/diff | Session Changes |
-| Approval | Review Request |
+Note: The Agents App does not expose a public API for third-party session registration — dispatch sessions appear because they are native Copilot SDK sessions.
 
 ---
 
@@ -1180,6 +1190,22 @@ ghc-orchestrator/
 │   ├── .mcp.json
 │   ├── skills/orchestrator/SKILL.md
 │   └── hooks/hooks.json
+│
+├── dispatch-vscode/                     # VS Code Extension
+│   ├── package.json                     # Extension manifest (views, commands, config)
+│   ├── src/
+│   │   ├── extension.ts                 # Entry point (activation, commands, SSE)
+│   │   ├── client.ts                    # HTTP/SSE client for dispatch daemon
+│   │   ├── providers/                   # TreeView data providers
+│   │   │   ├── task-tree.ts
+│   │   │   ├── agent-tree.ts
+│   │   │   ├── skill-tree.ts
+│   │   │   ├── automation-tree.ts
+│   │   │   └── approval-tree.ts
+│   │   └── panels/
+│   │       └── task-detail.ts           # Webview panel for task detail
+│   └── media/
+│       └── dispatch-icon.svg
 │
 └── tests/
     └── unit/                            # 165 tests across 15 suites
