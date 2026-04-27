@@ -9,6 +9,7 @@ import type { EventBus } from '../control-plane/event-bus.js';
 import type { MemoryManager } from '../memory/memory-manager.js';
 import type { SkillManager } from '../skills/skill-manager.js';
 import type { AutomationScheduler } from '../automation/automation-scheduler.js';
+import type { ModelManager } from '../execution/model-manager.js';
 
 export interface ApiDeps {
   taskManager: TaskManager;
@@ -21,6 +22,7 @@ export interface ApiDeps {
   memoryManager: MemoryManager;
   skillManager: SkillManager;
   automationScheduler: AutomationScheduler;
+  modelManager: ModelManager;
 }
 
 export function createApi(deps: ApiDeps): express.Express {
@@ -145,6 +147,45 @@ export function createApi(deps: ApiDeps): express.Express {
 
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', version: '0.1.0', uptime: process.uptime() });
+  });
+
+  // --- Models ---
+  app.get('/api/models', (req, res) => {
+    res.json({
+      current: deps.modelManager.getDefault(),
+      agentOverrides: deps.modelManager.getAgentOverrides(),
+      available: deps.modelManager.listModels(),
+    });
+  });
+
+  app.get('/api/models/current', (req, res) => {
+    res.json({ model: deps.modelManager.getDefault() });
+  });
+
+  app.post('/api/models/switch', (req, res) => {
+    const { model, agent } = req.body;
+    if (!model) { res.status(400).json({ error: '"model" required' }); return; }
+
+    const found = deps.modelManager.findModel(model);
+    if (!found) { res.status(400).json({ error: `Unknown model: ${model}. Use GET /api/models for available models.` }); return; }
+
+    if (agent) {
+      deps.modelManager.setAgentModel(agent, found.id);
+      res.json({ message: `Agent ${agent} switched to ${found.id}`, agent, model: found.id });
+    } else {
+      deps.modelManager.setDefault(found.id);
+      res.json({ message: `Default model switched to ${found.id}`, model: found.id });
+    }
+  });
+
+  app.post('/api/models/reset', (req, res) => {
+    const { agent } = req.body;
+    if (agent) {
+      deps.modelManager.clearAgentModel(agent);
+      res.json({ message: `Agent ${agent} model reset to definition default`, agent });
+    } else {
+      res.status(400).json({ error: 'Specify "agent" to reset, or use /api/models/switch to set default' });
+    }
   });
 
   // --- SSE Event Stream ---

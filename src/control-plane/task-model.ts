@@ -66,6 +66,7 @@ export const CreateTaskInput = z.object({
   description: z.string().default(''),
   priority: Priority.default('normal'),
   agent: z.string().default('@general-purpose'),
+  model: z.string().optional(),
   repo: z.string().optional(),
   parentTaskId: z.string().optional(),
   dependsOn: z.array(z.string()).default([]),

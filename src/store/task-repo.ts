@@ -41,6 +41,8 @@ export class TaskRepo {
   create(input: CreateTaskInput): Task {
     const now = new Date().toISOString();
     const id = ulid();
+    const metadata = { ...(input.metadata ?? {}) };
+    if (input.model) metadata.model = input.model;
     const row = {
       id,
       title: input.title,
@@ -55,7 +57,7 @@ export class TaskRepo {
       createdAt: now,
       updatedAt: now,
       maxRetries: input.maxRetries ?? 3,
-      metadata: JSON.stringify(input.metadata ?? {}),
+      metadata: JSON.stringify(metadata),
     };
     this.stmts.insert.run(row);
     return this.getById(id)!;

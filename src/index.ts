@@ -22,6 +22,7 @@ import { EventRepo } from './store/event-repo.js';
 import { TaskManager } from './control-plane/task-manager.js';
 import { LocalEventBus } from './control-plane/event-bus.js';
 import type { Priority, TaskStatus } from './control-plane/task-model.js';
+import { loadConfig } from './config.js';
 import { ensureDataDirs } from './paths.js';
 
 function createOrchestrator() {
@@ -65,6 +66,7 @@ const HELP_TEXT = `
     --create <title>           Create a new task
         --agent <agent>          Agent to assign (default: @general-purpose)
         --priority <level>       critical | high | normal | low (default: normal)
+        --model <model>          Model to use for this task (overrides agent default)
         --repo <path>            Target repository path
         --description <text>     Task description
 
@@ -80,12 +82,22 @@ const HELP_TEXT = `
     --enqueue <task-id>        Queue a pending task for execution
     --events <task-id>         Show event history for a task
     --stats                    Show task statistics
+
+    --model                    Show current default model
+    --model <name>             Switch the default model
+    --model <name> --agent <a> Switch model for a specific agent
+    --models                   List all available models
+
     --start                    Start the orchestrator daemon
     --help                     Show this help message
     --version                  Show version
 
   Examples:
     dispatch --create "Fix auth bug" --agent @coder --priority high
+    dispatch --create "Refactor" --agent @coder --model gpt-5.5
+    dispatch --model claude-opus-4.7
+    dispatch --model gpt-5.4 --agent @coder
+    dispatch --models
     dispatch --list --filter-status running
     dispatch --status 01KQ3ECDV5CJMS9DACYVJGM69K
     dispatch --cancel 01KQ3ECDV5CJMS9DACYVJGM69K --reason "No longer needed"
@@ -134,9 +146,10 @@ async function main() {
       if (!title) { console.error('Error: --create requires a title.  Usage: dispatch --create "task title"'); process.exit(1); }
       const agent = getFlag(args, '--agent') ?? '@general-purpose';
       const priority = (getFlag(args, '--priority') ?? 'normal') as Priority;
+      const model = getFlag(args, '--model');
       const repo = getFlag(args, '--repo');
       const description = getFlag(args, '--description') ?? '';
-      const task = tm.createTask({ title, description, agent, priority, repo });
+      const task = tm.createTask({ title, description, agent, priority, model, repo });
       console.log(`✅ Task created: ${task.id}`);
       printTaskDetail(task);
     }
@@ -208,6 +221,61 @@ async function main() {
         console.log(`    ${status.padEnd(12)} ${count}`);
       }
       console.log();
+    }
+
+    else if (hasFlag(args, '--models')) {
+      const { ModelManager } = await import('./execution/model-manager.js');
+      const mm = new ModelManager(loadConfig().copilotModel, getDb());
+      console.log(`\n  Current default: ${mm.getDefault()}\n`);
+      const overrides = mm.getAgentOverrides();
+      if (Object.keys(overrides).length > 0) {
+        console.log('  Agent overrides:');
+        for (const [agent, model] of Object.entries(overrides)) {
+          console.log(`    ${agent.padEnd(20)} ${model}`);
+        }
+        console.log();
+      }
+      console.log('  Available models:');
+      console.log(`  ${'ID'.padEnd(24)} ${'NAME'.padEnd(24)} ${'PROVIDER'.padEnd(12)} TIER`);
+      console.log(`  ${'─'.repeat(70)}`);
+      for (const m of mm.listModels()) {
+        const current = m.id === mm.getDefault() ? ' ◄' : '';
+        console.log(`  ${m.id.padEnd(24)} ${m.name.padEnd(24)} ${m.provider.padEnd(12)} ${m.tier}${current}`);
+      }
+      console.log();
+    }
+
+    else if (hasFlag(args, '--model')) {
+      const modelArg = getFlag(args, '--model');
+      const agentArg = getFlag(args, '--agent');
+      const { ModelManager } = await import('./execution/model-manager.js');
+      const mm = new ModelManager(loadConfig().copilotModel, getDb());
+
+      if (!modelArg) {
+        // Show current model
+        console.log(`\n  Current default model: ${mm.getDefault()}`);
+        const overrides = mm.getAgentOverrides();
+        if (Object.keys(overrides).length > 0) {
+          console.log('  Agent overrides:');
+          for (const [agent, model] of Object.entries(overrides)) {
+            console.log(`    ${agent}: ${model}`);
+          }
+        }
+        console.log();
+      } else {
+        const found = mm.findModel(modelArg);
+        if (!found) {
+          console.error(`Unknown model: ${modelArg}. Run dispatch --models for available models.`);
+          process.exit(1);
+        }
+        if (agentArg) {
+          mm.setAgentModel(agentArg, found.id);
+          console.log(`✅ Agent ${agentArg} model switched to ${found.id}`);
+        } else {
+          mm.setDefault(found.id);
+          console.log(`✅ Default model switched to ${found.id}`);
+        }
+      }
     }
 
     else {

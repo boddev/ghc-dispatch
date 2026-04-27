@@ -29,6 +29,7 @@ import { WikiManager } from './wiki/wiki-manager.js';
 import { MemoryManager } from './memory/memory-manager.js';
 import { SkillManager } from './skills/skill-manager.js';
 import { AutomationScheduler } from './automation/automation-scheduler.js';
+import { ModelManager } from './execution/model-manager.js';
 import { DiscordBot } from './surfaces/discord-bot.js';
 import { createApi } from './surfaces/api.js';
 import { loadConfig } from './config.js';
@@ -102,9 +103,13 @@ export async function startDaemon(): Promise<void> {
   const autoJobs = automationScheduler.listEnabled().length;
   console.log(`   Automation: ${autoJobs} active job(s)`);
 
+  // --- Model Manager ---
+  const modelManager = new ModelManager(config.copilotModel, db);
+  console.log(`   Model: ${modelManager.getDefault()} (default)`);
+
   const sessionRunner = new SessionRunner(
     taskManager, agentLoader, sessionPool, worktreeManager,
-    artifactCollector, eventBus, config,
+    artifactCollector, eventBus, config, modelManager,
   );
 
   // --- Scheduler Loop ---
@@ -166,7 +171,7 @@ export async function startDaemon(): Promise<void> {
   const api = createApi({
     taskManager, approvalManager, scheduler,
     sessionPool, agentLoader, sessionRunner, eventBus,
-    memoryManager, skillManager, automationScheduler,
+    memoryManager, skillManager, automationScheduler, modelManager,
   });
 
   const server = api.listen(config.apiPort, () => {
@@ -181,7 +186,7 @@ export async function startDaemon(): Promise<void> {
   if (config.discordBotToken) {
     discordBot = new DiscordBot({
       taskManager, approvalManager, sessionRunner,
-      skillManager, memoryManager, eventBus, config,
+      skillManager, memoryManager, eventBus, modelManager, config,
     });
     try {
       await discordBot.start();

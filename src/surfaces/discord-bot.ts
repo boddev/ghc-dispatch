@@ -22,6 +22,7 @@ import type { SessionRunner } from '../execution/session-runner.js';
 import type { SkillManager } from '../skills/skill-manager.js';
 import type { MemoryManager } from '../memory/memory-manager.js';
 import type { EventBus } from '../control-plane/event-bus.js';
+import type { ModelManager } from '../execution/model-manager.js';
 import type { Config } from '../config.js';
 
 export interface DiscordBotDeps {
@@ -31,6 +32,7 @@ export interface DiscordBotDeps {
   skillManager: SkillManager;
   memoryManager: MemoryManager;
   eventBus: EventBus;
+  modelManager: ModelManager;
   config: Config;
 }
 
@@ -157,6 +159,9 @@ export class DiscordBot {
           break;
         case 'recall':
           await this.cmdRecall(msg, parts.slice(1).join(' '));
+          break;
+        case 'model':
+          await this.cmdModel(msg, parts.slice(1));
           break;
         case 'help':
         default:
@@ -416,6 +421,49 @@ export class DiscordBot {
     }
 
     await msg.reply({ embeds: [embed] });
+  }
+
+  private async cmdModel(msg: Message, parts: string[]): Promise<void> {
+    const mm = this.deps.modelManager;
+    const modelArg = parts[0];
+
+    if (!modelArg) {
+      // Show current model
+      const embed = new EmbedBuilder()
+        .setColor(0x5865F2)
+        .setTitle('🧠 Current Model')
+        .addFields({ name: 'Default', value: `\`${mm.getDefault()}\`` });
+
+      const overrides = mm.getAgentOverrides();
+      if (Object.keys(overrides).length > 0) {
+        embed.addFields({
+          name: 'Agent Overrides',
+          value: Object.entries(overrides).map(([a, m]) => `${a}: \`${m}\``).join('\n'),
+        });
+      }
+
+      await msg.reply({ embeds: [embed] });
+      return;
+    }
+
+    // Check for --agent flag
+    const agentIdx = parts.indexOf('--agent');
+    const agentArg = agentIdx >= 0 && agentIdx + 1 < parts.length ? parts[agentIdx + 1] : undefined;
+
+    const found = mm.findModel(modelArg);
+    if (!found) {
+      const models = mm.listModels().map(m => `\`${m.id}\``).join(', ');
+      await msg.reply(`❌ Unknown model: \`${modelArg}\`\nAvailable: ${models}`);
+      return;
+    }
+
+    if (agentArg) {
+      mm.setAgentModel(agentArg, found.id);
+      await msg.reply(`✅ Agent **${agentArg}** switched to \`${found.id}\` (${found.name})`);
+    } else {
+      mm.setDefault(found.id);
+      await msg.reply(`✅ Default model switched to \`${found.id}\` (${found.name})`);
+    }
   }
 
   private async cmdHelp(msg: Message): Promise<void> {

@@ -7,6 +7,7 @@ import type { WorktreeManager } from './worktree-manager.js';
 import type { ArtifactCollector } from './artifact-collector.js';
 import type { Config } from '../config.js';
 import type { Task } from '../control-plane/task-model.js';
+import type { ModelManager } from './model-manager.js';
 
 export class SessionRunner {
   constructor(
@@ -17,6 +18,7 @@ export class SessionRunner {
     private artifactCollector: ArtifactCollector,
     private eventBus: EventBus,
     private config: Config,
+    private modelManager?: ModelManager,
   ) {}
 
   async executeTask(taskId: string): Promise<void> {
@@ -24,7 +26,10 @@ export class SessionRunner {
     if (!task) throw new Error(`Task not found: ${taskId}`);
 
     const agent = this.agentLoader.get(task.agent) ?? this.agentLoader.getDefault();
-    const model = agent.model === 'auto' ? this.config.copilotModel : agent.model;
+    const taskModel = task.metadata?.model as string | undefined;
+    const model = this.modelManager
+      ? this.modelManager.resolveModel(taskModel, task.agent, agent.model)
+      : (agent.model === 'auto' ? this.config.copilotModel : agent.model);
 
     let workDir = task.workingDirectory;
     if (task.repo && !workDir) {
