@@ -30,6 +30,7 @@ Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orch
 - [Memory System](#memory-system)
 - [Skills](#skills)
 - [Automation](#automation)
+- [Model Switching](#model-switching)
 - [VS Code Integration](#vs-code-integration)
 - [Discord Integration](#discord-integration)
 - [Event Store & Observability](#event-store--observability)
@@ -174,6 +175,10 @@ dispatch --<command> [arguments] [options]
 | `--retry <task-id>` | Retry a failed task |
 | `--events <task-id>` | Show event history for a task |
 | `--stats` | Show task statistics |
+| `--model` | Show current model and agent overrides |
+| `--model <name>` | Switch the default model |
+| `--model <name> --agent <a>` | Switch model for a specific agent |
+| `--models` | List all available models |
 | `--start` | Start the orchestrator daemon |
 | `--version` | Show version |
 | `--help` | Show usage information |
@@ -184,6 +189,7 @@ dispatch --<command> [arguments] [options]
 |------|-------------|---------|
 | `--agent <name>` | Agent to assign | `@general-purpose` |
 | `--priority <level>` | `critical` \| `high` \| `normal` \| `low` | `normal` |
+| `--model <model>` | Model override for this task | *(agent default)* |
 | `--repo <path>` | Target repository path | — |
 | `--description <text>` | Task description | — |
 
@@ -251,6 +257,15 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | `GET` | `/api/agents` | List loaded agent definitions |
 | `GET` | `/api/stats` | Task stats, queue depth, session count |
 | `GET` | `/api/health` | Health check (status, version, uptime) |
+
+### Models
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/models` | List models, current default, and agent overrides |
+| `GET` | `/api/models/current` | Get current default model |
+| `POST` | `/api/models/switch` | Switch default or per-agent model (`{model, agent?}`) |
+| `POST` | `/api/models/reset` | Clear agent model override (`{agent}`) |
 
 ### Conversations
 
@@ -930,6 +945,84 @@ Supported event types: `task.created`, `task.queued`, `task.started`, `task.comp
 
 ---
 
+## Model Switching
+
+Switch models at runtime without editing config files or restarting the daemon.
+
+### Resolution Chain (highest priority first)
+
+| Level | How to set | Scope |
+|-------|-----------|-------|
+| 1. Per-task | `--model gpt-5.5` on create | Single task only |
+| 2. Agent override | `dispatch --model gpt-5.4 --agent @coder` | All tasks for that agent until cleared |
+| 3. Agent definition | `model:` field in `.agent.md` | All tasks for that agent (default) |
+| 4. Global default | `dispatch --model claude-opus-4.7` | Everything else |
+
+### CLI
+
+```bash
+# Show current model and any agent overrides
+dispatch --model
+
+# Switch the global default (persisted across restarts)
+dispatch --model claude-opus-4.7
+
+# Switch model for a specific agent (persisted, doesn't edit .agent.md)
+dispatch --model gpt-5.4 --agent @coder
+
+# List all 16 available models
+dispatch --models
+
+# Create a task with a one-time model override
+dispatch --create "Complex analysis" --agent @coder --model gpt-5.5
+```
+
+### API
+
+```bash
+# List models with current default and overrides
+curl http://localhost:7878/api/models
+
+# Switch default
+curl -X POST http://localhost:7878/api/models/switch \
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-opus-4.7"}'
+
+# Switch per-agent
+curl -X POST http://localhost:7878/api/models/switch \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-5.4","agent":"@coder"}'
+
+# Clear an agent override (falls back to .agent.md definition)
+curl -X POST http://localhost:7878/api/models/reset \
+  -H "Content-Type: application/json" \
+  -d '{"agent":"@coder"}'
+```
+
+### Discord
+
+```
+!dispatch model                          # show current
+!dispatch model claude-opus-4.7          # switch default
+!dispatch model gpt-5.4 --agent @coder  # switch per-agent
+```
+
+### Available Models
+
+| ID | Provider | Tier |
+|----|----------|------|
+| `claude-sonnet-4.6` | Anthropic | standard |
+| `claude-opus-4.7` | Anthropic | premium |
+| `gpt-5.5` | OpenAI | premium |
+| `gpt-5.4` | OpenAI | standard |
+| `gpt-5.4-mini` | OpenAI | free |
+| `gemini-2.5-pro` | Google | standard |
+| *...and 10 more* | | |
+
+Run `dispatch --models` for the full list.
+
+---
+
 ## VS Code Integration
 
 GHC Dispatch integrates with VS Code through three mechanisms: a dedicated **VS Code Extension**, an **Agent Plugin**, and **Agents App** session visibility.
@@ -1143,6 +1236,7 @@ ghc-orchestrator/
 │   │   ├── copilot-adapter.ts           # Copilot SDK wrapper (real + mock)
 │   │   ├── session-pool.ts              # Concurrent session management
 │   │   ├── session-runner.ts            # Task execution via Copilot
+│   │   ├── model-manager.ts            # Runtime model switching + persistence
 │   │   ├── agent-loader.ts             # .agent.md parser
 │   │   ├── worktree-manager.ts          # Git worktree lifecycle
 │   │   ├── artifact-collector.ts        # Diff/log/file capture
@@ -1208,7 +1302,7 @@ ghc-orchestrator/
 │       └── dispatch-icon.svg
 │
 └── tests/
-    └── unit/                            # 165 tests across 15 suites
+    └── unit/                            # 184 tests across 16 suites
         ├── task-model.test.ts
         ├── task-manager.test.ts
         ├── event-store.test.ts
@@ -1223,7 +1317,8 @@ ghc-orchestrator/
         ├── conversation-repo.test.ts
         ├── memory-manager.test.ts
         ├── skill-manager.test.ts
-        └── automation-scheduler.test.ts
+        ├── automation-scheduler.test.ts
+        └── model-manager.test.ts
 ```
 
 ---
@@ -1264,9 +1359,10 @@ npm test
  ✓ tests/unit/memory-manager.test.ts   (13 tests)
  ✓ tests/unit/skill-manager.test.ts    (10 tests)
  ✓ tests/unit/automation-scheduler.test.ts (16 tests)
+ ✓ tests/unit/model-manager.test.ts    (19 tests)
 
- Test Files  15 passed (15)
-      Tests  165 passed (165)
+ Test Files  16 passed (16)
+      Tests  184 passed (184)
 ```
 
 ### Technology Stack
