@@ -33,6 +33,7 @@ import { ModelManager } from './execution/model-manager.js';
 import { DiscordBot } from './surfaces/discord-bot.js';
 import { ProactiveCheckIn } from './automation/proactive-checkin.js';
 import { GitHubEventHandler } from './automation/github-events.js';
+import { BrowserEngine } from './browser/browser-engine.js';
 import { createApi } from './surfaces/api.js';
 import { loadConfig } from './config.js';
 import { paths, ensureDataDirs } from './paths.js';
@@ -125,6 +126,12 @@ export async function startDaemon(): Promise<void> {
   // --- GitHub Events Handler ---
   const githubEvents = new GitHubEventHandler(taskManager, memoryManager);
 
+  // --- Browser Engine ---
+  const browserEngine = new BrowserEngine({
+    headless: true,
+    screenshotDir: join(paths.dataDir, 'screenshots'),
+  });
+
   // --- Scheduler Loop ---
   const schedulerInterval = setInterval(() => {
     const taskId = scheduler.dequeue();
@@ -185,7 +192,7 @@ export async function startDaemon(): Promise<void> {
     taskManager, approvalManager, scheduler,
     sessionPool, agentLoader, sessionRunner, eventBus,
     memoryManager, skillManager, automationScheduler, modelManager,
-    checkIn, githubEvents,
+    checkIn, githubEvents, browserEngine,
   });
 
   const server = api.listen(config.apiPort, () => {
@@ -222,6 +229,7 @@ export async function startDaemon(): Promise<void> {
     memoryManager.stopBackgroundProcessing();
     automationScheduler.stopAll();
     checkIn.stop();
+    await browserEngine.close();
     if (discordBot) await discordBot.stop();
     server.close();
     await sessionPool.releaseAll();

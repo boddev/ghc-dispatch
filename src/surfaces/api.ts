@@ -12,6 +12,7 @@ import type { AutomationScheduler } from '../automation/automation-scheduler.js'
 import type { ModelManager } from '../execution/model-manager.js';
 import type { ProactiveCheckIn } from '../automation/proactive-checkin.js';
 import type { GitHubEventHandler } from '../automation/github-events.js';
+import type { BrowserEngine } from '../browser/browser-engine.js';
 
 export interface ApiDeps {
   taskManager: TaskManager;
@@ -27,6 +28,7 @@ export interface ApiDeps {
   modelManager: ModelManager;
   checkIn: ProactiveCheckIn;
   githubEvents: GitHubEventHandler;
+  browserEngine: BrowserEngine;
 }
 
 export function createApi(deps: ApiDeps): express.Express {
@@ -484,6 +486,87 @@ export function createApi(deps: ApiDeps): express.Express {
       ? '✅ All clear — nothing to report.'
       : messages.map(m => `${emoji[m.type] ?? ''} **${m.title}**\n${m.body}`).join('\n\n');
     res.json({ messages, formatted });
+  });
+
+  // --- Browser Automation ---
+  app.post('/api/browser/command', async (req, res) => {
+    const { command } = req.body;
+    if (!command) { res.status(400).json({ error: '"command" required' }); return; }
+    try {
+      const result = await deps.browserEngine.executeNaturalLanguage(command);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/browser/navigate', async (req, res) => {
+    const { url } = req.body;
+    if (!url) { res.status(400).json({ error: '"url" required' }); return; }
+    res.json(await deps.browserEngine.navigate(url));
+  });
+
+  app.post('/api/browser/click', async (req, res) => {
+    const { text, selector } = req.body;
+    if (text) { res.json(await deps.browserEngine.clickText(text)); return; }
+    if (selector) { res.json(await deps.browserEngine.click(selector)); return; }
+    res.status(400).json({ error: '"text" or "selector" required' });
+  });
+
+  app.post('/api/browser/fill', async (req, res) => {
+    const { value, label, placeholder, selector } = req.body;
+    if (!value) { res.status(400).json({ error: '"value" required' }); return; }
+    if (label) { res.json(await deps.browserEngine.fillByLabel(label, value)); return; }
+    if (placeholder) { res.json(await deps.browserEngine.fillByPlaceholder(placeholder, value)); return; }
+    if (selector) { res.json(await deps.browserEngine.fill(selector, value)); return; }
+    res.status(400).json({ error: '"label", "placeholder", or "selector" required' });
+  });
+
+  app.post('/api/browser/press', async (req, res) => {
+    const { key } = req.body;
+    if (!key) { res.status(400).json({ error: '"key" required' }); return; }
+    res.json(await deps.browserEngine.press(key));
+  });
+
+  app.post('/api/browser/scroll', async (req, res) => {
+    const direction = req.body.direction ?? 'down';
+    const amount = req.body.amount ?? 500;
+    res.json(await deps.browserEngine.scroll(direction, amount));
+  });
+
+  app.get('/api/browser/page', async (req, res) => {
+    try {
+      res.json(await deps.browserEngine.getPageInfo());
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/browser/screenshot', async (req, res) => {
+    try {
+      const data = await deps.browserEngine.screenshot();
+      res.json({ screenshot: data });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/browser/text', async (req, res) => {
+    const selector = req.query.selector as string | undefined;
+    try {
+      const text = await deps.browserEngine.extractText(selector);
+      res.json({ text });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/browser/status', (req, res) => {
+    res.json({
+      running: deps.browserEngine.isRunning(),
+      currentUrl: deps.browserEngine.getCurrentUrl(),
+      history: deps.browserEngine.getHistory(),
+    });
   });
 
   return app;
