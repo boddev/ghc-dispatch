@@ -33,6 +33,7 @@ Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orch
 - [Proactive Check-Ins](#proactive-check-ins)
 - [GitHub Events](#github-events)
 - [Email & Calendar](#email--calendar)
+- [Browser Automation](#browser-automation)
 - [Model Switching](#model-switching)
 - [VS Code Integration](#vs-code-integration)
 - [Discord Integration](#discord-integration)
@@ -1042,7 +1043,73 @@ Both skills are SKILL.md files in `skills/` — Copilot agents learn to use them
 
 ### Browser Automation
 
-Dispatch does not include its own browser automation engine. Browser automation is available through the Copilot agent runtime — VS Code 1.115+ includes an integrated browser for agents, and Copilot CLI sessions can use web fetch and browser tools natively.
+Dispatch includes a full Playwright-powered browser engine that supports natural language commands. In addition to the AI-driven browsing available through Copilot agent sessions, dispatch provides deterministic, scriptable browser automation.
+
+#### Natural Language Commands
+
+```bash
+# Navigate with natural language
+curl -X POST http://localhost:7878/api/browser/command \
+  -H "Content-Type: application/json" \
+  -d '{"command":"go to github.com"}'
+
+# Click by visible text
+curl -X POST http://localhost:7878/api/browser/command \
+  -H "Content-Type: application/json" \
+  -d '{"command":"click Sign in"}'
+
+# Fill a form field
+curl -X POST http://localhost:7878/api/browser/command \
+  -H "Content-Type: application/json" \
+  -d '{"command":"fill \"alice@example.com\" in email"}'
+
+# Search Google
+curl -X POST http://localhost:7878/api/browser/command \
+  -H "Content-Type: application/json" \
+  -d '{"command":"search for playwright testing framework"}'
+
+# Read page content
+curl -X POST http://localhost:7878/api/browser/command \
+  -H "Content-Type: application/json" \
+  -d '{"command":"read the page"}'
+
+# Screenshot
+curl -X POST http://localhost:7878/api/browser/command \
+  -H "Content-Type: application/json" \
+  -d '{"command":"take a screenshot"}'
+```
+
+#### Supported Natural Language Patterns
+
+| Pattern | Example |
+|---------|---------|
+| `go to <url>` | "go to github.com", "open docs.microsoft.com" |
+| `click <text>` | "click Sign in", "click the Submit button" |
+| `fill <value> in <field>` | "fill 'alice' in username" |
+| `set <field> to <value>` | "set email to alice@example.com" |
+| `scroll down/up` | "scroll down" |
+| `go back` | "go back" |
+| `search for <query>` | "search for playwright docs" |
+| `read the page` | "read page content" |
+| `screenshot` | "take a screenshot" |
+| `press <key>` | "press Enter" |
+
+#### Direct API
+
+For precise control, use the direct browser endpoints:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/browser/command` | Execute natural language browser command |
+| `POST` | `/api/browser/navigate` | Navigate to URL |
+| `POST` | `/api/browser/click` | Click by text or CSS selector |
+| `POST` | `/api/browser/fill` | Fill input by label, placeholder, or selector |
+| `POST` | `/api/browser/press` | Press keyboard key |
+| `POST` | `/api/browser/scroll` | Scroll up or down |
+| `GET` | `/api/browser/page` | Get page info (title, links, inputs, buttons) |
+| `GET` | `/api/browser/screenshot` | Capture screenshot (base64 PNG) |
+| `GET` | `/api/browser/text` | Extract page text (optional selector) |
+| `GET` | `/api/browser/status` | Browser state and navigation history |
 
 ---
 
@@ -1373,6 +1440,9 @@ ghc-orchestrator/
 │   │   ├── proactive-checkin.ts         # Periodic system health check-ins
 │   │   └── github-events.ts            # GitHub webhook event handler
 │   │
+│   ├── browser/
+│   │   └── browser-engine.ts            # Playwright browser automation
+│   │
 │   └── wiki/
 │       └── wiki-manager.ts              # Wiki knowledge base
 │
@@ -1396,7 +1466,7 @@ ghc-orchestrator/
 │   └── microsoft-365/SKILL.md           # Outlook, Calendar, OneDrive via Graph API
 │
 └── tests/
-    └── unit/                            # 198 tests across 18 suites
+    └── unit/                            # 217 tests across 19 suites
         ├── task-model.test.ts
         ├── task-manager.test.ts
         ├── event-store.test.ts
@@ -1456,9 +1526,10 @@ npm test
  ✓ tests/unit/model-manager.test.ts    (19 tests)
  ✓ tests/unit/proactive-checkin.test.ts (5 tests)
  ✓ tests/unit/github-events.test.ts    (9 tests)
+ ✓ tests/unit/browser-engine.test.ts   (19 tests)
 
- Test Files  18 passed (18)
-      Tests  198 passed (198)
+ Test Files  19 passed (19)
+      Tests  217 passed (217)
 ```
 
 ### Technology Stack
