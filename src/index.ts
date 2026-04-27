@@ -127,9 +127,35 @@ function hasFlag(args: string[], flag: string): boolean {
 async function main() {
   const args = process.argv.slice(2);
 
-  // No arguments or help
-  if (args.length === 0 || hasFlag(args, '--help') || hasFlag(args, '-h')) {
+  // Help
+  if (hasFlag(args, '--help') || hasFlag(args, '-h')) {
     console.log(HELP_TEXT);
+    return;
+  }
+
+  // No arguments → start daemon + launch TUI
+  if (args.length === 0) {
+    const { startDaemon } = await import('./daemon.js');
+    const { startTui } = await import('./surfaces/tui.js');
+
+    // Check if daemon is already running
+    let daemonRunning = false;
+    try {
+      const resp = await fetch('http://localhost:7878/api/health');
+      if (resp.ok) daemonRunning = true;
+    } catch {}
+
+    if (!daemonRunning) {
+      // Start daemon in background (don't await — it runs forever)
+      startDaemon().catch(err => {
+        console.error('Daemon error:', err.message);
+      });
+      // Give daemon a moment to start
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    // Launch TUI
+    await startTui();
     return;
   }
 

@@ -50,6 +50,7 @@ export { GitHubEventHandler } from './automation/github-events.js';
 
 // Surfaces
 export { DiscordBot } from './surfaces/discord-bot.js';
+export { startTui } from './surfaces/tui.js';
 
 // Browser
 export { BrowserEngine } from './browser/browser-engine.js';
