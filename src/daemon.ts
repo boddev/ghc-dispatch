@@ -31,6 +31,8 @@ import { SkillManager } from './skills/skill-manager.js';
 import { AutomationScheduler } from './automation/automation-scheduler.js';
 import { ModelManager } from './execution/model-manager.js';
 import { DiscordBot } from './surfaces/discord-bot.js';
+import { ProactiveCheckIn } from './automation/proactive-checkin.js';
+import { GitHubEventHandler } from './automation/github-events.js';
 import { createApi } from './surfaces/api.js';
 import { loadConfig } from './config.js';
 import { paths, ensureDataDirs } from './paths.js';
@@ -112,6 +114,17 @@ export async function startDaemon(): Promise<void> {
     artifactCollector, eventBus, config, modelManager,
   );
 
+  // --- Proactive Check-Ins ---
+  const checkIn = new ProactiveCheckIn(taskManager, approvalManager, memoryManager, automationScheduler);
+  checkIn.onCheckIn((messages) => {
+    const text = ProactiveCheckIn.formatMessages(messages);
+    console.log(`\n🔔 Check-in:\n${text}\n`);
+  });
+  checkIn.start();
+
+  // --- GitHub Events Handler ---
+  const githubEvents = new GitHubEventHandler(taskManager, memoryManager);
+
   // --- Scheduler Loop ---
   const schedulerInterval = setInterval(() => {
     const taskId = scheduler.dequeue();
@@ -172,6 +185,7 @@ export async function startDaemon(): Promise<void> {
     taskManager, approvalManager, scheduler,
     sessionPool, agentLoader, sessionRunner, eventBus,
     memoryManager, skillManager, automationScheduler, modelManager,
+    checkIn, githubEvents,
   });
 
   const server = api.listen(config.apiPort, () => {
@@ -207,6 +221,7 @@ export async function startDaemon(): Promise<void> {
     clearInterval(gcInterval);
     memoryManager.stopBackgroundProcessing();
     automationScheduler.stopAll();
+    checkIn.stop();
     if (discordBot) await discordBot.stop();
     server.close();
     await sessionPool.releaseAll();

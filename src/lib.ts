@@ -43,6 +43,8 @@ export { SkillManager } from './skills/skill-manager.js';
 
 // Automation
 export { AutomationScheduler } from './automation/automation-scheduler.js';
+export { ProactiveCheckIn } from './automation/proactive-checkin.js';
+export { GitHubEventHandler } from './automation/github-events.js';
 
 // Surfaces
 export { DiscordBot } from './surfaces/discord-bot.js';

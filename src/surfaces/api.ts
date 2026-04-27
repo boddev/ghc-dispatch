@@ -10,6 +10,8 @@ import type { MemoryManager } from '../memory/memory-manager.js';
 import type { SkillManager } from '../skills/skill-manager.js';
 import type { AutomationScheduler } from '../automation/automation-scheduler.js';
 import type { ModelManager } from '../execution/model-manager.js';
+import type { ProactiveCheckIn } from '../automation/proactive-checkin.js';
+import type { GitHubEventHandler } from '../automation/github-events.js';
 
 export interface ApiDeps {
   taskManager: TaskManager;
@@ -23,6 +25,8 @@ export interface ApiDeps {
   skillManager: SkillManager;
   automationScheduler: AutomationScheduler;
   modelManager: ModelManager;
+  checkIn: ProactiveCheckIn;
+  githubEvents: GitHubEventHandler;
 }
 
 export function createApi(deps: ApiDeps): express.Express {
@@ -459,9 +463,27 @@ export function createApi(deps: ApiDeps): express.Express {
 
   // --- Webhook ingress ---
   app.post('/api/webhooks/:path', async (req, res) => {
+    // Special handling for GitHub webhooks
+    if (req.params.path === 'github') {
+      const eventType = req.headers['x-github-event'] as string ?? 'unknown';
+      const result = deps.githubEvents.handle(eventType, req.body ?? {});
+      res.json(result);
+      return;
+    }
+
     const result = await deps.automationScheduler.handleWebhook(req.params.path, req.body ?? {});
     if (!result) { res.status(404).json({ error: 'No webhook handler for this path' }); return; }
     res.json(result);
+  });
+
+  // --- Proactive Check-In ---
+  app.get('/api/checkin', (req, res) => {
+    const messages = deps.checkIn.evaluate();
+    const emoji: Record<string, string> = { warning: '⚠️', info: 'ℹ️', suggestion: '💡' };
+    const formatted = messages.length === 0
+      ? '✅ All clear — nothing to report.'
+      : messages.map(m => `${emoji[m.type] ?? ''} **${m.title}**\n${m.body}`).join('\n\n');
+    res.json({ messages, formatted });
   });
 
   return app;
