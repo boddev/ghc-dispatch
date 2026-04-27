@@ -1,0 +1,87 @@
+{
+  "name": "dispatch-vscode",
+  "displayName": "GHC Dispatch",
+  "description": "Copilot-native agent orchestration — manage tasks, agents, skills, and automation from VS Code",
+  "version": "0.1.0",
+  "publisher": "bodonnell",
+  "engines": { "vscode": "^1.115.0" },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dispatch",
+          "title": "Dispatch",
+          "icon": "media/dispatch-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "dispatch": [
+        { "id": "dispatch.tasks", "name": "Tasks" },
+        { "id": "dispatch.agents", "name": "Agents" },
+        { "id": "dispatch.skills", "name": "Skills" },
+        { "id": "dispatch.automation", "name": "Automation" },
+        { "id": "dispatch.approvals", "name": "Approvals" }
+      ]
+    },
+    "commands": [
+      { "command": "dispatch.createTask", "title": "Dispatch: Create Task" },
+      { "command": "dispatch.showStats", "title": "Dispatch: Show Stats" },
+      { "command": "dispatch.recall", "title": "Dispatch: Recall Memory" },
+      { "command": "dispatch.refreshTasks", "title": "Dispatch: Refresh Tasks", "icon": "$(refresh)" },
+      { "command": "dispatch.openTaskDetail", "title": "View Task Detail" },
+      { "command": "dispatch.cancelTask", "title": "Cancel Task" },
+      { "command": "dispatch.retryTask", "title": "Retry Task" },
+      { "command": "dispatch.enqueueTask", "title": "Enqueue Task" },
+      { "command": "dispatch.approveApproval", "title": "Approve" },
+      { "command": "dispatch.rejectApproval", "title": "Reject" },
+      { "command": "dispatch.enableSkill", "title": "Enable Skill" },
+      { "command": "dispatch.disableSkill", "title": "Disable Skill" },
+      { "command": "dispatch.openMemory", "title": "Dispatch: Memory Explorer" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "dispatch.refreshTasks", "when": "view == dispatch.tasks", "group": "navigation" },
+        { "command": "dispatch.createTask", "when": "view == dispatch.tasks", "group": "navigation" }
+      ],
+      "view/item/context": [
+        { "command": "dispatch.openTaskDetail", "when": "viewItem == task" },
+        { "command": "dispatch.cancelTask", "when": "viewItem == task-cancellable" },
+        { "command": "dispatch.retryTask", "when": "viewItem == task-retryable" },
+        { "command": "dispatch.enqueueTask", "when": "viewItem == task-enqueuable" },
+        { "command": "dispatch.approveApproval", "when": "viewItem == approval-pending" },
+        { "command": "dispatch.rejectApproval", "when": "viewItem == approval-pending" },
+        { "command": "dispatch.enableSkill", "when": "viewItem == skill-disabled" },
+        { "command": "dispatch.disableSkill", "when": "viewItem == skill-enabled" }
+      ]
+    },
+    "configuration": {
+      "title": "Dispatch",
+      "properties": {
+        "dispatch.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:7878",
+          "description": "URL of the dispatch daemon API"
+        },
+        "dispatch.autoRefreshInterval": {
+          "type": "number",
+          "default": 5000,
+          "description": "Auto-refresh interval in milliseconds (0 to disable)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.115.0",
+    "@types/node": "^22.15.3",
+    "typescript": "^5.8.3"
+  }
+}
