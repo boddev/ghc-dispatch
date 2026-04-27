@@ -163,6 +163,24 @@ export class DiscordBot {
         case 'model':
           await this.cmdModel(msg, parts.slice(1));
           break;
+        case 'events':
+          await this.cmdEvents(msg, parts[1]);
+          break;
+        case 'reload':
+          await this.cmdReload(msg);
+          break;
+        case 'restart':
+          await this.cmdRestart(msg);
+          break;
+        case 'update':
+          await this.cmdUpdate(msg);
+          break;
+        case 'checkin':
+          await this.cmdCheckin(msg);
+          break;
+        case 'version':
+          await this.cmdVersion(msg);
+          break;
         case 'help':
         default:
           await this.cmdHelp(msg);
@@ -466,6 +484,90 @@ export class DiscordBot {
     }
   }
 
+  private async cmdEvents(msg: Message, taskId?: string): Promise<void> {
+    if (!taskId) { await msg.reply('Usage: `!dispatch events <task-id>`'); return; }
+    const events = this.deps.taskManager.getTaskEvents(taskId);
+    if (events.length === 0) { await msg.reply('No events found.'); return; }
+
+    const lines = events.slice(-15).map(e => {
+      const time = new Date(e.timestamp).toLocaleTimeString();
+      const content = 'content' in e.payload ? ` — ${String((e.payload as any).content).slice(0, 80)}` : '';
+      return `\`${time}\` ${e.payload.type}${content}`;
+    });
+
+    const embed = new EmbedBuilder()
+      .setColor(0x5865F2)
+      .setTitle(`📋 Events for ${taskId.slice(-8)}`)
+      .setDescription(lines.join('\n').slice(0, 4000))
+      .setFooter({ text: `${events.length} total events` });
+
+    await msg.reply({ embeds: [embed] });
+  }
+
+  private async cmdReload(msg: Message): Promise<void> {
+    try {
+      const resp = await fetch('http://localhost:7878/api/reload', { method: 'POST' });
+      const data = await resp.json() as any;
+      await msg.reply(`🔄 Reloaded: ${data.agents} agents, ${data.skills} skills`);
+    } catch {
+      await msg.reply('❌ Could not reach daemon for reload.');
+    }
+  }
+
+  private async cmdRestart(msg: Message): Promise<void> {
+    await msg.reply('🔄 Restarting dispatch daemon...');
+    try {
+      await fetch('http://localhost:7878/api/restart', { method: 'POST' });
+    } catch {
+      await msg.reply('❌ Could not reach daemon for restart.');
+    }
+  }
+
+  private async cmdUpdate(msg: Message): Promise<void> {
+    await msg.reply('🔄 Checking for updates...');
+    try {
+      const resp = await fetch('http://localhost:7878/api/update', { method: 'POST' });
+      const data = await resp.json() as any;
+      if (data.success) {
+        await msg.reply(`✅ Updated: ${data.previousVersion} → ${data.newVersion} (via ${data.method})`);
+      } else {
+        await msg.reply(`❌ Update failed: ${data.output?.slice(0, 200) ?? 'unknown error'}`);
+      }
+    } catch {
+      await msg.reply('❌ Could not reach daemon for update.');
+    }
+  }
+
+  private async cmdCheckin(msg: Message): Promise<void> {
+    try {
+      const resp = await fetch('http://localhost:7878/api/checkin');
+      const data = await resp.json() as any;
+      if (!data.messages?.length) {
+        await msg.reply('✅ All clear — nothing to report.');
+        return;
+      }
+      const emoji: Record<string, string> = { warning: '⚠️', info: 'ℹ️', suggestion: '💡' };
+      const lines = data.messages.map((m: any) => `${emoji[m.type] ?? ''} **${m.title}**\n${m.body}`);
+      const embed = new EmbedBuilder()
+        .setColor(0xFEE75C)
+        .setTitle('🔔 Dispatch Check-In')
+        .setDescription(lines.join('\n\n').slice(0, 4000));
+      await msg.reply({ embeds: [embed] });
+    } catch {
+      await msg.reply('❌ Could not reach daemon for check-in.');
+    }
+  }
+
+  private async cmdVersion(msg: Message): Promise<void> {
+    try {
+      const resp = await fetch('http://localhost:7878/api/health');
+      const data = await resp.json() as any;
+      await msg.reply(`🤖 Dispatch v${data.version} — uptime: ${Math.floor(data.uptime)}s`);
+    } catch {
+      await msg.reply('dispatch 0.1.0 (daemon offline)');
+    }
+  }
+
   private async cmdHelp(msg: Message): Promise<void> {
     const p = this.prefix;
     const embed = new EmbedBuilder()
@@ -490,6 +592,15 @@ export class DiscordBot {
           `\`${p} skills\` — list installed skills`,
           `\`${p} stats\` — system statistics`,
           `\`${p} recall <topic>\` — search memory for a topic`,
+          `\`${p} events <task-id>\` — task event history`,
+          `\`${p} model [name] [--agent @x]\` — show/switch model`,
+        ].join('\n') },
+        { name: 'System', value: [
+          `\`${p} reload\` — hot-reload agents and skills`,
+          `\`${p} restart\` — restart the daemon`,
+          `\`${p} update\` — update to latest version`,
+          `\`${p} checkin\` — run a proactive check-in now`,
+          `\`${p} version\` — show version and uptime`,
         ].join('\n') },
         { name: 'Natural Language', value: 'Mention the bot or DM it to create tasks from natural language. Cross-channel context is included automatically.' },
       )

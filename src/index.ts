@@ -148,21 +148,40 @@ async function main() {
   // --update: self-update
   if (hasFlag(args, '--update')) {
     console.log('🔄 Checking for updates...');
-    const { selfUpdate } = await import('./execution/self-manage.js');
-    const result = selfUpdate(process.cwd());
-    if (result.success) {
-      console.log(`✅ Updated: ${result.previousVersion} → ${result.newVersion} (via ${result.method})`);
-      if (result.output) console.log(result.output);
-    } else {
-      console.error(`❌ Update failed: ${result.output}`);
+    // Try the running daemon first
+    try {
+      const resp = await fetch('http://localhost:7878/api/update', { method: 'POST' });
+      const data = await resp.json() as any;
+      if (data.success) {
+        console.log(`✅ Updated: ${data.previousVersion} → ${data.newVersion} (via ${data.method})`);
+      } else {
+        console.error(`❌ Update failed: ${data.output}`);
+      }
+    } catch {
+      // Daemon not running — do it locally
+      const { selfUpdate } = await import('./execution/self-manage.js');
+      const result = selfUpdate(process.cwd());
+      if (result.success) {
+        console.log(`✅ Updated: ${result.previousVersion} → ${result.newVersion} (via ${result.method})`);
+      } else {
+        console.error(`❌ Update failed: ${result.output}`);
+      }
     }
     return;
   }
 
   // --restart: restart the daemon
   if (hasFlag(args, '--restart')) {
-    const { selfRestart } = await import('./execution/self-manage.js');
-    selfRestart(process.cwd());
+    // Try the running daemon first
+    try {
+      const resp = await fetch('http://localhost:7878/api/restart', { method: 'POST' });
+      const data = await resp.json() as any;
+      console.log(`🔄 ${data.message ?? 'Restart signal sent'}`);
+    } catch {
+      // Daemon not running — start fresh
+      const { selfRestart } = await import('./execution/self-manage.js');
+      selfRestart(process.cwd());
+    }
     return;
   }
 
