@@ -183,6 +183,9 @@ dispatch --<command> [arguments] [options]
 | `--model <name>` | Switch the default model |
 | `--model <name> --agent <a>` | Switch model for a specific agent |
 | `--models` | List all available models |
+| `--reload` | Hot-reload agents and skills without restart |
+| `--update` | Update dispatch to the latest version |
+| `--restart` | Restart the daemon (spawns replacement, exits) |
 | `--start` | Start the orchestrator daemon |
 | `--version` | Show version |
 | `--help` | Show usage information |
@@ -1405,6 +1408,8 @@ ghc-orchestrator/
 │   │   ├── session-pool.ts              # Concurrent session management
 │   │   ├── session-runner.ts            # Task execution via Copilot
 │   │   ├── model-manager.ts            # Runtime model switching + persistence
+│   │   ├── hot-reloader.ts             # fs.watch auto-reload for agents/skills
+│   │   └── self-manage.ts              # Self-update + self-restart
 │   │   ├── agent-loader.ts             # .agent.md parser
 │   │   ├── worktree-manager.ts          # Git worktree lifecycle
 │   │   ├── artifact-collector.ts        # Diff/log/file capture
