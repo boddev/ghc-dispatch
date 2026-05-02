@@ -130,28 +130,28 @@ This team is best suited for requests that cross domain boundaries — for examp
 | Agent | Specialization | Key Strengths |
 |---|---|---|
 | `@education-team-lead-8bc3e942` | Coordination & academic routing | Planning, delegation, conflict resolution, synthesis quality gate, pedagogical quality assurance, escalation |
-| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, engagement strategy library, in-class activities, reading summaries, study guides, multimedia scripts, accessibility-first authoring |
-| `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Backward design facilitation, Bloom's-aligned objectives, syllabus documents, lesson plans, prerequisite maps, alignment matrices, course health scorecards |
-| `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, test blueprints, MCQ distractor design, analytic/holistic/single-point rubrics, answer keys, Bloom's alignment maps, item analysis guidance |
-| `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, individualized written feedback, anomalous submission detection, inter-rater reliability calibration, grade dispute documentation |
-| `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches with citation authenticity protocol, annotated bibliographies, predatory publisher detection, discipline-specific source freshness guidance, research synthesis |
-| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, grade feedback, extension responses, welfare escalation decision tree, advising scripts, FAQ documents, response template libraries |
-| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL + POUR framework reviews, WCAG 2.1 AA audits, LMS-specific guidance (Canvas, Blackboard, Moodle, D2L), captioning workflows, accommodation implementation plans |
-| `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & quality gate | Pre-release quality gate, hallucination risk detection, citation quality review (format + accuracy + appropriateness), factual consistency checks, rubric alignment audits, integrity risk assessment, AI use policy development |
+| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, engagement strategy library, in-class activities, reading summaries, study guides, multimedia scripts, accessibility-first authoring; includes disambiguation guidance for routing decisions |
+| `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Backward design facilitation, Bloom's-aligned objectives, syllabi, lesson plans, prerequisite maps, alignment matrices, course health scorecards; handles standard, compressed/8-week, modular, and dual-credit formats |
+| `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, test blueprints, MCQ distractor design, analytic/holistic/single-point rubrics, answer keys, Bloom's alignment maps, item analysis guidance; includes lab practicals, performance assessments, and portfolio frameworks |
+| `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, individualized written feedback, anomalous submission detection, inter-rater reliability calibration, grade dispute documentation; handles late/partial submissions and non-standard format edge cases |
+| `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches with citation authenticity protocol, annotated bibliographies, predatory publisher detection, discipline-specific source freshness and search strategy guidance (STEM, social sciences, humanities, law, professional programs), research synthesis, citation audit |
+| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, grade feedback, extension responses, welfare escalation decision tree, advising scripts, FAQ documents, response template libraries; mass vs. individual communication hygiene; coordinates with integrity reviewer before any integrity-related communication |
+| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL + POUR framework reviews, WCAG 2.1 AA audits, LMS-specific guidance (Canvas, Blackboard, Moodle, D2L), captioning workflows, accommodation implementation plans; tiered technology stack guidance (free, LMS-native, professional services) |
+| `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & quality gate | Pre-release quality gate, hallucination risk detection, citation quality review (format + accuracy + appropriateness), factual consistency checks, rubric alignment audits, integrity risk assessment, AI use policy development, AI detection tool limitations guidance, integrity education materials |
 
 #### Operating Model
 
 | Role | Agent | Responsibilities |
 |---|---|---|
 | Team Lead | `@education-team-lead-8bc3e942` | Decomposes professor goals into scoped assignments, delegates to specialists, applies synthesis quality gate, resolves member output conflicts, escalates blockers to professor |
-| Content Creation | `@education-lecture-notes-and-course-content-specialist-76feadfc` | Produces lecture notes, slide outlines, in-class activities, and study guides with built-in engagement strategies and accessibility-first authoring for any topic, course level, and delivery modality |
-| Curriculum Design | `@education-curriculum-and-syllabus-designer-1e919b44` | Designs module/unit structure using backward design; maps Bloom's-aligned learning objectives; produces syllabi, lesson plans, prerequisite maps, alignment matrices, and course health scorecards |
-| Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates assessments with test blueprints, MCQ distractors, rubrics with observable performance descriptors, answer keys, and post-assessment item analysis guidance |
-| Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics with calibration anchors, writes individualized feedback, detects anomalous submissions for integrity review, supports inter-rater reliability calibration |
-| Research Support | `@education-academic-research-assistant-626ebf36` | Conducts literature searches with citation authenticity verification, produces annotated bibliographies with predatory publisher checks, curates reading lists with source freshness assessment |
-| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications with tone calibration and welfare escalation decision tree; coordinates with integrity reviewer before any academic integrity communication; never sends without professor review |
-| Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Conducts UDL + POUR framework audits, applies WCAG 2.1 AA standards, provides LMS-specific accommodation guidance, reviews captions and alt text, advises on inclusive assessment design |
-| Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Operates as pre-release quality gate: checks for hallucination risk, citation authenticity, factual consistency, rubric alignment, and policy compliance before materials reach students; flags every item requiring professor judgment |
+| Content Creation | `@education-lecture-notes-and-course-content-specialist-76feadfc` | Produces lecture notes, slide outlines, in-class activities, and study guides with built-in engagement strategies and accessibility-first authoring for any topic, course level, and delivery modality (in-person, hybrid, async online) |
+| Curriculum Design | `@education-curriculum-and-syllabus-designer-1e919b44` | Designs module/unit structure using backward design; maps Bloom's-aligned learning objectives; produces syllabi, lesson plans, prerequisite maps, alignment matrices, course health scorecards; supports standard, compressed, modular, and dual-credit formats |
+| Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates assessments with test blueprints, MCQ distractors, rubrics with observable performance descriptors, answer keys, and post-assessment item analysis guidance; includes lab practicals, performance assessments, and portfolio frameworks |
+| Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics with calibration anchors, writes individualized feedback, detects anomalous submissions for integrity review, supports inter-rater reliability calibration; handles late/partial submissions and non-standard format edge cases |
+| Research Support | `@education-academic-research-assistant-626ebf36` | Conducts literature searches with citation authenticity verification, applies discipline-specific search strategies (STEM, social sciences, humanities, law, professional programs), produces annotated bibliographies with predatory publisher checks, curates reading lists, conducts citation audit for AI-assisted materials |
+| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications with tone calibration and welfare escalation decision tree; manages mass vs. individual communication hygiene to prevent FERPA exposures; coordinates with integrity reviewer before any integrity-related communication; never sends without professor review |
+| Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Conducts UDL + POUR framework audits, applies WCAG 2.1 AA standards, provides LMS-specific accommodation guidance, reviews captions and alt text, advises on inclusive assessment design; provides tiered technology stack guidance from free built-in tools through professional captioning services |
+| Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Operates as pre-release quality gate: checks for hallucination risk, citation authenticity, factual consistency, rubric alignment, and policy compliance before materials reach students; flags every item requiring professor judgment; provides AI detection tool guidance and integrity education materials |
 
 The team lead creates parallel member tasks when work streams are independent. For example, `@education-lecture-notes-and-course-content-specialist-76feadfc` can draft lecture materials while `@education-assessment-and-rubric-designer-cc79da9e` builds aligned assessments and `@education-accessibility-and-learning-support-specialist-a1dfc584` reviews both for accessibility — simultaneously. Only genuinely dependent tasks are serialized (e.g., curriculum design must precede lecture content when a new course is being built from scratch).
 
@@ -177,7 +177,11 @@ The team lead creates parallel member tasks when work streams are independent. F
 - **Backward design support** — curriculum design uses evidence-first methodology; all downstream content and assessments derive from stated learning outcomes
 - **Discipline-agnostic** — specialists adapt to any academic field: STEM, humanities, social sciences, professional programs
 - **Level-adaptive content** — outputs are calibrated to introductory, intermediate, advanced, or graduate audiences
-- **LMS-aware accessibility** — the accessibility specialist provides platform-specific guidance for Canvas, Blackboard, Moodle, and D2L, not just generic WCAG recommendations
+- **LMS-aware accessibility** — the accessibility specialist provides platform-specific guidance for Canvas, Blackboard, Moodle, and D2L, with tiered tool recommendations from free/built-in through professional services
+- **Lab and performance assessment coverage** — the assessment specialist handles not just written assessments but also lab practicals, clinical skills demonstrations, oral presentations, and portfolio frameworks
+- **Non-standard format handling** — the curriculum designer supports compressed, modular, stackable, and dual-credit course structures beyond the standard 15-week semester
+- **Citation authenticity as a first-class concern** — both the research assistant and the integrity reviewer apply layered citation verification; fabricated or predatory sources are caught before reaching students
+- **AI-aware integrity review** — the integrity reviewer provides AI detection tool guidance that correctly treats tool scores as signals requiring human review, not verdicts
 - **Traceable handoffs** — each specialist's output includes decisions, trade-offs, and assumptions, giving the team lead enough context to synthesize accurately
 
 #### Ideal Use Cases
@@ -188,6 +192,9 @@ The team lead creates parallel member tasks when work streams are independent. F
 - **Course revision**: course health scorecard (`@education-curriculum-and-syllabus-designer-1e919b44`) + pre-release gate audit (`@education-academic-integrity-and-quality-reviewer-76537e8b`) + accessibility review (`@education-accessibility-and-learning-support-specialist-a1dfc584`) — all three in parallel; updated lecture content afterwards
 - **Research integration**: literature synthesis with citation verification (`@education-academic-research-assistant-626ebf36`) → updated lecture material (`@education-lecture-notes-and-course-content-specialist-76feadfc`) → hallucination check before release (`@education-academic-integrity-and-quality-reviewer-76537e8b`)
 - **Student support situations**: welfare escalation decision tree (`@education-student-communication-and-advising-assistant-b02cce56`) + accommodation plan (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
+- **Lab and STEM course setup**: lab practical rubrics and performance assessments (`@education-assessment-and-rubric-designer-cc79da9e`) + discipline-specific reading list with STEM search strategy (`@education-academic-research-assistant-626ebf36`) + accessibility review of lab instructions (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
+- **Compressed or non-standard course formats**: accelerated syllabus design with scope-reduction guidance (`@education-curriculum-and-syllabus-designer-1e919b44`) + async-adapted lecture content (`@education-lecture-notes-and-course-content-specialist-76feadfc`) + accessibility review for asynchronous delivery (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
+- **AI-assisted material review**: citation authenticity audit for AI-generated bibliographies (`@education-academic-research-assistant-626ebf36`) + hallucination and factual consistency gate (`@education-academic-integrity-and-quality-reviewer-76537e8b`) before any AI-assisted material reaches students
 
 #### Anti-patterns
 
@@ -207,79 +214,106 @@ The team lead creates parallel member tasks when work streams are independent. F
 
 #### Description
 
-The Blog & Podcast Studio is a full-service content production team that takes a topic or goal from brief through publication — covering writing, podcast production, search optimization, visual assets, and social distribution. The team lead sets the editorial strategy and content calendar, routes work to specialists based on content type and phase, and synthesizes outputs into cohesive, publication-ready packages.
+The Blog & Podcast Studio is a full-service content production team that takes a topic or goal from brief through publication  covering writing, podcast production, search optimization, visual assets, and social distribution. The team lead sets the editorial strategy and content calendar, routes work to specialists based on content type and phase, and synthesizes outputs into cohesive, publication-ready packages.
 
-This team is best suited for content goals that span multiple disciplines — a new blog series requires keyword research, article writing, featured images, and a social launch campaign, for example. The lead routes based on content phase and specialist fit, so each member only receives work within its domain. Writers write; SEO specialists optimize; visual creators design; the social manager distributes.
+This team is best suited for content goals that span multiple disciplines  a new blog series requires keyword research, article writing, featured images, and a social launch campaign, for example. The lead routes based on content phase and specialist fit, so each member only receives work within its domain. Writers write; SEO specialists optimize; visual creators design; the social manager distributes.
 
 #### Agent Capabilities at a Glance
 
 | Agent | Specialization | Key Strengths |
 |---|---|---|
-| `@content-media-team-lead-d370fcb1` | Editorial coordination & strategy | Content calendar planning, delegation, workflow sequencing, synthesis, brand voice oversight |
-| `@content-media-blog-writer-editor-d3115369` | Writing & editing | Long-form and short-form blog articles, editing, CMS-ready formatting, brand voice calibration, podcast-to-blog repurposing |
-| `@content-media-podcast-producer-eca4c308` | Podcast production | Episode scripting (full/semi-scripted/outline), show notes, guest briefing documents, clean transcripts, chapter markers, RSS-ready metadata packages, social clip identification |
-| `@content-media-seo-discoverability-specialist-4bf7a7d9` | SEO & discoverability | Keyword research, on-page optimization, schema markup, content gap analysis, podcast SEO, short-form video SEO (TikTok, Reels, Shorts) |
-| `@content-media-social-media-community-manager-e06af256` | Social media & community | Platform-specific social copy (Twitter/X, LinkedIn, Instagram, TikTok, Facebook), distribution calendars, content repurposing templates, campaign planning, analytics and performance review |
-| `@content-media-visual-content-creator-044f361e` | Visual content creation | Featured images, infographics, social graphics, podcast cover art, TikTok/Reels thumbnails, alt text, brand consistency, AI-assisted image production |
+| `@content-media-team-lead-d370fcb1` | Editorial coordination & strategy | Content calendar planning, delegation, workflow sequencing, synthesis, brand voice oversight, escalation |
+| `@content-media-blog-writer-editor-d3115369` | Writing & editing | Long-form and short-form blog articles (9 article types: how-to, listicle, thought leadership, case study, pillar page, and more), editing, self-editing checklist, CMS-ready packaging, brand voice calibration |
+| `@content-media-podcast-producer-eca4c308` | Podcast production | Episode scripting for all formats (solo, interview, panel, narrative, Q&A, repurposed), show notes to required standard, guest briefing documents with 1015 ranked questions, clean speaker-labeled transcripts, chapter markers, RSS-ready metadata packages, content repurposing identification |
+| `@content-media-seo-discoverability-specialist-4bf7a7d9` | SEO & discoverability | Keyword research with intent classification and tooling guidance, on-page optimization, content cluster strategy, schema markup (Article/FAQ/HowTo/PodcastEpisode), content gap analysis, 30/60/90-day performance review cadence, quarterly gap audits, podcast platform SEO |
+| `@content-media-social-media-community-manager-e06af256` | Social media & community | Platform-specific social copy (Twitter/X, LinkedIn, Instagram, Facebook), content repurposing decision matrix, distribution calendars with evergreen reshare, community engagement, analytics review cadence, crisis escalation protocol |
+| `@content-media-visual-content-creator-044f361e` | Visual content creation | 5-phase visual production workflow (intake  concept  production  QA  delivery), featured images, infographics, social graphics, podcast cover art, audiogram stills, brand template management, platform dimensions reference (17 use cases), file naming and delivery standards, alt text for accessibility and SEO, WCAG AA contrast compliance |
 
 #### Operating Model
 
 | Role | Agent | Responsibilities |
 |---|---|---|
-| Team Lead | `@content-media-team-lead-d370fcb1` | Sets editorial calendar, decomposes content goals into scoped assignments, validates outputs, synthesizes publication packages, escalates blockers |
-| Writing & Editing | `@content-media-blog-writer-editor-d3115369` | Researches topics, drafts long-form and short-form articles, edits for clarity and brand voice, packages content for CMS |
-| Podcast Production | `@content-media-podcast-producer-eca4c308` | Plans episode structure (all formats: solo, interview, panel, narrative), writes full scripts or semi-scripted guides, prepares guest briefing documents with ranked questions, drafts show notes to required standards (summary, takeaways, timestamps, bio, links, CTA), produces episode metadata packages (3 title options, short ≤200 char and long descriptions, chapter markers in HH:MM:SS format), cleans transcripts with speaker labels |
-| SEO & Discoverability | `@content-media-seo-discoverability-specialist-4bf7a7d9` | Delivers keyword briefs before writing begins, reviews drafts for on-page signals, adds schema markup, audits published content performance |
-| Social & Community | `@content-media-social-media-community-manager-e06af256` | Repurposes published content into platform-native social posts for Twitter/X, LinkedIn, Instagram, TikTok, and Facebook using content repurposing templates; plans multi-platform distribution calendars; drafts campaign briefs with KPIs; reports analytics and performance recommendations |
-| Visual Content | `@content-media-visual-content-creator-044f361e` | Produces featured images, infographics, social graphics, podcast artwork, TikTok/Reels thumbnails, carousel slides, and audiogram stills; writes alt text for all assets; applies brand guidelines; supports AI-assisted image production with appropriate constraints |
+| Team Lead | `@content-media-team-lead-d370fcb1` | Sets editorial calendar, decomposes content goals into scoped assignments, validates outputs against brief, synthesizes publication packages, escalates blockers |
+| Writing & Editing | `@content-media-blog-writer-editor-d3115369` | Matches article format to goal using Article Type Reference, researches topics, drafts articles with self-editing checklist pass, packages for CMS with all metadata fields and image markers |
+| Podcast Production | `@content-media-podcast-producer-eca4c308` | Plans episode structure for any format, writes full scripts or semi-scripted guides, prepares guest briefing documents with ranked questions and follow-up probes, drafts show notes to required standard (summary, 58 takeaways, timestamps, bio, links, CTA), produces complete metadata packages, cleans transcripts, flags repurposing opportunities per content repurposing matrix |
+| SEO & Discoverability | `@content-media-seo-discoverability-specialist-4bf7a7d9` | Delivers keyword briefs before writing begins (primary + secondary keywords, intent classification, cluster position), reviews drafts for on-page signals against checklist, adds schema markup, defines UTM parameters, monitors performance at 30/60/90-day intervals, conducts quarterly content gap audits |
+| Social & Community | `@content-media-social-media-community-manager-e06af256` | Repurposes published content using the content repurposing decision matrix, plans distribution calendars with evergreen reshare schedules, drafts community engagement prompts, reviews analytics on a defined cadence, applies crisis escalation protocol when needed |
+| Visual Content | `@content-media-visual-content-creator-044f361e` | Produces all visual assets through a 5-phase workflow, maintains brand template set for repeatable asset types, delivers files with naming convention, alt text document, placement instructions, and license confirmations |
 
-The team lead creates parallel member tasks when work streams are independent. For example, `@content-media-blog-writer-editor-d3115369` can draft an article while `@content-media-seo-discoverability-specialist-4bf7a7d9` prepares the keyword brief simultaneously — the writer incorporates keyword targets, not the other way around. Visual assets and social copy are produced after the article is approved; only genuinely dependent phases are serialized.
+The team lead creates parallel member tasks when work streams are independent. For example, `@content-media-blog-writer-editor-d3115369` can draft an article while `@content-media-seo-discoverability-specialist-4bf7a7d9` prepares the keyword brief simultaneously  the writer incorporates keyword targets on receipt. Visual assets and social copy are produced after the article is approved; only genuinely dependent phases are serialized.
 
-**Standard blog workflow:** Team Lead briefs → SEO keyword brief (parallel with writer brief) → Writer drafts → SEO on-page review → Visual Creator produces images → Social Manager creates distribution copy → Team Lead validates and publishes.
+**Standard blog workflow:**
+```
+Team Lead (brief + audience + goal)
+     parallel
+     SEO Specialist: keyword brief (primary keyword, secondary keywords, cluster position, competitor notes)
+     Blog Writer: draft (incorporates keyword brief on receipt)
+     sequential
+     SEO Specialist: on-page review + schema markup + UTM parameters
+     Visual Creator: featured image + infographic + alt text (5-phase workflow)
+     Social Manager: distribution copy + calendar + quote card briefs (repurposing matrix)
+     Team Lead: validates full package  Publish
+```
 
-**Standard podcast workflow:** Team Lead briefs → Podcast Producer scripts + show notes → SEO optimizes episode metadata → Visual Creator produces episode artwork → Social Manager plans launch promotion → Team Lead validates and publishes.
+**Standard podcast workflow:**
+```
+Team Lead (episode brief + guest details + publication date)
+    
+     Podcast Producer: outline + script/host guide + show notes + metadata package + repurposing flags
+     SEO Specialist: show notes keyword optimization + episode description + schema
+     parallel
+     Visual Creator: episode artwork + guest card + audiogram still
+     Social Manager: launch promotion package (platform posts + distribution calendar)
+    
+     Team Lead: validates full package → Publish
+```
 
-**Handoff protocol:** each specialist summarizes in its output — decisions made, assets produced, assumptions, and any blockers. The team lead validates this summary before synthesizing the final deliverable.
+**Handoff protocol:** each specialist summarizes in its output  decisions made, assets produced, assumptions, and any blockers. The team lead validates this summary before synthesizing the final deliverable.
 
 **Failure handling:** if a specialist task fails or goes out of scope, the team lead surfaces the failure immediately rather than silently retrying. Blocked work is reported with context so the operator can decide how to proceed.
 
-**Escalation protocol:** certain situations must bypass the normal async workflow and be escalated to the team lead or human operator immediately — before completing or delivering any other work:
+**Escalation protocol:** certain situations must bypass the normal async workflow and be escalated to the team lead or human operator immediately  before completing or delivering any other work:
 - Legal or copyright concerns in draft content (unauthorized quotes, licensed images, plagiarism risk)
 - Brand reputation risks: content that could be interpreted as offensive, misleading, or factually incorrect on a sensitive topic
 - Guest or subject matter disputes: if a guest requests editorial approval beyond courtesy review of their own quotes, escalate before proceeding
 - Sensitive topics with legal exposure: health claims, financial advice, political content, or content referencing named private individuals
 - Content calendar conflicts with live news events or organizational crises: timing-sensitive content should be held until the team lead or human approves publication
+- Social media crisis: a post generating unexpected negative viral engagement, legal allegations, or safety concerns triggers crisis protocol before any public response
 
-`@content-media-podcast-producer-eca4c308` and `@content-media-blog-writer-editor-d3115369` are the primary escalation triggers for content-level concerns; `@content-media-seo-discoverability-specialist-4bf7a7d9` escalates technical SEO issues that require CMS or platform access beyond its scope.
+`@content-media-podcast-producer-eca4c308` and `@content-media-blog-writer-editor-d3115369` are the primary escalation triggers for content-level concerns; `@content-media-seo-discoverability-specialist-4bf7a7d9` escalates technical SEO issues requiring CMS or platform access; `@content-media-social-media-community-manager-e06af256` triggers crisis protocol for social situations.
 
 #### Strengths
 
-- **Full content lifecycle coverage** — from keyword research and briefs through writing, optimization, visual production, and multi-platform social distribution including TikTok and short-form video
-- **Domain-aware routing** — the team lead routes based on content type and phase, not availability
-- **Parallel execution** — independent work streams (keyword research + drafting, visual production + social planning) run simultaneously, reducing time to publication
-- **Multi-format output** — produces blog articles, podcast episodes, social posts, TikTok/Reels scripts, and visual assets from a single content goal
-- **Cross-format repurposing** — podcast episodes become blog companion posts; articles become Twitter threads, LinkedIn posts, and short-form video scripts; maximizes content ROI across the full distribution funnel
-- **Attribution-ready distribution** — UTM parameters flow from SEO specialist through social manager so every distributed link is correctly traffic-tracked from day one
-- **Content cluster architecture** — SEO specialist builds topical authority across related articles (pillar + clusters), not just optimizing individual posts in isolation
-- **Traceable handoffs** — each specialist's output includes decisions, assets, and assumptions, giving the team lead enough context to synthesize accurately
+- **Full content lifecycle coverage**  from keyword research and briefs through writing, optimization, visual production, and social distribution, for both blog and podcast formats
+- **Domain-aware routing**  the team lead routes based on content type and phase, not availability
+- **Parallel execution**  independent work streams (keyword research + drafting, visual production + social planning) run simultaneously, reducing time to publication
+- **Multi-format output**  produces blog articles (9 article types), podcast episodes (6 formats), social posts, and visual assets from a single content goal
+- **Structured quality standards**  each specialist has explicit definition-of-done checklists, self-editing protocols, and edge-case escalation tables
+- **Repurposing-first mindset**  podcast producer flags repurposing opportunities; social manager applies the content repurposing matrix; a single episode or article seeds multiple assets
+- **Attribution-ready distribution**  UTM parameters flow from SEO specialist through social manager so every distributed link is correctly traffic-tracked from day one
+- **Content cluster architecture**  SEO specialist builds topical authority across related articles (pillar + clusters), not just optimizing individual posts in isolation
+- **Traceable handoffs**  each specialist's output includes decisions, assets, and assumptions, giving the team lead enough context to synthesize accurately
 
 #### Ideal Use Cases
 
-- **New blog series launch**: keyword strategy + content cluster map (`@content-media-seo-discoverability-specialist-4bf7a7d9`) + article drafts (`@content-media-blog-writer-editor-d3115369`) + featured images (`@content-media-visual-content-creator-044f361e`) + social launch campaign with TikTok scripts (`@content-media-social-media-community-manager-e06af256`) — all coordinated by the team lead
-- **Podcast episode production**: scripting + show notes + social clip identification (`@content-media-podcast-producer-eca4c308`) → episode SEO + UTM parameters (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → episode artwork + Reels thumbnail (`@content-media-visual-content-creator-044f361e`) → UTM-linked social promotion + TikTok scripts (`@content-media-social-media-community-manager-e06af256`)
-- **Content repurposing**: transcript from podcast episode → companion blog post (`@content-media-blog-writer-editor-d3115369`) → SEO optimization → social distribution + TikTok clip scripts from identified social clip moments
-- **Monthly content calendar execution**: team lead sequences a full month of blog and podcast content across all specialists in parallel
-- **SEO content refresh**: gap analysis + refresh recommendation (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → updated drafts (`@content-media-blog-writer-editor-d3115369`) → updated visuals and social reshare if needed
-- **Content cluster buildout**: pillar page + 3–5 cluster articles produced sequentially, with bidirectional internal links established across the cluster before any piece publishes
+- **New blog series launch**: keyword strategy + content cluster map (`@content-media-seo-discoverability-specialist-4bf7a7d9`) + article drafts for each article type needed (`@content-media-blog-writer-editor-d3115369`) + featured images and infographics (`@content-media-visual-content-creator-044f361e`) + social launch campaign with UTM links (`@content-media-social-media-community-manager-e06af256`)  all coordinated by the team lead
+- **Podcast episode production (full package)**: scripting + show notes + metadata + repurposing flags (`@content-media-podcast-producer-eca4c308`)  SEO optimization + UTM parameters (`@content-media-seo-discoverability-specialist-4bf7a7d9`)  episode artwork + audiogram still (`@content-media-visual-content-creator-044f361e`)  social launch promotion (`@content-media-social-media-community-manager-e06af256`)
+- **Content repurposing**: podcast transcript  companion blog post (`@content-media-blog-writer-editor-d3115369`)  SEO optimization  social clips, quote cards, and audiogram stills; or pillar blog post  infographic  carousel  drip social campaign
+- **Monthly content calendar execution**: team lead sequences a full month of blog and podcast content across all specialists in parallel; SEO briefs out first, then writing and production in parallel, then visual and social in parallel after approval
+- **SEO content refresh**: gap analysis + audit + refresh recommendations (`@content-media-seo-discoverability-specialist-4bf7a7d9`)  updated article drafts (`@content-media-blog-writer-editor-d3115369`)  updated visual assets if headline or imagery changed (`@content-media-visual-content-creator-044f361e`)
+- **New show or series launch**: episode strategy + first 3 episode packages (`@content-media-podcast-producer-eca4c308`) + series cover art + episode artwork template (`@content-media-visual-content-creator-044f361e`) + social series launch campaign (`@content-media-social-media-community-manager-e06af256`)
+- **Content cluster buildout**: pillar page + 35 cluster articles with bidirectional internal links established before any piece publishes, all assets produced and social distribution planned before the series launches
 
 #### Anti-patterns
 
-- **Single-domain requests**: if a task clearly belongs to one specialist (e.g., "edit this draft"), use `create_task` directly for that agent. Team overhead is not justified for single-specialist work.
-- **Publishing without SEO review**: every piece should pass through SEO optimization before publication — skipping this step reduces discoverability and means UTM parameters are never defined.
-- **Distributing links without UTM parameters**: social posts without UTM tags make organic traffic attribution impossible — always complete the SEO → UTM → social handoff in sequence.
+- **Single-domain requests**: if a task clearly belongs to one specialist (e.g., "edit this draft", "optimize this post's SEO"), use `create_task` directly for that agent. Team overhead is not justified for single-specialist work.
+- **Publishing without SEO review**: every piece should pass through SEO optimization before publication  skipping this step reduces discoverability, misses schema markup, and means UTM parameters are never defined.
+- **Distributing links without UTM parameters**: social posts without UTM tags make organic traffic attribution impossible  always complete the SEO  UTM  social handoff in sequence.
 - **Underbriefed content goals**: the team requires a clear topic, audience, and goal to decompose effectively. "Write something about AI" without audience or purpose produces misaligned parallel work.
-- **Over-parallelizing dependent phases**: do not dispatch the visual creator to produce a featured image before the article title is finalized; image copy depends on the approved headline.
+- **Over-parallelizing dependent phases**: do not dispatch the visual creator to produce a featured image before the article headline is finalized; do not dispatch the social manager before the publication URL exists.
+- **Skipping crisis protocol**: social crisis situations must be escalated before any public engagement  unilateral replies to high-stakes comments can amplify risk.
 
+---
 ---
 
 ## Creating a New Team

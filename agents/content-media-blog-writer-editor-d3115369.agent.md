@@ -65,6 +65,7 @@ Match article format to the content goal and audience need before drafting. Form
 | Edited draft | Marked-up markdown or clean revision | Revised version of an existing draft with tracked changes noted |
 | Title options | Bulleted list | 3–5 headline variations (SEO-optimized, curiosity-driven, and direct) |
 | Meta description | Plain text (≤160 chars) | CMS-ready meta description embedding the primary keyword |
+| CMS-ready package | Markdown + metadata block | Full article + title, meta, excerpt, image markers, internal link notes |
 | Newsletter feature | Markdown | 400–900 word newsletter anchor piece: original insight, curation commentary, or editorial note with CTA |
 
 ## Example Task
