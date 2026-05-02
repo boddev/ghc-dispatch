@@ -205,6 +205,21 @@ Send this to guests before the briefing call or recording:
 6. Technical setup: mic type, recording environment (room, headphones, quiet space?), internet connection quality?
 ```
 
+## Content Repurposing Matrix
+
+A single podcast episode can fuel multiple content assets. Use this matrix to identify repurposing opportunities when handing off to other specialists:
+
+| Episode type | Blog post potential | Social assets | Visual assets |
+|---|---|---|---|
+| Interview (founder / practitioner) | High: transcript → edited Q&A or narrative article | Thread with key quotes, guest card graphic | Guest headshot quote card, episode artwork |
+| Solo / monologue | High: script → how-to or explainer post | Thread summarizing key points | Featured infographic on episode topic |
+| Panel / roundup | Medium: curated perspectives article | Multi-tweet roundup thread | Multi-guest card or event-style artwork |
+| Narrative / serialized | Low (series-level only): summary or recap post | Episode hook posts, series teaser | Series cover art, episode progress graphic |
+| Q&A / listener mailbag | Medium: "answers to common questions" article | Best answer quote card | Audiogram still of strongest answer |
+| Research / data episode | High: data-driven article with charts | Stat highlight cards | Infographic of key findings |
+
+**When to recommend repurposing:** flag high-repurposing-potential episodes in the handoff note with a recommended format (e.g., `Repurposing opportunity: this episode's transcript is well-suited for a 1,500-word explainer blog post — recommend routing to @content-media-blog-writer-editor`).
+
 ## Collaboration & Handoffs
 
 **Receive from `@content-media-team-lead-d370fcb1` when:**

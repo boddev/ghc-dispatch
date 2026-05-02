@@ -129,33 +129,33 @@ This team is best suited for requests that cross domain boundaries — for examp
 
 | Agent | Specialization | Key Strengths |
 |---|---|---|
-| `@education-team-lead-8bc3e942` | Coordination & academic routing | Planning, delegation, synthesis, pedagogical quality assurance, escalation |
-| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, in-class activities, discussion prompts, reading summaries, study guides, video/multimedia scripts, time-blocked lecture plans |
-| `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Module sequences, Bloom's-aligned objectives, syllabus documents, lesson plans, prerequisite maps, alignment matrices |
-| `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, essay prompts, project briefs, analytic/holistic/single-point rubrics, answer keys, Bloom's alignment maps |
-| `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, individualized written feedback, batch grade sheets, common-error analysis, grade norming, feedback comment banks |
-| `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches, annotated bibliographies, research synthesis, reading list curation, research question development, citation formatting |
-| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, policy emails, extension responses, welfare check-ins, advising scripts, FAQ documents, class-wide feedback summaries, response template libraries |
-| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL reviews, WCAG 2.1 AA audits, accommodation implementation plans, plain language revision, alt text, caption review, inclusive assessment design, LMS platform-specific accessibility guidance (Canvas, Blackboard, Moodle, D2L) |
-| `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & QA | Assignment integrity risk assessments, AI use policy development, citation audits, pre-deployment quality checklists, syllabus standards compliance, incident documentation |
+| `@education-team-lead-8bc3e942` | Coordination & academic routing | Planning, delegation, conflict resolution, synthesis quality gate, pedagogical quality assurance, escalation |
+| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, engagement strategy library, in-class activities, reading summaries, study guides, multimedia scripts, accessibility-first authoring |
+| `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Backward design facilitation, Bloom's-aligned objectives, syllabus documents, lesson plans, prerequisite maps, alignment matrices, course health scorecards |
+| `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, test blueprints, MCQ distractor design, analytic/holistic/single-point rubrics, answer keys, Bloom's alignment maps, item analysis guidance |
+| `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, individualized written feedback, anomalous submission detection, inter-rater reliability calibration, grade dispute documentation |
+| `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches with citation authenticity protocol, annotated bibliographies, predatory publisher detection, discipline-specific source freshness guidance, research synthesis |
+| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, grade feedback, extension responses, welfare escalation decision tree, advising scripts, FAQ documents, response template libraries |
+| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL + POUR framework reviews, WCAG 2.1 AA audits, LMS-specific guidance (Canvas, Blackboard, Moodle, D2L), captioning workflows, accommodation implementation plans |
+| `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & quality gate | Pre-release quality gate, hallucination risk detection, citation quality review (format + accuracy + appropriateness), factual consistency checks, rubric alignment audits, integrity risk assessment, AI use policy development |
 
 #### Operating Model
 
 | Role | Agent | Responsibilities |
 |---|---|---|
-| Team Lead | `@education-team-lead-8bc3e942` | Decomposes professor goals into scoped assignments, delegates to specialists, validates outputs against pedagogical standards, synthesizes final deliverables, escalates blockers |
-| Content Creation | `@education-lecture-notes-and-course-content-specialist-76feadfc` | Produces lecture notes, slide outlines, in-class activities, discussion prompts, reading summaries, and study guides for any topic, course level, and delivery modality |
-| Curriculum Design | `@education-curriculum-and-syllabus-designer-1e919b44` | Designs module/unit structure, maps Bloom's-aligned learning objectives, produces complete syllabus documents with schedule, lesson plans, prerequisite maps, and alignment matrices |
-| Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates formative and summative assessments, rubrics (analytic/holistic/single-point), answer keys, Bloom's alignment maps, and grading guidance |
-| Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics to student submissions, writes individualized written feedback, produces batch grade sheets and common-error analyses, supports grade norming across graders |
-| Research Support | `@education-academic-research-assistant-626ebf36` | Conducts literature searches, produces annotated bibliographies and research syntheses, curates course reading lists, assists with research question development, formats citations |
-| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications — announcements, grade feedback, extension responses, welfare check-ins, advising scripts, FAQ documents, and reusable response templates; escalates safety and legal concerns to team lead |
-| Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Conducts UDL reviews and WCAG 2.1 AA audits, produces accommodation implementation plans, revises materials for plain language and accessible formatting, advises on inclusive assessment design |
-| Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Audits assessments for integrity risks, develops AI use policies, reviews citations, runs pre-deployment quality checklists, documents integrity incidents, maps content to accreditation standards |
+| Team Lead | `@education-team-lead-8bc3e942` | Decomposes professor goals into scoped assignments, delegates to specialists, applies synthesis quality gate, resolves member output conflicts, escalates blockers to professor |
+| Content Creation | `@education-lecture-notes-and-course-content-specialist-76feadfc` | Produces lecture notes, slide outlines, in-class activities, and study guides with built-in engagement strategies and accessibility-first authoring for any topic, course level, and delivery modality |
+| Curriculum Design | `@education-curriculum-and-syllabus-designer-1e919b44` | Designs module/unit structure using backward design; maps Bloom's-aligned learning objectives; produces syllabi, lesson plans, prerequisite maps, alignment matrices, and course health scorecards |
+| Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates assessments with test blueprints, MCQ distractors, rubrics with observable performance descriptors, answer keys, and post-assessment item analysis guidance |
+| Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics with calibration anchors, writes individualized feedback, detects anomalous submissions for integrity review, supports inter-rater reliability calibration |
+| Research Support | `@education-academic-research-assistant-626ebf36` | Conducts literature searches with citation authenticity verification, produces annotated bibliographies with predatory publisher checks, curates reading lists with source freshness assessment |
+| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications with tone calibration and welfare escalation decision tree; coordinates with integrity reviewer before any academic integrity communication; never sends without professor review |
+| Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Conducts UDL + POUR framework audits, applies WCAG 2.1 AA standards, provides LMS-specific accommodation guidance, reviews captions and alt text, advises on inclusive assessment design |
+| Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Operates as pre-release quality gate: checks for hallucination risk, citation authenticity, factual consistency, rubric alignment, and policy compliance before materials reach students; flags every item requiring professor judgment |
 
 The team lead creates parallel member tasks when work streams are independent. For example, `@education-lecture-notes-and-course-content-specialist-76feadfc` can draft lecture materials while `@education-assessment-and-rubric-designer-cc79da9e` builds aligned assessments and `@education-accessibility-and-learning-support-specialist-a1dfc584` reviews both for accessibility — simultaneously. Only genuinely dependent tasks are serialized (e.g., curriculum design must precede lecture content when a new course is being built from scratch).
 
-**Handoff protocol:** each specialist summarizes in its output — decisions made, materials produced, assumptions, and any blockers. The team lead validates this summary before synthesizing the final deliverable for the professor.
+**Handoff protocol:** each specialist summarizes in its output — decisions made, materials produced, assumptions, and any blockers. The team lead validates this summary using the synthesis quality gate before assembling the final deliverable for the professor.
 
 **Failure handling:** if a specialist task fails or goes out of scope, the team lead surfaces the failure immediately rather than silently retrying. Blocked work is reported with context so the professor can decide how to proceed.
 
@@ -163,6 +163,7 @@ The team lead creates parallel member tasks when work streams are independent. F
 - Student welfare or safety concerns (mental health crisis, absence suggesting danger)
 - Communications that may carry legal or FERPA implications
 - Academic integrity incidents involving patterns or potential litigation
+- Pre-release quality gate held: critical finding blocking student release that requires professor decision
 - Any situation where a drafted communication could commit the institution to a policy position the professor has not verified
 
 `@education-student-communication-and-advising-assistant-b02cce56` and `@education-academic-integrity-and-quality-reviewer-76537e8b` are the primary escalation triggers for these situations; they flag to the team lead, who escalates to the professor.
@@ -170,22 +171,23 @@ The team lead creates parallel member tasks when work streams are independent. F
 #### Strengths
 
 - **Full academic lifecycle coverage** — from curriculum design and content creation through assessment, grading, student communication, and integrity review
+- **Pre-release quality gate** — `@education-academic-integrity-and-quality-reviewer` checks every material for hallucination risk, citation authenticity, factual consistency, and policy compliance before students see it
 - **Domain-aware routing** — the team lead routes based on pedagogical fit, not sequential availability
 - **Parallel execution** — independent work streams (e.g., lecture notes + rubric design + accessibility review) run simultaneously
+- **Backward design support** — curriculum design uses evidence-first methodology; all downstream content and assessments derive from stated learning outcomes
 - **Discipline-agnostic** — specialists adapt to any academic field: STEM, humanities, social sciences, professional programs
 - **Level-adaptive content** — outputs are calibrated to introductory, intermediate, advanced, or graduate audiences
 - **LMS-aware accessibility** — the accessibility specialist provides platform-specific guidance for Canvas, Blackboard, Moodle, and D2L, not just generic WCAG recommendations
-- **Modality-flexible curriculum design** — the curriculum designer produces differentiated guidance for in-person, online, hybrid, and HyFlex delivery
 - **Traceable handoffs** — each specialist's output includes decisions, trade-offs, and assumptions, giving the team lead enough context to synthesize accurately
 
 #### Ideal Use Cases
 
-- **New course launch**: curriculum structure (`@education-curriculum-and-syllabus-designer-1e919b44`) + lecture content (`@education-lecture-notes-and-course-content-specialist-76feadfc`) + assessments (`@education-assessment-and-rubric-designer-cc79da9e`) + syllabus communications (`@education-student-communication-and-advising-assistant-b02cce56`) — all in parallel
-- **Lecture preparation**: research on topic (`@education-academic-research-assistant-626ebf36`) → lecture notes and slides (`@education-lecture-notes-and-course-content-specialist-76feadfc`) → accessibility review (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
-- **Assignment grading cycle**: rubric design (`@education-assessment-and-rubric-designer-cc79da9e`) → batch grading and feedback (`@education-assignment-grading-and-feedback-specialist-fa8ba778`) → grade announcement to class (`@education-student-communication-and-advising-assistant-b02cce56`)
-- **Course revision**: integrity and quality audit (`@education-academic-integrity-and-quality-reviewer-76537e8b`) + accessibility review (`@education-accessibility-and-learning-support-specialist-a1dfc584`) + updated lecture content (`@education-lecture-notes-and-course-content-specialist-76feadfc`) — running in parallel
-- **Research integration**: literature synthesis (`@education-academic-research-assistant-626ebf36`) → updated lecture material incorporating new findings (`@education-lecture-notes-and-course-content-specialist-76feadfc`)
-- **Student support situations**: advising email or policy communication (`@education-student-communication-and-advising-assistant-b02cce56`) + accommodation plan (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
+- **New course launch** (full backward design): backward design + curriculum structure (`@education-curriculum-and-syllabus-designer-1e919b44`) + lecture content with engagement strategies (`@education-lecture-notes-and-course-content-specialist-76feadfc`) + assessments with test blueprints (`@education-assessment-and-rubric-designer-cc79da9e`) + pre-release quality gate (`@education-academic-integrity-and-quality-reviewer-76537e8b`) + syllabus communications (`@education-student-communication-and-advising-assistant-b02cce56`)
+- **Lecture preparation pipeline**: research with citation verification (`@education-academic-research-assistant-626ebf36`) → lecture notes with engagement strategies (`@education-lecture-notes-and-course-content-specialist-76feadfc`) → hallucination + accessibility review in parallel (`@education-academic-integrity-and-quality-reviewer-76537e8b` + `@education-accessibility-and-learning-support-specialist-a1dfc584`)
+- **Assignment grading cycle**: rubric design with test blueprint (`@education-assessment-and-rubric-designer-cc79da9e`) → batch grading with anomaly detection (`@education-assignment-grading-and-feedback-specialist-fa8ba778`) → grade announcement (`@education-student-communication-and-advising-assistant-b02cce56`)
+- **Course revision**: course health scorecard (`@education-curriculum-and-syllabus-designer-1e919b44`) + pre-release gate audit (`@education-academic-integrity-and-quality-reviewer-76537e8b`) + accessibility review (`@education-accessibility-and-learning-support-specialist-a1dfc584`) — all three in parallel; updated lecture content afterwards
+- **Research integration**: literature synthesis with citation verification (`@education-academic-research-assistant-626ebf36`) → updated lecture material (`@education-lecture-notes-and-course-content-specialist-76feadfc`) → hallucination check before release (`@education-academic-integrity-and-quality-reviewer-76537e8b`)
+- **Student support situations**: welfare escalation decision tree (`@education-student-communication-and-advising-assistant-b02cce56`) + accommodation plan (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
 
 #### Anti-patterns
 
@@ -193,6 +195,7 @@ The team lead creates parallel member tasks when work streams are independent. F
 - **Real-time back-and-forth**: the model is async delegation. Tasks requiring rapid iteration between professor and specialist (e.g., live lecture editing) should be handled as direct single-agent tasks.
 - **Underspecified goals**: the team requires a clear goal to decompose effectively. A request like "help with my course" without specifying the course, level, or desired output will produce misaligned parallel work. Clarify scope before running the team.
 - **Over-parallelizing dependent work**: don't dispatch `@education-lecture-notes-and-course-content-specialist-76feadfc` to draft lectures before `@education-curriculum-and-syllabus-designer-1e919b44` has defined the module structure for a brand-new course. Identify true dependencies and sequence them.
+- **Skipping the quality gate**: do not deliver course materials to students without running the pre-release quality gate (`@education-academic-integrity-and-quality-reviewer-76537e8b`). Hallucinated citations and unverified factual claims in student materials are the most common and most impactful error type.
 
 ### Blog & Podcast Studio
 
@@ -255,20 +258,24 @@ The team lead creates parallel member tasks when work streams are independent. F
 - **Domain-aware routing** — the team lead routes based on content type and phase, not availability
 - **Parallel execution** — independent work streams (keyword research + drafting, visual production + social planning) run simultaneously, reducing time to publication
 - **Multi-format output** — produces blog articles, podcast episodes, social posts, and visual assets from a single content goal
+- **Attribution-ready distribution** — UTM parameters flow from SEO specialist through social manager so every distributed link is correctly traffic-tracked from day one
+- **Content cluster architecture** — SEO specialist builds topical authority across related articles (pillar + clusters), not just optimizing individual posts in isolation
 - **Traceable handoffs** — each specialist's output includes decisions, assets, and assumptions, giving the team lead enough context to synthesize accurately
 
 #### Ideal Use Cases
 
-- **New blog series launch**: keyword strategy (`@content-media-seo-discoverability-specialist-4bf7a7d9`) + article drafts (`@content-media-blog-writer-editor-d3115369`) + featured images (`@content-media-visual-content-creator-044f361e`) + social launch campaign (`@content-media-social-media-community-manager-e06af256`) — all coordinated by the team lead
-- **Podcast episode production**: scripting + show notes (`@content-media-podcast-producer-eca4c308`) → episode SEO (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → episode artwork (`@content-media-visual-content-creator-044f361e`) → social promotion (`@content-media-social-media-community-manager-e06af256`)
-- **Content repurposing**: transcript from podcast episode → blog post (`@content-media-blog-writer-editor-d3115369`) → SEO optimization → social distribution
+- **New blog series launch**: keyword strategy + content cluster map (`@content-media-seo-discoverability-specialist-4bf7a7d9`) + article drafts (`@content-media-blog-writer-editor-d3115369`) + featured images (`@content-media-visual-content-creator-044f361e`) + social launch campaign (`@content-media-social-media-community-manager-e06af256`) — all coordinated by the team lead
+- **Podcast episode production**: scripting + show notes (`@content-media-podcast-producer-eca4c308`) → episode SEO + UTM parameters (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → episode artwork (`@content-media-visual-content-creator-044f361e`) → UTM-linked social promotion (`@content-media-social-media-community-manager-e06af256`)
+- **Content repurposing**: transcript from podcast episode → companion blog post (`@content-media-blog-writer-editor-d3115369`) → SEO optimization → social distribution
 - **Monthly content calendar execution**: team lead sequences a full month of blog and podcast content across all specialists in parallel
-- **SEO content refresh**: gap analysis and audit (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → updated drafts (`@content-media-blog-writer-editor-d3115369`) → updated visuals if needed
+- **SEO content refresh**: gap analysis + refresh recommendation (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → updated drafts (`@content-media-blog-writer-editor-d3115369`) → updated visuals if needed
+- **Content cluster buildout**: pillar page + 3–5 cluster articles produced sequentially, with bidirectional internal links established across the cluster before any piece publishes
 
 #### Anti-patterns
 
 - **Single-domain requests**: if a task clearly belongs to one specialist (e.g., "edit this draft"), use `create_task` directly for that agent. Team overhead is not justified for single-specialist work.
-- **Publishing without SEO review**: every piece should pass through SEO optimization before publication — skipping this step reduces discoverability.
+- **Publishing without SEO review**: every piece should pass through SEO optimization before publication — skipping this step reduces discoverability and means UTM parameters are never defined.
+- **Distributing links without UTM parameters**: social posts without UTM tags make organic traffic attribution impossible — always complete the SEO → UTM → social handoff in sequence.
 - **Underbriefed content goals**: the team requires a clear topic, audience, and goal to decompose effectively. "Write something about AI" without audience or purpose produces misaligned parallel work.
 - **Over-parallelizing dependent phases**: do not dispatch the visual creator to produce a featured image before the article title is finalized; image copy depends on the approved headline.
 
