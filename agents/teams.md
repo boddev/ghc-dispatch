@@ -115,8 +115,9 @@ Teams beyond the built-in set are created by operators via the API. Two example 
 
 **ID:** configured at runtime
 **Lead:** `@education-team-lead-8bc3e942`
-**Members:** `@education-lecture-notes-and-course-content-specialist-76feadfc`, `@education-assignment-grading-and-feedback-specialist-fa8ba778`, `@education-curriculum-and-syllabus-designer-1e919b44`, `@education-assessment-and-rubric-designer-cc79da9e`, `@education-academic-research-assistant-626ebf36`, `@education-student-communication-and-advising-assistant-b02cce56`, `@education-accessibility-and-learning-support-specialist-a1dfc584`, `@education-academic-integrity-and-quality-reviewer-76537e8b`
-**Domain:** Academic education support
+**Members:** `@education-curriculum-and-syllabus-designer-1e919b44`, `@education-lecture-notes-and-course-content-specialist-76feadfc`, `@education-assignment-grading-and-feedback-specialist-fa8ba778`, `@education-assessment-and-rubric-designer-cc79da9e`, `@education-academic-research-assistant-626ebf36`, `@education-student-communication-and-advising-assistant-b02cce56`, `@education-accessibility-and-learning-support-specialist-a1dfc584`, `@education-academic-integrity-and-quality-reviewer-76537e8b`
+**Domain:** Education
+**Function:** Academic teaching and research support
 
 #### Description
 
