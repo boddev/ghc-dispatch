@@ -194,10 +194,72 @@ The team lead creates parallel member tasks when work streams are independent. F
 
 ### Blog & Podcast Studio
 
-**Lead:** `@content-media-team-lead`
-**Domain:** Content production and publishing
+**ID:** configured at runtime
+**Lead:** `@content-media-team-lead-d370fcb1`
+**Members:** `@content-media-blog-writer-editor-d3115369`, `@content-media-podcast-producer-eca4c308`, `@content-media-seo-discoverability-specialist-4bf7a7d9`, `@content-media-social-media-community-manager-e06af256`, `@content-media-visual-content-creator-044f361e`
+**Domain:** Content & Media
+**Function:** Content Production and Distribution
 
-A full-service content team for planning, producing, publishing, and promoting blog articles and podcast episodes. Includes specialists for writing/editing, podcast production, SEO, social media, and visual content creation.
+#### Description
+
+The Blog & Podcast Studio is a full-service content production team that takes a topic or goal from brief through publication — covering writing, podcast production, search optimization, visual assets, and social distribution. The team lead sets the editorial strategy and content calendar, routes work to specialists based on content type and phase, and synthesizes outputs into cohesive, publication-ready packages.
+
+This team is best suited for content goals that span multiple disciplines — a new blog series requires keyword research, article writing, featured images, and a social launch campaign, for example. The lead routes based on content phase and specialist fit, so each member only receives work within its domain. Writers write; SEO specialists optimize; visual creators design; the social manager distributes.
+
+#### Agent Capabilities at a Glance
+
+| Agent | Specialization | Key Strengths |
+|---|---|---|
+| `@content-media-team-lead-d370fcb1` | Editorial coordination & strategy | Content calendar planning, delegation, workflow sequencing, synthesis, brand voice oversight |
+| `@content-media-blog-writer-editor-d3115369` | Writing & editing | Long-form and short-form blog articles, editing, CMS-ready formatting, brand voice calibration |
+| `@content-media-podcast-producer-eca4c308` | Podcast production | Episode scripting, show notes, guest briefing, transcript production, episode metadata |
+| `@content-media-seo-discoverability-specialist-4bf7a7d9` | SEO & discoverability | Keyword research, on-page optimization, schema markup, content gap analysis, podcast SEO |
+| `@content-media-social-media-community-manager-e06af256` | Social media & community | Platform-specific social copy, distribution calendars, community engagement, content repurposing |
+| `@content-media-visual-content-creator-044f361e` | Visual content creation | Featured images, infographics, social graphics, podcast cover art, alt text, brand consistency |
+
+#### Operating Model
+
+| Role | Agent | Responsibilities |
+|---|---|---|
+| Team Lead | `@content-media-team-lead-d370fcb1` | Sets editorial calendar, decomposes content goals into scoped assignments, validates outputs, synthesizes publication packages, escalates blockers |
+| Writing & Editing | `@content-media-blog-writer-editor-d3115369` | Researches topics, drafts long-form and short-form articles, edits for clarity and brand voice, packages content for CMS |
+| Podcast Production | `@content-media-podcast-producer-eca4c308` | Plans episode structure, writes scripts and show notes, prepares guest briefings, produces episode metadata packages |
+| SEO & Discoverability | `@content-media-seo-discoverability-specialist-4bf7a7d9` | Delivers keyword briefs before writing begins, reviews drafts for on-page signals, adds schema markup, audits published content performance |
+| Social & Community | `@content-media-social-media-community-manager-e06af256` | Repurposes published content into platform-native social posts, plans distribution calendars, drafts community engagement prompts |
+| Visual Content | `@content-media-visual-content-creator-044f361e` | Produces featured images, infographics, social graphics, podcast artwork, and alt text for all visual assets |
+
+The team lead creates parallel member tasks when work streams are independent. For example, `@content-media-blog-writer-editor-d3115369` can draft an article while `@content-media-seo-discoverability-specialist-4bf7a7d9` prepares the keyword brief simultaneously — the writer incorporates keyword targets, not the other way around. Visual assets and social copy are produced after the article is approved; only genuinely dependent phases are serialized.
+
+**Standard blog workflow:** Team Lead briefs → SEO keyword brief (parallel with writer brief) → Writer drafts → SEO on-page review → Visual Creator produces images → Social Manager creates distribution copy → Team Lead validates and publishes.
+
+**Standard podcast workflow:** Team Lead briefs → Podcast Producer scripts + show notes → SEO optimizes episode metadata → Visual Creator produces episode artwork → Social Manager plans launch promotion → Team Lead validates and publishes.
+
+**Handoff protocol:** each specialist summarizes in its output — decisions made, assets produced, assumptions, and any blockers. The team lead validates this summary before synthesizing the final deliverable.
+
+**Failure handling:** if a specialist task fails or goes out of scope, the team lead surfaces the failure immediately rather than silently retrying. Blocked work is reported with context so the operator can decide how to proceed.
+
+#### Strengths
+
+- **Full content lifecycle coverage** — from keyword research and briefs through writing, optimization, visual production, and social distribution
+- **Domain-aware routing** — the team lead routes based on content type and phase, not availability
+- **Parallel execution** — independent work streams (keyword research + drafting, visual production + social planning) run simultaneously, reducing time to publication
+- **Multi-format output** — produces blog articles, podcast episodes, social posts, and visual assets from a single content goal
+- **Traceable handoffs** — each specialist's output includes decisions, assets, and assumptions, giving the team lead enough context to synthesize accurately
+
+#### Ideal Use Cases
+
+- **New blog series launch**: keyword strategy (`@content-media-seo-discoverability-specialist-4bf7a7d9`) + article drafts (`@content-media-blog-writer-editor-d3115369`) + featured images (`@content-media-visual-content-creator-044f361e`) + social launch campaign (`@content-media-social-media-community-manager-e06af256`) — all coordinated by the team lead
+- **Podcast episode production**: scripting + show notes (`@content-media-podcast-producer-eca4c308`) → episode SEO (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → episode artwork (`@content-media-visual-content-creator-044f361e`) → social promotion (`@content-media-social-media-community-manager-e06af256`)
+- **Content repurposing**: transcript from podcast episode → blog post (`@content-media-blog-writer-editor-d3115369`) → SEO optimization → social distribution
+- **Monthly content calendar execution**: team lead sequences a full month of blog and podcast content across all specialists in parallel
+- **SEO content refresh**: gap analysis and audit (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → updated drafts (`@content-media-blog-writer-editor-d3115369`) → updated visuals if needed
+
+#### Anti-patterns
+
+- **Single-domain requests**: if a task clearly belongs to one specialist (e.g., "edit this draft"), use `create_task` directly for that agent. Team overhead is not justified for single-specialist work.
+- **Publishing without SEO review**: every piece should pass through SEO optimization before publication — skipping this step reduces discoverability.
+- **Underbriefed content goals**: the team requires a clear topic, audience, and goal to decompose effectively. "Write something about AI" without audience or purpose produces misaligned parallel work.
+- **Over-parallelizing dependent phases**: do not dispatch the visual creator to produce a featured image before the article title is finalized; image copy depends on the approved headline.
 
 ---
 
