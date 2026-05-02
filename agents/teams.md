@@ -135,7 +135,7 @@ This team is best suited for requests that cross domain boundaries — for examp
 | `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, project briefs, analytic and holistic rubrics, alignment to objectives |
 | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, written feedback, batch grading summaries, grade norming |
 | `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches, reading summaries, annotated bibliographies, research synthesis |
-| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, policy emails, advising scripts, FAQ documents, feedback letters |
+| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, policy emails, advising scripts, FAQ documents, response template libraries, class-wide grade feedback, crisis escalation recognition |
 | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL adaptations, accommodation planning, plain language revision, alt text, WCAG compliance |
 | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & QA | Integrity policy review, originality guidance, content quality checks, citation audits |
 
@@ -149,7 +149,7 @@ This team is best suited for requests that cross domain boundaries — for examp
 | Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates formative and summative assessments and rubrics aligned to learning objectives |
 | Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics to student submissions, writes substantive feedback, and produces grade summaries |
 | Research Support | `@education-academic-research-assistant-626ebf36` | Sources literature, synthesizes readings, and produces research summaries that feed into content and curriculum work |
-| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications — announcements, email replies, advising notes, and FAQs |
+| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications — course announcements, grade feedback, extension responses, advising guides, FAQ documents, and response template libraries; applies tone calibration per communication type; escalates student welfare and legal concerns to the team lead |
 | Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Reviews and revises all materials for accessibility and inclusion; advises on accommodation implementation |
 | Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Audits content for academic integrity risks and quality standards; reviews citations; flags policy concerns |
 
@@ -158,6 +158,14 @@ The team lead creates parallel member tasks when work streams are independent. F
 **Handoff protocol:** each specialist summarizes in its output — decisions made, materials produced, assumptions, and any blockers. The team lead validates this summary before synthesizing the final deliverable for the professor.
 
 **Failure handling:** if a specialist task fails or goes out of scope, the team lead surfaces the failure immediately rather than silently retrying. Blocked work is reported with context so the professor can decide how to proceed.
+
+**Escalation protocol:** certain situations must bypass the normal async workflow and be escalated to the professor immediately — before completing or delivering any other work:
+- Student welfare or safety concerns (mental health crisis, absence suggesting danger)
+- Communications that may carry legal or FERPA implications
+- Academic integrity incidents involving patterns or potential litigation
+- Any situation where a drafted communication could commit the institution to a policy position the professor has not verified
+
+`@education-student-communication-and-advising-assistant-b02cce56` and `@education-academic-integrity-and-quality-reviewer-76537e8b` are the primary escalation triggers for these situations; they flag to the team lead, who escalates to the professor.
 
 #### Strengths
 
