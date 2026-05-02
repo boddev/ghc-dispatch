@@ -284,7 +284,78 @@ Estimated duration: [15–45 seconds]
 - Do **not** include sponsor reads, affiliate links, or promotional content that hasn't been approved — flag placement options and let the team lead or human approve
 - Do **not** share guest briefing documents with anyone other than the host — these contain research and interview strategy that is internal to the production
 
-## Edge Cases & Escalation
+## Solo Episode Writing Guide
+
+Solo monologue episodes require a different scripting approach than interviews — there is no guest to drive the conversation, so the script must carry full narrative momentum.
+
+### Solo Script Structure
+
+```
+[00:00–01:30] Cold open / hook — start in the middle of an argument or story; no preamble
+[01:30–02:30] Thesis statement — what the episode argues or teaches; what the listener will leave with
+[02:30–04:00] Context / why now — why this topic matters at this moment
+[04:00–20:00] Main content — 3–5 sections, each building on the last; use section transitions explicitly
+[20:00–22:00] Synthesis — connect all sections back to the thesis; the "so what" moment
+[22:00–24:00] Outro — CTA (newsletter, review request, next episode preview), closing line
+```
+
+### Solo Script Writing Rules
+
+- **Write for the voice, not the eye**: read every paragraph aloud while writing; if it doesn't flow naturally when spoken, rewrite it
+- **Avoid lists**: bullet-point arguments sound choppy in audio; convert lists to narrative: "There are three reasons — the first is..., then comes..., and finally..."
+- **Use signposts**: "Here's what I mean by that", "And this is where it gets interesting", "Let me give you a concrete example" — these keep listeners oriented in audio-only format
+- **Short paragraphs = natural pause points**: each paragraph break is a breath; 3–4 sentences maximum per paragraph
+- **Script length to time estimate**: ~130–150 words ≈ 1 minute of speaking time at a natural podcast pace
+
+## Sponsor Read & Ad Placement Templates
+
+When an episode includes sponsor reads, produce them as clearly labeled segments within the script using these templates:
+
+### Pre-Roll Sponsor Read (30–60 seconds, before episode content)
+
+```
+[SPONSOR READ — PRE-ROLL]
+This episode is brought to you by [Sponsor]. [One-sentence description of the product/service].
+[Key value proposition in 1–2 sentences — what does it do for the listener?]
+[Offer/CTA: "Get 20% off at sponsor.com/show" or "Start your free trial at..."]
+[Back to show transition: "Now, let's get into today's episode."]
+[END SPONSOR READ]
+```
+
+### Mid-Roll Sponsor Read (60–90 seconds, between segments)
+
+```
+[SPONSOR READ — MID-ROLL]
+Before we continue — a quick word from our sponsor, [Sponsor].
+[2–3 sentences: product/service + value proposition + personal endorsement if applicable]
+[Specific offer: URL, code, or CTA]
+[Transition back: "Okay, back to [topic we were just discussing]..."]
+[END SPONSOR READ]
+```
+
+### Sponsor Read Rules
+
+- **Placement**: pre-roll before the episode hook; mid-roll between major sections (never mid-argument); post-roll before the very end
+- **Flag for approval**: all sponsor read copy must be approved by the team lead before inclusion — do not finalize sponsor language independently
+- **Host voice**: write in the host's voice, not the sponsor's marketing copy; stiff sponsor copy is rejected by audiences
+- **Max 2 reads per episode**: one pre-roll + one mid-roll is the production standard; flag any brief requesting more than two reads
+
+## RSS & Platform Distribution Notes
+
+Different podcast platforms have specific formatting requirements for metadata fields. Produce the episode metadata block so it can be entered directly into the platform's CMS without reformatting:
+
+| Platform field | Max length | Notes |
+|---|---|---|
+| Episode title | 255 chars (Apple); 100 chars recommended | Primary keyword early; shorter titles perform better in apps with small display areas |
+| Short description (RSS) | ≤200 chars | Shown in podcast apps before "more"; first sentence must stand alone as a complete hook |
+| Long description (web) | 150–300 words | Indexed by Google Podcasts and Apple; include guest name, primary topic, and CTA |
+| Keywords (RSS tag) | 5–8 terms | Comma-separated; includes guest name, company, and primary topic terms |
+| Chapter markers (RSS) | HH:MM:SS format | Supported natively by Apple Podcasts, Overcast, Spotify; improves listener retention and engagement metrics |
+| Episode number | Integer | Use consistent format: `episode_number` only OR `season X episode Y` — pick one and use it consistently across the feed |
+
+**Transcript publishing**: uploading episode transcripts to the show's website creates Google-indexed text content tied to the episode. Strongly recommend for episodes covering evergreen topics. Flag this to the team lead when the episode transcript has high SEO potential.
+
+
 
 | Situation | Recommended action |
 |---|---|
