@@ -1,6 +1,6 @@
 # Agent Teams
 
-Agent teams group a lead agent and one or more specialist members to collaborate on a shared goal. The lead plans and coordinates; members execute their assigned scopes and report back.
+Agent teams group a lead agent and one or more specialist members to collaborate on a shared goal. The lead plans and coordinates; members execute their assigned scopes and report back. Teams enable parallel, domain-specific work that a single agent cannot efficiently handle alone.
 
 ---
 
@@ -8,16 +8,22 @@ Agent teams group a lead agent and one or more specialist members to collaborate
 
 When a task is dispatched to a team:
 
-1. **Lead task** — the lead agent receives the goal, reviews team composition, creates a plan, and delegates subtasks to members.
-2. **Member tasks** — each member agent receives a scoped assignment from the lead, executes independently, and delivers results with a handoff summary.
-3. **Synthesis** — the lead collects member outputs, validates completeness, and produces a unified result for the user.
+1. **Lead task**  the lead agent receives the goal, reviews team composition, creates a plan, and delegates scoped subtasks to member agents.
+2. **Member tasks**  each member agent receives a bounded assignment, executes independently using its full tool set, and delivers results with a handoff summary.
+3. **Synthesis**  the lead collects member outputs, validates completeness, resolves conflicts, and produces a unified result for the user.
+
+**Key properties of the model:**
+- **Async delegation**  members work independently; this is not pair programming or real-time collaboration
+- **Scoped assignments**  each member receives a clear, bounded task description so it can execute without follow-up questions
+- **Traceable handoffs**  each member summarizes decisions, files changed, and blockers in its output
+- **Lead validates before synthesizing**  the lead confirms member outputs address their assigned scope before assembling the final deliverable
 
 Teams are created via the API or CLI and stored in the GHC database. Members are referenced by their agent handles (e.g., `@coder`).
 
 ### API
 
 ```bash
-# Create a task for the whole team
+# Run a task for the whole team
 POST /api/teams/:id/run
 { "title": "Add dark mode support", "description": "...", "preApproved": true }
 
@@ -40,42 +46,64 @@ run_team { teamId: "<id>", title: "Add dark mode support" }
 
 ### Software Dev
 
-**ID:** configured at runtime  
-**Lead:** `@orchestrator`  
-**Members:** `@coder`, `@designer`, `@general-purpose`  
-**Domain:** Software development (cloud-oriented)
+**ID:** configured at runtime
+**Lead:** `@orchestrator`
+**Members:** `@coder`, `@designer`, `@general-purpose`
+**Domain:** Software development
 
 #### Description
 
-The Software Dev team handles end-to-end software development work. The Orchestrator leads by routing tasks to the right specialists, synthesizing results, and reporting back to the user. Tasks spanning multiple domains — e.g., a feature that requires UI changes, backend logic, and documentation — are well-suited for this team.
+The Software Dev team handles end-to-end software development work spanning implementation, UI/UX, and documentation. The Orchestrator leads by decomposing the goal into domain-specific assignments, routing each to the appropriate specialist, monitoring progress, and synthesizing outputs into a coherent deliverable.
+
+This team is best suited for tasks that cross domain boundaries — a feature that requires backend logic, UI component changes, and documentation updates, for example. The Orchestrator routes based on capability match, not round-robin assignment, so each member only receives work that aligns with its specialization.
+
+#### Agent Capabilities at a Glance
+
+| Agent | Specialization | Key Strengths |
+|---|---|---|
+| `@orchestrator` | Coordination & routing | Planning, delegation, DAG orchestration, synthesis, escalation |
+| `@coder` | Software engineering | TypeScript/JS/Python/Go/Rust/C#, Node.js, React, testing, CI/CD, Git |
+| `@designer` | UI/UX design | React/Vue/Svelte components, Tailwind/CSS Modules, WCAG 2.1 AA accessibility, design systems |
+| `@general-purpose` | Research & documentation | Technical writing, data analysis, planning specs, system scripting, communications |
 
 #### Operating Model
 
 | Role | Agent | Responsibilities |
 |---|---|---|
-| Team Lead | `@orchestrator` | Planning, delegation, synthesis, status reporting |
-| Engineering | `@coder` | Code implementation, debugging, testing, CI/CD |
-| Design | `@designer` | UI/UX components, styling, accessibility |
-| Research / Docs | `@general-purpose` | Research, documentation, data processing |
+| Team Lead | `@orchestrator` | Planning, delegation, dependency sequencing, synthesis, status reporting, escalation |
+| Engineering | `@coder` | Code implementation, bug fixes, refactoring, tests, CI/CD, Git commits |
+| Design | `@designer` | UI/UX components, CSS/styling, responsive layouts, accessibility audits, design tokens |
+| Research / Docs | `@general-purpose` | Research, documentation, data analysis, implementation specs, configuration, communications |
+
+The Orchestrator creates parallel member tasks when work streams are independent. For example, `@coder` can implement a new API endpoint while `@designer` builds the corresponding UI component and `@general-purpose` writes the documentation — all simultaneously. Only genuinely dependent tasks are serialized.
+
+**Handoff protocol:** each member summarizes in its output — decisions made, files changed, assumptions, and any blockers. The Orchestrator validates this summary before synthesizing the final result.
+
+**Failure handling:** if a member task fails or goes out of scope, the Orchestrator surfaces the failure immediately rather than silently retrying. Blocked work streams are reported to the user with context so they can decide how to proceed.
 
 #### Strengths
 
-- **Full-stack coverage** — code, design, and research/docs handled in parallel
-- **Domain-aware routing** — the Orchestrator routes based on task type, not generic round-robin
-- **Copilot-quality execution** — each member runs as a full Copilot session with complete tool access
-- **Traceable handoffs** — each member summarizes decisions and blockers for the lead
+- **Full-stack coverage** — implementation, design, and research/documentation handled by domain specialists
+- **Domain-aware routing** — the Orchestrator assigns work based on capability match, not sequential availability
+- **Parallel execution** — independent work streams run simultaneously, reducing total time-to-completion
+- **Copilot-quality execution** — each member runs as a full Copilot agent session with complete tool access
+- **Traceable handoffs** — each member's output includes decisions, trade-offs, and blockers, giving the Orchestrator enough context to synthesize accurately
 
 #### Ideal Use Cases
 
-- Multi-component feature development (backend + frontend + docs)
-- Bug investigations that cross code, UI, and documentation
-- Codebase audits requiring research, code analysis, and design review
-- Sprint-scale goals requiring parallel independent work streams
+- **Multi-component feature development**: backend API (`@coder`) + frontend UI (`@designer`) + documentation (`@general-purpose`)
+- **Cross-layer bug investigations**: root cause in code (`@coder`), regression in UI (`@designer`), runbook update needed (`@general-purpose`)
+- **Codebase audits**: code analysis and fixes (`@coder`) + UI/accessibility review (`@designer`) + findings report (`@general-purpose`)
+- **Sprint-scale goals**: parallel, independently executable work streams across all three domains
+- **Onboarding new contributors**: codebase research + documentation authoring (`@general-purpose`) + example code (`@coder`)
+- **Documentation-driven development**: spec first (`@general-purpose`) → implementation (`@coder`) → component (`@designer`)
 
 #### Anti-patterns
 
-- Tasks that clearly belong to a single specialist (use `create_task` directly instead of a team run)
-- Tasks requiring real-time collaboration between members (the model is async delegation, not pair programming)
+- **Single-domain tasks**: if a task clearly belongs to one specialist, use `create_task` directly. Team overhead is not justified for pure coding, pure design, or pure research tasks.
+- **Real-time collaboration**: the model is async delegation, not pair programming. Tasks requiring tight back-and-forth between specialists should be broken into sequential phases, not run as a single parallel team task.
+- **Underspecified goals**: the team requires a clear goal to decompose effectively. Vague requests should be clarified before running the team — unclear input produces misaligned parallel work that wastes all three members' time.
+- **Over-parallelizing dependent work**: don't dispatch `@designer` to build a component before `@coder` has finalized the data contract. Identify true dependencies and sequence them explicitly.
 
 ---
 
@@ -85,14 +113,14 @@ Teams beyond the built-in set are created by operators via the API. Two example 
 
 ### Academic Professor Support Team
 
-**Lead:** `@education-team-lead`  
+**Lead:** `@education-team-lead`
 **Domain:** Academic education support
 
 A multidisciplinary team supporting professors with course design, lecture materials, grading, student communication, research assistance, and academic integrity review. Specialists cover curriculum design, assessment, accessibility, and content creation.
 
 ### Blog & Podcast Studio
 
-**Lead:** `@content-media-team-lead`  
+**Lead:** `@content-media-team-lead`
 **Domain:** Content production and publishing
 
 A full-service content team for planning, producing, publishing, and promoting blog articles and podcast episodes. Includes specialists for writing/editing, podcast production, SEO, social media, and visual content creation.
@@ -102,6 +130,8 @@ A full-service content team for planning, producing, publishing, and promoting b
 ## Creating a New Team
 
 ### With generated agents (recommended for new domains)
+
+Use this approach when you need a team with purpose-built agents that don't yet exist in the system.
 
 ```json
 POST /api/chat
@@ -125,6 +155,8 @@ POST /api/chat
 
 ### With existing agents
 
+Use this approach when existing agents (like `@coder` or `@general-purpose`) cover the required capabilities.
+
 ```bash
 POST /api/teams
 {
@@ -146,7 +178,21 @@ POST /api/teams
 | Field | Description |
 |---|---|
 | `domain` | The subject area of the team (e.g., `software-engineering`, `content`, `education`) |
-| `function` | A description of what the team does (used in lead/member prompts) |
-| `operatingModel` | How the team divides and coordinates work (injected into the lead's context) |
+| `function` | A description of what the team does  used in lead and member prompts at runtime |
+| `operatingModel` | How the team divides and coordinates work  injected into the lead's context to guide delegation |
 
-These fields are injected into the lead and member agent prompts at runtime, giving each agent context about the team's purpose and expected collaboration style.
+These fields are injected into the lead and member agent prompts at runtime. Setting them accurately improves the lead's ability to decompose goals and the members' ability to understand their role within the team.
+
+---
+
+## When to Use a Team vs. a Single Agent
+
+| Scenario | Recommendation |
+|---|---|
+| Task clearly belongs to one domain (e.g., pure coding) | Use `create_task` for that specialist directly |
+| Task spans two or more domains (e.g., code + docs) | Use `run_team` |
+| You need parallel work streams with domain expertise | Use `run_team` |
+| You need a quick answer or status check | Ask `@orchestrator` directly |
+| You want a domain-specific team that doesn't exist yet | Create a new team with generated agents |
+
+Team runs introduce coordination overhead. Reserve them for tasks where domain parallelism or the breadth of work justifies the overhead.
