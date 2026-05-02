@@ -240,6 +240,15 @@ The team lead creates parallel member tasks when work streams are independent. F
 
 **Failure handling:** if a specialist task fails or goes out of scope, the team lead surfaces the failure immediately rather than silently retrying. Blocked work is reported with context so the operator can decide how to proceed.
 
+**Escalation protocol:** certain situations must bypass the normal async workflow and be escalated to the team lead or human operator immediately — before completing or delivering any other work:
+- Legal or copyright concerns in draft content (unauthorized quotes, licensed images, plagiarism risk)
+- Brand reputation risks: content that could be interpreted as offensive, misleading, or factually incorrect on a sensitive topic
+- Guest or subject matter disputes: if a guest requests editorial approval beyond courtesy review of their own quotes, escalate before proceeding
+- Sensitive topics with legal exposure: health claims, financial advice, political content, or content referencing named private individuals
+- Content calendar conflicts with live news events or organizational crises: timing-sensitive content should be held until the team lead or human approves publication
+
+`@content-media-podcast-producer-eca4c308` and `@content-media-blog-writer-editor-d3115369` are the primary escalation triggers for content-level concerns; `@content-media-seo-discoverability-specialist-4bf7a7d9` escalates technical SEO issues that require CMS or platform access beyond its scope.
+
 #### Strengths
 
 - **Full content lifecycle coverage** — from keyword research and briefs through writing, optimization, visual production, and social distribution
