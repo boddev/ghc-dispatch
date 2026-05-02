@@ -20,6 +20,7 @@ Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orch
 - [HTTP API](#http-api)
 - [MCP Server](#mcp-server)
 - [Agents](#agents)
+- [Teams](#teams)
 - [Task Lifecycle](#task-lifecycle)
 - [Scheduler & Admission Control](#scheduler--admission-control)
 - [Policy Engine](#policy-engine)
@@ -323,6 +324,16 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | `DELETE` | `/api/automation/:id` | Remove a job |
 | `POST` | `/api/webhooks/:path` | Incoming webhook trigger |
 
+### Teams
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/teams` | List all teams |
+| `POST` | `/api/teams` | Create a team (`name`, `description`, `leadAgent`, `memberAgents`, `metadata`) |
+| `GET` | `/api/teams/:id` | Get team details |
+| `DELETE` | `/api/teams/:id` | Delete a team |
+| `POST` | `/api/teams/:id/run` | Dispatch a task to the full team (`title`, `description?`, `repo?`, `preApproved?`) |
+
 ### SSE Event Stream
 
 ```bash
@@ -363,6 +374,8 @@ GHC Orchestrator exposes itself as a **Model Context Protocol (MCP) server**, ma
 | `reject_task` | Reject a pending approval request |
 | `get_task_events` | Get event history for a task |
 | `list_agents` | List available agent definitions |
+| `list_teams` | List all configured agent teams |
+| `run_team` | Dispatch a task to a full agent team (lead + members) |
 | `get_stats` | Orchestrator health and metrics |
 | `get_pending_approvals` | List all pending approval requests |
 
@@ -435,8 +448,52 @@ and cloud resource management. Always validate changes in staging first.
 | `skills` | No | List of skills to load |
 | `tools` | No | Tool allowlist (omit to give all tools) |
 | `mcpServers` | No | MCP servers to connect |
+| `domain` | No | Subject-area label (e.g., `software-engineering`, `ui-ux-design`) — used for routing hints |
+| `teamType` | No | Team role category (e.g., `engineering`, `design`, `general`, `orchestration`) |
+| `teamRoles` | No | Array of roles this agent can fill on a team (e.g., `["specialist", "implementer"]`) |
+| `preferredTasks` | No | List of task types this agent handles well — informs routing |
+| `antiTasks` | No | Task types to decline and escalate to another agent |
+| `handoffStyle` | No | Description of how this agent summarizes completed work for the team lead |
+| `leadershipStyle` | No | How this agent leads when acting as team lead |
 
 The agent format is compatible with [VS Code Agent Plugins](https://code.visualstudio.com/docs/copilot/customization/agent-plugins).
+
+---
+
+## Teams
+
+Agent teams group a **lead agent** and one or more **specialist members** to collaborate on a shared goal. The lead plans and coordinates; members execute their assigned scopes independently and report back.
+
+### How Teams Work
+
+1. The team lead receives the goal, reviews team composition, creates a plan, and delegates subtasks to members.
+2. Each member executes its scoped assignment as a full Copilot session and delivers a handoff summary.
+3. The lead collects member outputs, validates completeness, and produces a unified result for the user.
+
+### Built-in Team: Software Dev
+
+| Role | Agent | Responsibilities |
+|------|-------|-----------------|
+| Team Lead | `@orchestrator` | Planning, delegation, synthesis, status reporting |
+| Engineering | `@coder` | Code implementation, debugging, testing, CI/CD |
+| Design | `@designer` | UI/UX components, styling, accessibility |
+| Research / Docs | `@general-purpose` | Research, documentation, data processing |
+
+**Ideal for:** multi-component features (backend + frontend + docs), codebase audits, sprint-scale parallel work.
+
+### Running a Team Task
+
+```bash
+# Via HTTP API
+curl -X POST http://localhost:7878/api/teams/:id/run \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Add dark mode support","description":"...","preApproved":true}'
+
+# Via MCP / chat
+run_team { "teamId": "<id>", "title": "Add dark mode support" }
+```
+
+See [`agents/teams.md`](agents/teams.md) for full team documentation, community teams, and how to create new teams.
 
 ---
 
