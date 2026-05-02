@@ -113,10 +113,75 @@ Teams beyond the built-in set are created by operators via the API. Two example 
 
 ### Academic Professor Support Team
 
-**Lead:** `@education-team-lead`
+**ID:** configured at runtime
+**Lead:** `@education-team-lead-8bc3e942`
+**Members:** `@education-lecture-notes-and-course-content-specialist-76feadfc`, `@education-assignment-grading-and-feedback-specialist-fa8ba778`, `@education-curriculum-and-syllabus-designer-1e919b44`, `@education-assessment-and-rubric-designer-cc79da9e`, `@education-academic-research-assistant-626ebf36`, `@education-student-communication-and-advising-assistant-b02cce56`, `@education-accessibility-and-learning-support-specialist-a1dfc584`, `@education-academic-integrity-and-quality-reviewer-76537e8b`
 **Domain:** Academic education support
 
-A multidisciplinary team supporting professors with course design, lecture materials, grading, student communication, research assistance, and academic integrity review. Specialists cover curriculum design, assessment, accessibility, and content creation.
+#### Description
+
+The Academic Professor Support Team provides end-to-end support for university and college professors across the full lifecycle of teaching and course management. The team lead receives a professor's request, identifies which combination of specialists is needed, coordinates parallel or sequential work, and delivers a unified result that is pedagogically sound, accessible, and aligned with academic standards.
+
+This team is best suited for requests that cross domain boundaries — for example, launching a new course requires curriculum design, lecture content, assessments, and a student-facing syllabus all at once. The lead routes based on domain fit, not availability, so each specialist only receives work within its expertise.
+
+#### Agent Capabilities at a Glance
+
+| Agent | Specialization | Key Strengths |
+|---|---|---|
+| `@education-team-lead-8bc3e942` | Coordination & academic routing | Planning, delegation, synthesis, pedagogical quality assurance, escalation |
+| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, reading summaries, examples, discussion prompts, study guides |
+| `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Module sequences, learning objective mapping, syllabus documents, course structure |
+| `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, project briefs, analytic and holistic rubrics, alignment to objectives |
+| `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, written feedback, batch grading summaries, grade norming |
+| `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches, reading summaries, annotated bibliographies, research synthesis |
+| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, policy emails, advising scripts, FAQ documents, feedback letters |
+| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL adaptations, accommodation planning, plain language revision, alt text, WCAG compliance |
+| `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & QA | Integrity policy review, originality guidance, content quality checks, citation audits |
+
+#### Operating Model
+
+| Role | Agent | Responsibilities |
+|---|---|---|
+| Team Lead | `@education-team-lead-8bc3e942` | Decomposes professor goals into scoped assignments, delegates to specialists, validates outputs against pedagogical standards, synthesizes final deliverables |
+| Content Creation | `@education-lecture-notes-and-course-content-specialist-76feadfc` | Produces lecture notes, slide outlines, examples, discussion prompts, and study guides for any topic and course level |
+| Curriculum Design | `@education-curriculum-and-syllabus-designer-1e919b44` | Structures modules, sequences learning objectives, and produces complete syllabus documents |
+| Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates formative and summative assessments and rubrics aligned to learning objectives |
+| Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics to student submissions, writes substantive feedback, and produces grade summaries |
+| Research Support | `@education-academic-research-assistant-626ebf36` | Sources literature, synthesizes readings, and produces research summaries that feed into content and curriculum work |
+| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications — announcements, email replies, advising notes, and FAQs |
+| Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Reviews and revises all materials for accessibility and inclusion; advises on accommodation implementation |
+| Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Audits content for academic integrity risks and quality standards; reviews citations; flags policy concerns |
+
+The team lead creates parallel member tasks when work streams are independent. For example, `@education-lecture-notes-and-course-content-specialist-76feadfc` can draft lecture materials while `@education-assessment-and-rubric-designer-cc79da9e` builds aligned assessments and `@education-accessibility-and-learning-support-specialist-a1dfc584` reviews both for accessibility — simultaneously. Only genuinely dependent tasks are serialized (e.g., curriculum design must precede lecture content when a new course is being built from scratch).
+
+**Handoff protocol:** each specialist summarizes in its output — decisions made, materials produced, assumptions, and any blockers. The team lead validates this summary before synthesizing the final deliverable for the professor.
+
+**Failure handling:** if a specialist task fails or goes out of scope, the team lead surfaces the failure immediately rather than silently retrying. Blocked work is reported with context so the professor can decide how to proceed.
+
+#### Strengths
+
+- **Full academic lifecycle coverage** — from curriculum design and content creation through assessment, grading, student communication, and integrity review
+- **Domain-aware routing** — the team lead routes based on pedagogical fit, not sequential availability
+- **Parallel execution** — independent work streams (e.g., lecture notes + rubric design + accessibility review) run simultaneously
+- **Discipline-agnostic** — specialists adapt to any academic field: STEM, humanities, social sciences, professional programs
+- **Level-adaptive content** — outputs are calibrated to introductory, intermediate, advanced, or graduate audiences
+- **Traceable handoffs** — each specialist's output includes decisions, trade-offs, and assumptions, giving the team lead enough context to synthesize accurately
+
+#### Ideal Use Cases
+
+- **New course launch**: curriculum structure (`@education-curriculum-and-syllabus-designer-1e919b44`) + lecture content (`@education-lecture-notes-and-course-content-specialist-76feadfc`) + assessments (`@education-assessment-and-rubric-designer-cc79da9e`) + syllabus communications (`@education-student-communication-and-advising-assistant-b02cce56`) — all in parallel
+- **Lecture preparation**: research on topic (`@education-academic-research-assistant-626ebf36`) → lecture notes and slides (`@education-lecture-notes-and-course-content-specialist-76feadfc`) → accessibility review (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
+- **Assignment grading cycle**: rubric design (`@education-assessment-and-rubric-designer-cc79da9e`) → batch grading and feedback (`@education-assignment-grading-and-feedback-specialist-fa8ba778`) → grade announcement to class (`@education-student-communication-and-advising-assistant-b02cce56`)
+- **Course revision**: integrity and quality audit (`@education-academic-integrity-and-quality-reviewer-76537e8b`) + accessibility review (`@education-accessibility-and-learning-support-specialist-a1dfc584`) + updated lecture content (`@education-lecture-notes-and-course-content-specialist-76feadfc`) — running in parallel
+- **Research integration**: literature synthesis (`@education-academic-research-assistant-626ebf36`) → updated lecture material incorporating new findings (`@education-lecture-notes-and-course-content-specialist-76feadfc`)
+- **Student support situations**: advising email or policy communication (`@education-student-communication-and-advising-assistant-b02cce56`) + accommodation plan (`@education-accessibility-and-learning-support-specialist-a1dfc584`)
+
+#### Anti-patterns
+
+- **Single-domain requests**: if a task clearly belongs to one specialist (e.g., "write a quiz"), use `create_task` directly for that agent. Team overhead is not justified for single-specialist work.
+- **Real-time back-and-forth**: the model is async delegation. Tasks requiring rapid iteration between professor and specialist (e.g., live lecture editing) should be handled as direct single-agent tasks.
+- **Underspecified goals**: the team requires a clear goal to decompose effectively. A request like "help with my course" without specifying the course, level, or desired output will produce misaligned parallel work. Clarify scope before running the team.
+- **Over-parallelizing dependent work**: don't dispatch `@education-lecture-notes-and-course-content-specialist-76feadfc` to draft lectures before `@education-curriculum-and-syllabus-designer-1e919b44` has defined the module structure for a brand-new course. Identify true dependencies and sequence them.
 
 ### Blog & Podcast Studio
 
