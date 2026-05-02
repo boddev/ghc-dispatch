@@ -130,28 +130,28 @@ This team is best suited for requests that cross domain boundaries — for examp
 | Agent | Specialization | Key Strengths |
 |---|---|---|
 | `@education-team-lead-8bc3e942` | Coordination & academic routing | Planning, delegation, synthesis, pedagogical quality assurance, escalation |
-| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, reading summaries, examples, discussion prompts, study guides |
-| `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Module sequences, learning objective mapping, syllabus documents, course structure |
-| `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, project briefs, analytic and holistic rubrics, alignment to objectives |
-| `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, written feedback, batch grading summaries, grade norming |
-| `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches, reading summaries, annotated bibliographies, research synthesis |
-| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, policy emails, advising scripts, FAQ documents, response template libraries, class-wide grade feedback, crisis escalation recognition |
-| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL adaptations, accommodation planning, plain language revision, alt text, WCAG compliance |
-| `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & QA | Integrity policy review, originality guidance, content quality checks, citation audits |
+| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, in-class activities, discussion prompts, reading summaries, study guides, video scripts |
+| `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Module sequences, Bloom's-aligned objectives, syllabus documents, lesson plans, prerequisite maps, alignment matrices |
+| `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, essay prompts, project briefs, analytic/holistic/single-point rubrics, answer keys, Bloom's alignment maps |
+| `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, individualized written feedback, batch grade sheets, common-error analysis, grade norming, feedback comment banks |
+| `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches, annotated bibliographies, research synthesis, reading list curation, research question development, citation formatting |
+| `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, policy emails, extension responses, welfare check-ins, advising scripts, FAQ documents, class-wide feedback summaries, response template libraries |
+| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL reviews, WCAG 2.1 AA audits, accommodation implementation plans, plain language revision, alt text, caption review, inclusive assessment design |
+| `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & QA | Assignment integrity risk assessments, AI use policy development, citation audits, pre-deployment quality checklists, syllabus standards compliance, incident documentation |
 
 #### Operating Model
 
 | Role | Agent | Responsibilities |
 |---|---|---|
-| Team Lead | `@education-team-lead-8bc3e942` | Decomposes professor goals into scoped assignments, delegates to specialists, validates outputs against pedagogical standards, synthesizes final deliverables |
-| Content Creation | `@education-lecture-notes-and-course-content-specialist-76feadfc` | Produces lecture notes, slide outlines, examples, discussion prompts, and study guides for any topic and course level |
-| Curriculum Design | `@education-curriculum-and-syllabus-designer-1e919b44` | Structures modules, sequences learning objectives, and produces complete syllabus documents |
-| Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates formative and summative assessments and rubrics aligned to learning objectives |
-| Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics to student submissions, writes substantive feedback, and produces grade summaries |
-| Research Support | `@education-academic-research-assistant-626ebf36` | Sources literature, synthesizes readings, and produces research summaries that feed into content and curriculum work |
-| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications — course announcements, grade feedback, extension responses, advising guides, FAQ documents, and response template libraries; applies tone calibration per communication type; escalates student welfare and legal concerns to the team lead |
-| Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Reviews and revises all materials for accessibility and inclusion; advises on accommodation implementation |
-| Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Audits content for academic integrity risks and quality standards; reviews citations; flags policy concerns |
+| Team Lead | `@education-team-lead-8bc3e942` | Decomposes professor goals into scoped assignments, delegates to specialists, validates outputs against pedagogical standards, synthesizes final deliverables, escalates blockers |
+| Content Creation | `@education-lecture-notes-and-course-content-specialist-76feadfc` | Produces lecture notes, slide outlines, in-class activities, discussion prompts, reading summaries, and study guides for any topic, course level, and delivery modality |
+| Curriculum Design | `@education-curriculum-and-syllabus-designer-1e919b44` | Designs module/unit structure, maps Bloom's-aligned learning objectives, produces complete syllabus documents with schedule, lesson plans, prerequisite maps, and alignment matrices |
+| Assessment Design | `@education-assessment-and-rubric-designer-cc79da9e` | Creates formative and summative assessments, rubrics (analytic/holistic/single-point), answer keys, Bloom's alignment maps, and grading guidance |
+| Grading & Feedback | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Applies rubrics to student submissions, writes individualized written feedback, produces batch grade sheets and common-error analyses, supports grade norming across graders |
+| Research Support | `@education-academic-research-assistant-626ebf36` | Conducts literature searches, produces annotated bibliographies and research syntheses, curates course reading lists, assists with research question development, formats citations |
+| Student Communication | `@education-student-communication-and-advising-assistant-b02cce56` | Drafts all student-facing communications — announcements, grade feedback, extension responses, welfare check-ins, advising scripts, FAQ documents, and reusable response templates; escalates safety and legal concerns to team lead |
+| Accessibility | `@education-accessibility-and-learning-support-specialist-a1dfc584` | Conducts UDL reviews and WCAG 2.1 AA audits, produces accommodation implementation plans, revises materials for plain language and accessible formatting, advises on inclusive assessment design |
+| Integrity & Quality | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Audits assessments for integrity risks, develops AI use policies, reviews citations, runs pre-deployment quality checklists, documents integrity incidents, maps content to accreditation standards |
 
 The team lead creates parallel member tasks when work streams are independent. For example, `@education-lecture-notes-and-course-content-specialist-76feadfc` can draft lecture materials while `@education-assessment-and-rubric-designer-cc79da9e` builds aligned assessments and `@education-accessibility-and-learning-support-specialist-a1dfc584` reviews both for accessibility — simultaneously. Only genuinely dependent tasks are serialized (e.g., curriculum design must precede lecture content when a new course is being built from scratch).
 
