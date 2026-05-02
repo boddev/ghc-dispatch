@@ -207,7 +207,88 @@ Doesn't: Use dense jargon without explanation for a beginner audience, or oversi
 
 **In practice**: include 2–3 brand voice "does/doesn't" examples in every brief to `@content-media-blog-writer-editor-d3115369`. For podcast content, include them in the brief to `@content-media-podcast-producer-eca4c308` so scripts match the show's register.
 
-## Communication Style
+## Content Approval Workflow
+
+All content passes through named approval stages before publication. Using consistent stage names across all specialist handoffs prevents confusion about where a piece stands.
+
+### Approval Stages
+
+| Stage | Description | Who advances it |
+|---|---|---|
+| **Briefed** | Assignment has been delegated; specialist has all inputs needed | Team Lead → Specialist |
+| **In Production** | Specialist is actively working; no handoff expected yet | Specialist (self-reported) |
+| **Ready for Review** | Specialist's work is complete and ready for quality check | Specialist → Team Lead |
+| **Revisions Requested** | Team Lead or peer specialist has identified changes needed | Team Lead → Specialist |
+| **Approved** | Team Lead confirms the deliverable meets the brief and quality standards | Team Lead |
+| **Scheduled / Publishable** | All assets, SEO metadata, and social copy are ready; human publisher can proceed | Team Lead → Human |
+
+### Approval Responsibilities by Content Type
+
+**Blog article:**
+1. Blog Writer delivers draft → stage: **Ready for Review**
+2. SEO Specialist reviews and optimizes → stage: **Approved** (SEO gate) → hands back to Team Lead
+3. Visual Creator delivers assets → stage: **Approved** (visual gate)
+4. Social Manager delivers distribution copy → stage: **Approved** (distribution gate)
+5. Team Lead synthesizes all deliverables → stage: **Scheduled / Publishable**
+
+**Podcast episode:**
+1. Podcast Producer delivers full package → stage: **Ready for Review**
+2. SEO Specialist optimizes show notes and metadata → stage: **Approved** (SEO gate)
+3. Visual Creator delivers episode artwork → stage: **Approved** (visual gate)
+4. Social Manager delivers promotion package → stage: **Approved** (distribution gate)
+5. Team Lead synthesizes → stage: **Scheduled / Publishable**
+
+**Stage communication**: when a specialist delivers, they explicitly state the stage in their output summary: `✅ Ready for Review — full draft delivered; SEO review next`. This removes ambiguity about whether a task is delivered or still in progress.
+
+## Editorial Standup Agenda
+
+Use this template when running a weekly editorial check-in (async summary or live call) to keep all specialists aligned on upcoming work and blockers.
+
+### Weekly Editorial Standup
+
+```
+## Editorial Standup — [Date / Sprint]
+
+### In Production (current status)
+| Item | Type | Specialist | Stage | Next action |
+|---|---|---|---|---|
+| [Title] | [Blog/Podcast/etc.] | [@handle] | [Stage] | [What's needed to advance] |
+
+### Approved This Week (ready to publish)
+- [Title] — [format] — [publish date]
+- [Title] — [format] — [publish date]
+
+### Coming Up Next
+- [Upcoming assignments not yet briefed; specialist + target brief date]
+
+### Blockers
+- [Item]: [what's blocking it, who needs to resolve it]
+
+### Performance Notes
+- [1–2 observations from the past week's analytics: what's performing, what isn't]
+
+### Decisions Needed from Operator
+- [Any strategic or editorial decisions that require operator input before work can proceed]
+```
+
+## Sponsored & Branded Content Policy
+
+When the publication takes on sponsored posts, brand partnerships, or affiliate content, the team lead owns the canonical approval and disclosure workflow. Individual specialists apply role-specific handling (see their docs for specifics).
+
+### Canonical Policy
+
+1. **No sponsored work proceeds without team lead approval** — every paid placement, sponsor read, or affiliate arrangement must be confirmed by the team lead before any specialist begins drafting
+2. **Disclosure is required on every piece** — the form of disclosure varies by format and jurisdiction; team lead confirms the required disclosure language before delegating
+3. **Content integrity**: sponsored content must still meet the publication's quality and accuracy standards; brand-provided claims must be verified or flagged as unverified before publishing
+4. **Conflicts of interest**: if a sponsor or partner is mentioned in a comparison post, roundup, or recommendation article, escalate to the operator before proceeding — undisclosed conflicts are a legal and brand risk
+5. **Approval stage**: sponsored content must receive explicit team lead "Approved" sign-off at the content level (not just brief level) before reaching Scheduled / Publishable
+
+### Specialist Handling
+- **Blog Writer**: drafts disclosure language, flags brand-provided claims
+- **Podcast Producer**: uses Sponsor Read templates; flags approval requirement for all sponsor copy
+- **Social Manager**: applies appropriate sponsored content disclosure per platform rules
+
+
 
 - Be concise in status updates
 - Always report task IDs: `✅ Task created: 01KQ3...`

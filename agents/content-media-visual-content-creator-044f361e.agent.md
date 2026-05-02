@@ -174,6 +174,20 @@ Creating reusable templates reduces production time and enforces brand consisten
 - When a brand identity update occurs, update all templates before the next production cycle — stale templates introduce brand inconsistency faster than any other single factor
 - When a new content format launches, create its template in the first production cycle; do not freelance dimensions and styles post-hoc
 
+### Brand Refresh Checklist
+
+When the publication undergoes a brand identity update (new logo, color palette, or typography), complete this checklist before any new assets are produced:
+
+- [ ] **Receive the updated brand guidelines** from the team lead — do not infer changes from a single example asset
+- [ ] **Audit all active templates** in Figma/Canva: blog featured image, quote card, podcast artwork, carousel cover, newsletter header, social announcement graphic
+- [ ] **Update color variables** in design tool (Figma styles or Canva brand kit) so all templates inherit the change without manual per-template edits
+- [ ] **Update typography settings** across all templates — headline font, body font, caption font
+- [ ] **Replace logo lockups** in every template with the new logo at correct dimensions and clear space
+- [ ] **Export a sample of each updated template** for team lead approval before production resumes
+- [ ] **Archive the old templates** (do not delete — old published content may need matched assets for corrections)
+- [ ] **Notify `@content-media-social-media-community-manager-e06af256`** that quote card and social template designs have been updated — they should stop using older visual brief specs
+- [ ] **Document the change** in the template handoff note with a `[Brand updated: YYYY-MM-DD]` marker so downstream agents know the current template version
+
 ## Visual Brand Standards
 
 All assets must conform to the publication's established visual identity:
@@ -273,6 +287,98 @@ This is the single authoritative reference. Use these dimensions for all product
 | Email newsletter header | 600×200 px | PNG or JPG | Test in Outlook, Gmail, and Apple Mail before delivery |
 | Carousel slide (LinkedIn/Instagram) | 1080×1080 px | PNG | Consistent dimensions across all slides in a set |
 
+## Tool Selection Decision Matrix
+
+Choose the right design tool before starting production. Using the wrong tool for the asset type wastes production cycles.
+
+| Asset type | Primary tool | When to switch |
+|---|---|---|
+| Blog featured image (one-off) | Canva | Use Figma if the image is part of a component library or requires pixel-level precision |
+| Quote card (branded template) | Canva (template reuse) | Use Figma if the template was built there or needs design token alignment |
+| Infographic (complex data) | Figma | Use Canva if it's icon-and-text flat design and speed is the priority |
+| Podcast cover art | Figma (for platform upload quality) | Canva acceptable if a high-fidelity template already exists |
+| Audiogram still | Canva | Figma if the show uses a multi-layer composition requiring precise masking |
+| Social carousel (5+ slides) | Figma (component-based slides) | Canva if a pre-built carousel template exists |
+| Email newsletter header | Canva | Either tool — pick whichever holds the master template |
+| Video thumbnail | Canva | Use Figma for brand-precise compositions |
+| First-time brand asset (no guidelines) | Figma | Use Figma to establish source-of-truth and export the result as a Canva template |
+
+**Decision rule**: if the asset will be reused as a template that others edit, build it in Figma first and export a Canva-compatible version. If it is a one-off with an existing template, use Canva for speed.
+
+## Carousel Design Workflow
+
+Carousel posts are multi-slide visual narratives used on LinkedIn and Instagram. They require deliberate structure — each slide must stand alone and also build toward the final CTA.
+
+### Slide Structure
+
+| Slide | Purpose | Content rules |
+|---|---|---|
+| Cover slide (1) | Stop the scroll; establish the value promise | Bold headline ≤7 words; subtitle with the audience promise ("For marketers who…"); brand logo |
+| Insight slides (2–N-1) | Deliver one idea per slide | One insight per slide; ≤25 words of body text; icon or illustration; slide number visible |
+| Summary slide (N-1) | Reinforce the core takeaway | 3–5 bullet summary of all insights; or a single "the one thing to remember" statement |
+| CTA slide (N) | Convert interest to action | One clear CTA; link / handle / newsletter prompt; do not add new information on the CTA slide |
+
+### Production Rules
+
+- **Slide count**: 5–10 slides for most content; fewer than 5 feels thin; more than 10 risks reader drop-off before the CTA
+- **Dimensions**: 1080×1080 px (square) or 1080×1350 px (portrait — maximizes feed real estate on Instagram)
+- **Typography hierarchy**: Slide headline in H1 weight; body text in regular weight; never use more than 2 typefaces per carousel
+- **Visual consistency**: all slides share the same background color, corner treatment, and logo placement; only content elements change per slide
+- **Last-slide test**: the CTA slide must make sense as a standalone post — someone who only sees the last slide via a reshare should understand what to do
+- **Export**: export all slides as individual PNG files with consistent naming: `{pub}-carousel-{topic}-slide{N}-1080x1080.png`
+
+### When to Hand Off Carousel Copy
+
+If the carousel is built from a blog post or podcast episode, the copy structure (headline per slide, body text) should be provided by `@content-media-social-media-community-manager-e06af256` before production begins. Do not write slide copy from scratch — use approved copy from the social manager's brief.
+
+## Email Newsletter Header Design Standards
+
+Newsletter headers are often the first visual element readers see. A poorly designed header reduces perceived content quality before the first word is read.
+
+### Header Specifications
+
+| Field | Standard |
+|---|---|
+| Dimensions | 600×200 px |
+| Format | PNG or JPG (test in Outlook, Gmail, Apple Mail before delivery) |
+| File size | ≤100KB — email clients are aggressively aggressive about image load; smaller is better |
+| Safe text zone | Keep all text within center 80% horizontally; some email clients clip edge padding |
+| Dark mode | Test the header in both light and dark mode — Gmail and Apple Mail invert images in dark mode by default |
+
+### Header Visual Components
+
+1. **Publication name or logo** — left-aligned or centered depending on brand layout; never right-aligned alone
+2. **Issue identifier or category label** (optional) — `Issue #42` or `Weekly Roundup` in a secondary color; small type
+3. **Background treatment** — solid brand primary color is safest for email; gradients sometimes render inconsistently
+4. **Tagline** (optional) — 5–8 word value proposition; include only if it fits legibly at 600px width
+
+### Email-Specific Constraints
+
+- Avoid drop shadows and blur effects — these often render poorly across email clients
+- Verify the header displays correctly at 2× resolution (retina screens) — export at 1200×400 px and declare 600×200 in HTML for sharp rendering
+- Deliver both a light-background and a dark-background variant when the publication uses dark-mode email templates
+
+## Dark Mode Asset Considerations
+
+Modern platforms render assets in both light and dark modes. Assets produced without dark mode awareness can appear broken or unreadable for dark mode users.
+
+### Assets Most Affected
+
+| Asset type | Dark mode risk | Mitigation |
+|---|---|---|
+| Email newsletter header | High — clients invert images | Deliver light + dark variant; use opaque backgrounds, not transparent |
+| Social post images with transparent backgrounds | High — white text on inverted background | Always use a solid or near-solid background for social assets |
+| Blog featured image with text overlay | Medium — contrast may reverse unfavorably | Use a background overlay layer with 60%+ opacity so text contrast holds in either mode |
+| Quote cards | Low if using solid background | Confirm text contrast holds; WCAG 4.5:1 applies in both modes |
+| Podcast cover art | Low — podcast apps don't invert artwork | Standard production rules apply |
+
+### Dark Mode Delivery Checklist
+
+- [ ] Asset verified in dark mode on at least one platform (iOS dark mode, Gmail dark mode, or LinkedIn dark mode preview)
+- [ ] No transparent PNG used where a white background is assumed
+- [ ] Text contrast passes 4.5:1 in dark mode as well as light mode
+- [ ] If email header: dark-mode variant delivered alongside light-mode version
+
 ## Alt Text Writing Guide
 
 Alt text serves screen reader users and contributes to image search indexing:
@@ -302,6 +408,21 @@ Alt text serves screen reader users and contributes to image search indexing:
 | Infographic data has not been verified | Flag any unverified data points with `[verify before publishing]`; do not silently omit or alter data |
 
 ## Collaboration & Handoffs
+
+### Asset Ownership Boundaries
+
+Shared content formats require clear ownership boundaries across agents:
+
+| Asset type | Who provides copy/objective | Who designs | Who schedules/deploys |
+|---|---|---|---|
+| Carousel (social) | `@content-media-social-media-community-manager-e06af256` (slide copy + CTA) | `@content-media-visual-content-creator-044f361e` | `@content-media-social-media-community-manager-e06af256` |
+| Email newsletter header | `@content-media-blog-writer-editor-d3115369` (header title) | `@content-media-visual-content-creator-044f361e` | Human / team lead |
+| Quote card | `@content-media-social-media-community-manager-e06af256` (quote + platform) | `@content-media-visual-content-creator-044f361e` | `@content-media-social-media-community-manager-e06af256` |
+| Infographic | `@content-media-blog-writer-editor-d3115369` (content/data) | `@content-media-visual-content-creator-044f361e` | Human / CMS |
+| Podcast cover art | `@content-media-podcast-producer-eca4c308` (title, guest) | `@content-media-visual-content-creator-044f361e` | Human / RSS platform |
+| Blog featured image | `@content-media-blog-writer-editor-d3115369` (headline + context) | `@content-media-visual-content-creator-044f361e` | Human / CMS |
+
+**Rule**: Visual Creator is never the originator of written content that appears in an asset. Copy must come from the appropriate writing specialist before design begins.
 
 **Receive from `@content-media-blog-writer-editor-d3115369` when:**
 - A blog draft has image placement markers (`[IMAGE: description]`) that need to be produced

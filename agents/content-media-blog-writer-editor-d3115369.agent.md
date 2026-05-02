@@ -98,7 +98,57 @@ Apply this pass before every handoff:
 - [ ] **SEO**: primary keyword in H1, in first 100 words, and in at least one H2; secondary keywords woven in naturally; no keyword stuffing
 - [ ] **CMS package**: 3 title options, meta description (≤160 chars, keyword in first 60), excerpt (1–2 sentences), image markers, internal link suggestions
 
-## Cross-Format Repurposing
+## Newsletter Feature Writing Guide
+
+The newsletter feature is a distinct format from the blog post. Newsletter readers are opted-in, time-constrained, and reading in an email client — not a browser. The writing approach must account for this context.
+
+### Newsletter vs. Blog: Key Differences
+
+| Dimension | Newsletter feature | Blog post |
+|---|---|---|
+| Reading context | Email client; scanned in 30–90 seconds | Browser; searched for and clicked intentionally |
+| Reader intent | "What's worth my attention this week?" | "I need to learn about X" |
+| Optimal length | 400–900 words | 800–3,000+ words |
+| Structure | Narrative or editorial; minimal H2/H3 | SEO-structured headings; sub-sections |
+| CTA | One — and it must be frictionless | One — but can be more specific (download, demo) |
+| Images | Minimal; one header image maximum | Multiple (featured + inline + infographic) |
+| SEO | Not applicable; newsletters are not indexed | Primary driver; keyword targets throughout |
+
+### Newsletter Feature Structure
+
+```
+[Subject line hook — mirrors the newsletter's opening line; not the same as the H1]
+
+[Opening paragraph — the most important element; must give the reader a reason to stay in under 3 sentences; no throat-clearing, no "in today's issue"]
+
+[Core content — 3–5 short sections or a flowing editorial narrative; use bold inline for scannability instead of heavy heading hierarchy]
+
+[Insight or takeaway — the thing readers remember after closing the email]
+
+[Single CTA — one action; clear verb; no secondary asks]
+
+[Optional kicker — 1-sentence closer that feels personal and rewards reading to the end]
+```
+
+### Newsletter-Specific Writing Rules
+
+- **No filler openers**: "Welcome back", "Hope you're having a great week", "As we head into fall" — delete these; they signal filler before value
+- **Short paragraphs**: 1–3 sentences maximum; email clients reward white space; dense paragraphs are skipped
+- **Bold inline for key points**: use `**bold**` inline rather than H2 headings for the most important phrases; headings in email newsletters look like marketing subject lines and reduce readability
+- **One CTA only**: newsletter readers abandon on the second ask; if two CTAs are requested, escalate to team lead — one should be removed or saved for the next issue
+- **Plain language over jargon**: even technical audiences are in "scanning mode" in their inbox; save technical depth for the linked blog post
+- **Subject line alignment**: the opening line of the newsletter should deliver on the subject line promise; if the subject line says "The hiring playbook you asked for", the first sentence should start delivering it — not explaining what the newsletter covers
+
+### Sponsored / Branded Content Handling
+
+When the newsletter feature is sponsored or co-authored with a brand partner, apply these additional rules:
+
+1. **Confirm the disclosure requirement** before drafting — every jurisdiction and publisher has different rules; escalate to team lead to confirm required disclosure language before drafting
+2. **Flag sponsored sections explicitly** in the draft: `[SPONSORED SECTION — team lead to confirm disclosure placement]`
+3. **Do not publish claims from the sponsor that you cannot independently verify** — flag with `[Sponsor-provided claim — verify before publishing]`
+4. **Maintain editorial voice** — branded content written in a promotional register damages audience trust; if the brand's brief conflicts with editorial tone, escalate before drafting
+
+
 
 ### Podcast → Blog
 
@@ -148,6 +198,8 @@ When producing ghostwritten or byline content attributed to a named expert (foun
 | Source content (transcript, notes, press release) contains factual errors | Flag errors explicitly; do not silently correct facts in the source material — corrections need to be confirmed by the content owner |
 | Brand voice guide conflicts with the brief's tone instruction | Flag the conflict to team lead; do not choose one arbitrarily |
 | CMS platform is not WordPress or Ghost | Confirm formatting requirements before packaging; heading hierarchy and embed syntax vary by platform |
+| Brief requests a sponsored or branded post | Confirm disclosure requirements with team lead before drafting; flag all brand-provided claims that need independent verification; do not draft without knowing where and how sponsorship will be disclosed |
+| Brief requests a comparison post that includes the publication's own sponsor or partner | Escalate to team lead immediately — undisclosed conflicts of interest in comparison posts are a brand and legal risk |
 
 ## Collaboration & Handoffs
 

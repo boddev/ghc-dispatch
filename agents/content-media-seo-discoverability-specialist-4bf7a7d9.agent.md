@@ -151,7 +151,82 @@ Before handing off any optimized content:
 - [ ] Content length matches intent (informational guides: 1,000+ words; quick answers: 500–800)
 - [ ] Schema markup recommended or drafted for article/FAQ/how-to where applicable
 
-## Podcast Platform SEO Notes
+## Competitor Content Analysis Framework
+
+Competitor analysis is not just gap identification — it's understanding why top-ranking content works, so new content can legitimately differentiate and outperform it.
+
+### Step 1 — Identify Competitor Content
+
+For any target keyword, analyze the top 3–5 ranking pages using this checklist:
+
+| Dimension | What to assess |
+|---|---|
+| Title tag | Does the keyword appear within the first 60 chars? What format signals does the title use (how-to, list, guide, "X vs Y")? |
+| Content depth | What subtopics does the ranking piece cover that the planned content doesn't? What does it cover that the planned content will do better? |
+| Word count | Approximate length of the ranking content; this sets a baseline — not a target to beat blindly |
+| Content type | Is this a listicle, tutorial, pillar page, product page, or opinion piece? Does the intent match what's planned? |
+| Internal linking | How many internal links? This signals how established the domain's cluster structure is around this topic |
+| Schema markup | Does the competitor use FAQ, HowTo, Article, or other schema? |
+| E-E-A-T signals | Author bio? Citations? Original data? Expert quotes? Absence of these is a differentiation opportunity |
+| Date | When was it last updated? If the content is stale (>12 months) on a fast-moving topic, freshness is an advantage |
+
+### Step 2 — Identify Differentiation Opportunities
+
+Translate the competitor audit into content brief guidance:
+
+| Gap type | Recommended differentiation |
+|---|---|
+| Competitor covers topic broadly with no depth | Plan a deep-dive that covers 1–2 subtopics with far greater specificity |
+| All competitors use the same format (e.g., all listicles) | Consider an alternative format (tutorial, guide) if search intent supports it |
+| Competitors lack original data or research | Add a survey data point, case study, or expert quote that competitors can't replicate |
+| Competitor content is outdated | Update with current statistics and flag "last updated" date prominently |
+| All competitors target the same primary keyword | Target a more specific long-tail variant with higher intent clarity |
+| Competitors have no FAQ or HowTo schema | Add schema markup as a featured snippet targeting opportunity |
+
+### Step 3 — Deliver the Competitive Brief
+
+Include a "Competitive landscape" section in the keyword brief delivered to `@content-media-blog-writer-editor-d3115369`:
+
+```
+## Competitive Landscape for: [primary keyword]
+
+Top 3 ranking competitors:
+1. [URL] — [title] — [word count estimate] — [what it covers well] — [gap or weakness]
+2. [URL] — [title] — [word count estimate] — [what it covers well] — [gap or weakness]
+3. [URL] — [title] — [word count estimate] — [what it covers well] — [gap or weakness]
+
+Recommended differentiation angle: [1–2 sentences]
+Content depth target: [specific subtopics to cover that competitors miss]
+Format recommendation: [if different from what the brief originally specified, explain why]
+```
+
+## Podcast Platform Discovery Algorithm Notes
+
+Podcast discoverability spans multiple platforms, each with its own ranking signals. Apply these platform-specific optimizations in addition to the general podcast SEO guidance above.
+
+### Apple Podcasts
+
+- **Primary ranking signals**: episode and show title keyword match, subscriber count, listener ratings and reviews, episode completion rate, download velocity (especially in the first 24–72 hours after publish)
+- **Title optimization**: include the primary topic keyword early in the title; Apple's search prioritizes keyword matching in titles more heavily than in descriptions
+- **Description**: first 3 sentences display without "show more" on mobile; ensure they hook and include the primary keyword
+- **Artwork matters for CTR**: Apple Podcasts shows large artwork in search results; high-contrast, legible artwork increases click-through from search; route to `@content-media-visual-content-creator-044f361e` if artwork isn't meeting discoverability goals
+- **New episode velocity**: publishing consistently on a schedule signals an active show; irregular gaps hurt discover algorithm ranking
+
+### Spotify
+
+- **Recommended episode notes**: Spotify indexes episode descriptions for in-app search; descriptions should include the guest name, 2–3 topic keywords, and the primary CTA
+- **Show name keyword weight**: Spotify weighs the show name heavily — if the show name doesn't include a topic keyword, the description must compensate with strong keyword usage in the first 150 characters
+- **Interactive features**: polls and Q&As (Spotify-native) increase listener engagement signals that can improve algorithmic distribution; flag these to the team lead as optional engagement tools for episodes expected to perform well
+- **Video podcasts**: Spotify now prominently surfaces video podcasts; if the show records video, flag this to the team lead as a discoverability opportunity
+
+### YouTube Podcasts / YouTube Music
+
+- **Transcript indexing**: YouTube auto-transcribes audio and video content; speaking the primary topic keyword naturally in the first 60 seconds of an episode improves searchability
+- **Playlist strategy**: organize episodes into playlists by topic/season on YouTube; playlist pages are indexed and can surface for topic-based searches
+- **Chapter markers in description**: YouTube supports `MM:SS Chapter Title` format in descriptions; well-labeled chapters improve watch/listen time (a key ranking signal) and appear as navigation shortcuts in search results
+- **Thumbnail parity with podcast cover**: if the show publishes on YouTube, ensure episode thumbnails match the podcast brand; routes back to `@content-media-visual-content-creator-044f361e` for YouTube thumbnail production (1280×720 px)
+
+
 
 Podcast discoverability is driven by a different set of signals than web search:
 

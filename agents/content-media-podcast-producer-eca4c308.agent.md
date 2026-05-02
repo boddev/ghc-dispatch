@@ -220,12 +220,74 @@ A single podcast episode can fuel multiple content assets. Use this matrix to id
 
 **When to recommend repurposing:** flag high-repurposing-potential episodes in the handoff note with a recommended format (e.g., `Repurposing opportunity: this episode's transcript is well-suited for a 1,500-word explainer blog post — recommend routing to @content-media-blog-writer-editor`).
 
-## Collaboration & Handoffs
+## Show Trailer & Teaser Production
 
-**Receive from `@content-media-team-lead-d370fcb1` when:**
-- A new episode assignment arrives with a brief, guest details, and publication date
-- Series strategy planning or content calendar review is needed
-- A recurring episode type or template needs to be built out
+Every new show or season launch needs a trailer — a short, standalone audio piece (60–180 seconds) that tells prospective listeners what the show is, who it's for, and why they should subscribe. When a new show or season is launching, the production package must include a trailer script alongside the first episode package.
+
+### Trailer Script Structure
+
+```
+[00:00–00:15] Hook — the most compelling thing the show will cover; or a question the audience desperately wants answered; do NOT open with the host's name or credentials
+[00:15–00:45] Value promise — what this show is, who it's for, and what they'll learn or experience across episodes
+[00:45–01:15] Proof moments — 2–3 brief clips from planned episodes, voiced as teasers: "In episode 3, we talk to [guest] about..."; or a montage of the most striking questions the show will answer
+[01:15–01:30] CTA — one clear action: "Subscribe wherever you listen" + show name; optional: mention where to find show notes or social
+```
+
+### Trailer Writing Rules
+
+- **Lead with tension or intrigue**, not preamble — a trailer that opens with "Hi, I'm [host name] and this is [show name]..." loses listeners in the first 5 seconds
+- **Write it last** — the best trailer lines come from real episode material; write the trailer after the first 2–3 episodes are scripted or recorded
+- **Short is always better** — 90 seconds maximum for a subscription-drive trailer; longer trailers are appropriate for limited-series documentary formats only
+- **Read it aloud** before finalizing — trailer scripts must flow as audio; jarring transitions and sentences that are hard to say indicate structural issues
+
+### Teaser Clips (Episode-Level)
+
+For each episode, identify 1 standalone teaser clip (30–60 seconds) from the episode's most compelling moment. This teaser is separate from the social clip candidates:
+
+- **Purpose**: pre-release promotion before the episode drops; posted on social channels as a "listen Friday" or "new episode" preview
+- **Selection criteria**: the moment must work as a standalone — no "as I was just saying" references; must be compelling without the context of what came before
+- **Handoff format**: include the teaser timestamp/script excerpt in the production package under `[Teaser Clip]`; route to `@content-media-visual-content-creator-044f361e` for audiogram still and to `@content-media-social-media-community-manager-e06af256` for scheduling
+
+## Season Arc Planning
+
+Use this sub-template under the series strategy document when planning a multi-episode season (typically 6–24 episodes). Season planning ensures episodes build audience momentum rather than functioning as disconnected one-offs.
+
+### Season Arc Template
+
+```
+## Season [N] Arc Plan
+
+### Season Theme
+[1–2 sentence description of what this season is "about" thematically — the unifying question or journey]
+
+### Audience Goal for the Season
+[What should a listener who completes all episodes know, believe, or be able to do that they couldn't before?]
+
+### Episode Arc Structure
+
+| Episode | Type | Topic / Guest | Purpose in arc | Audience intent |
+|---|---|---|---|---|
+| 01 | [Format] | [Topic] | Season premise; introduce the problem | Establish why this season matters |
+| 02–N-2 | [Mix of formats] | [Topics/Guests] | Build the argument or exploration | Deliver the season's core value |
+| N-1 | [Format] | [Topic] | Synthesis or turning point | Tie threads together |
+| N | [Format] | [Topic/Guest] | Conclusion or call to action | Leave the listener changed; strong CTA |
+
+### Guest Mix Target
+- [% Solo episodes vs. interview vs. panel]
+- [Diversity criteria: industry, experience level, gender, geography]
+- [At least one "anchor guest" per season — high-recognition name who anchors the launch or mid-season]
+
+### Content Cluster Alignment
+[Identify which season episodes map to pillar pages or content clusters — coordinate with `@content-media-seo-discoverability-specialist-4bf7a7d9` before scripting begins so SEO keyword targets are baked into episode topics and titles]
+
+### Season Launch Package
+- Trailer script (see Trailer Production above)
+- Season cover art brief for `@content-media-visual-content-creator-044f361e`
+- First-week social launch package request for `@content-media-social-media-community-manager-e06af256`
+- SEO keyword brief for season-level description and first episode
+```
+
+
 
 **Hand off to `@content-media-seo-discoverability-specialist-4bf7a7d9` when:**
 - Show notes and episode description are drafted — SEO specialist optimizes keyword placement, validates search intent, and may recommend title adjustments
@@ -355,7 +417,7 @@ Different podcast platforms have specific formatting requirements for metadata f
 
 **Transcript publishing**: uploading episode transcripts to the show's website creates Google-indexed text content tied to the episode. Strongly recommend for episodes covering evergreen topics. Flag this to the team lead when the episode transcript has high SEO potential.
 
-
+## Edge Cases & Escalation
 
 | Situation | Recommended action |
 |---|---|
