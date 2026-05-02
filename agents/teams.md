@@ -130,13 +130,13 @@ This team is best suited for requests that cross domain boundaries — for examp
 | Agent | Specialization | Key Strengths |
 |---|---|---|
 | `@education-team-lead-8bc3e942` | Coordination & academic routing | Planning, delegation, synthesis, pedagogical quality assurance, escalation |
-| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, in-class activities, discussion prompts, reading summaries, study guides, video scripts |
+| `@education-lecture-notes-and-course-content-specialist-76feadfc` | Course content creation | Lecture notes, slide outlines, in-class activities, discussion prompts, reading summaries, study guides, video/multimedia scripts, time-blocked lecture plans |
 | `@education-curriculum-and-syllabus-designer-1e919b44` | Curriculum & syllabus design | Module sequences, Bloom's-aligned objectives, syllabus documents, lesson plans, prerequisite maps, alignment matrices |
 | `@education-assessment-and-rubric-designer-cc79da9e` | Assessments & rubrics | Quizzes, exams, essay prompts, project briefs, analytic/holistic/single-point rubrics, answer keys, Bloom's alignment maps |
 | `@education-assignment-grading-and-feedback-specialist-fa8ba778` | Grading & feedback | Rubric-based grading, individualized written feedback, batch grade sheets, common-error analysis, grade norming, feedback comment banks |
 | `@education-academic-research-assistant-626ebf36` | Academic research support | Literature searches, annotated bibliographies, research synthesis, reading list curation, research question development, citation formatting |
 | `@education-student-communication-and-advising-assistant-b02cce56` | Student communication | Course announcements, policy emails, extension responses, welfare check-ins, advising scripts, FAQ documents, class-wide feedback summaries, response template libraries |
-| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL reviews, WCAG 2.1 AA audits, accommodation implementation plans, plain language revision, alt text, caption review, inclusive assessment design |
+| `@education-accessibility-and-learning-support-specialist-a1dfc584` | Accessibility & inclusion | UDL reviews, WCAG 2.1 AA audits, accommodation implementation plans, plain language revision, alt text, caption review, inclusive assessment design, LMS platform-specific accessibility guidance (Canvas, Blackboard, Moodle, D2L) |
 | `@education-academic-integrity-and-quality-reviewer-76537e8b` | Academic integrity & QA | Assignment integrity risk assessments, AI use policy development, citation audits, pre-deployment quality checklists, syllabus standards compliance, incident documentation |
 
 #### Operating Model
@@ -174,6 +174,8 @@ The team lead creates parallel member tasks when work streams are independent. F
 - **Parallel execution** — independent work streams (e.g., lecture notes + rubric design + accessibility review) run simultaneously
 - **Discipline-agnostic** — specialists adapt to any academic field: STEM, humanities, social sciences, professional programs
 - **Level-adaptive content** — outputs are calibrated to introductory, intermediate, advanced, or graduate audiences
+- **LMS-aware accessibility** — the accessibility specialist provides platform-specific guidance for Canvas, Blackboard, Moodle, and D2L, not just generic WCAG recommendations
+- **Modality-flexible curriculum design** — the curriculum designer produces differentiated guidance for in-person, online, hybrid, and HyFlex delivery
 - **Traceable handoffs** — each specialist's output includes decisions, trade-offs, and assumptions, giving the team lead enough context to synthesize accurately
 
 #### Ideal Use Cases
@@ -212,7 +214,7 @@ This team is best suited for content goals that span multiple disciplines — a 
 |---|---|---|
 | `@content-media-team-lead-d370fcb1` | Editorial coordination & strategy | Content calendar planning, delegation, workflow sequencing, synthesis, brand voice oversight |
 | `@content-media-blog-writer-editor-d3115369` | Writing & editing | Long-form and short-form blog articles, editing, CMS-ready formatting, brand voice calibration |
-| `@content-media-podcast-producer-eca4c308` | Podcast production | Episode scripting, show notes, guest briefing, transcript production, episode metadata |
+| `@content-media-podcast-producer-eca4c308` | Podcast production | Episode scripting (full/semi-scripted/outline), show notes, guest briefing documents, clean transcripts, chapter markers, RSS-ready episode metadata packages |
 | `@content-media-seo-discoverability-specialist-4bf7a7d9` | SEO & discoverability | Keyword research, on-page optimization, schema markup, content gap analysis, podcast SEO |
 | `@content-media-social-media-community-manager-e06af256` | Social media & community | Platform-specific social copy, distribution calendars, community engagement, content repurposing |
 | `@content-media-visual-content-creator-044f361e` | Visual content creation | Featured images, infographics, social graphics, podcast cover art, alt text, brand consistency |
@@ -223,7 +225,7 @@ This team is best suited for content goals that span multiple disciplines — a 
 |---|---|---|
 | Team Lead | `@content-media-team-lead-d370fcb1` | Sets editorial calendar, decomposes content goals into scoped assignments, validates outputs, synthesizes publication packages, escalates blockers |
 | Writing & Editing | `@content-media-blog-writer-editor-d3115369` | Researches topics, drafts long-form and short-form articles, edits for clarity and brand voice, packages content for CMS |
-| Podcast Production | `@content-media-podcast-producer-eca4c308` | Plans episode structure, writes scripts and show notes, prepares guest briefings, produces episode metadata packages |
+| Podcast Production | `@content-media-podcast-producer-eca4c308` | Plans episode structure (all formats: solo, interview, panel, narrative), writes full scripts or semi-scripted guides, prepares guest briefing documents with ranked questions, drafts show notes to required standards (summary, takeaways, timestamps, bio, links, CTA), produces episode metadata packages (3 title options, short ≤200 char and long descriptions, chapter markers in HH:MM:SS format), cleans transcripts with speaker labels |
 | SEO & Discoverability | `@content-media-seo-discoverability-specialist-4bf7a7d9` | Delivers keyword briefs before writing begins, reviews drafts for on-page signals, adds schema markup, audits published content performance |
 | Social & Community | `@content-media-social-media-community-manager-e06af256` | Repurposes published content into platform-native social posts, plans distribution calendars, drafts community engagement prompts |
 | Visual Content | `@content-media-visual-content-creator-044f361e` | Produces featured images, infographics, social graphics, podcast artwork, and alt text for all visual assets |
