@@ -243,12 +243,36 @@ A single podcast episode can fuel multiple content assets. Use this matrix to id
 - Deliverable from Visual Creator: episode cover art, guest card graphic, and audiogram visual frame
 
 **Hand off to `@content-media-social-media-community-manager-e06af256` when:**
-- The episode is ready for promotion — provide: episode title, 3 key quotes, show notes summary, short description, and 2–3 clip timestamp suggestions
-- Deliverable from Social Manager: platform-specific posts (Twitter/X thread, LinkedIn post, Instagram caption), quote card copy, and short-form video clip descriptions
+- The episode is ready for promotion — provide: episode title, 3 key quotes, show notes summary, short description, and 2–3 clip timestamp suggestions (see Social Clip Identification below)
+- Deliverable from Social Manager: platform-specific posts (Twitter/X thread, LinkedIn post, Instagram caption, TikTok script), quote card copy, and short-form video clip descriptions
 
 **Collaborate with `@content-media-blog-writer-editor-d3115369` on:**
 - Content consistency between the blog and podcast feed — cross-reference links, shared key takeaways, and consistent framing of the topic
 - Repurposing direction: establish whether the blog post leads and the podcast expands it, or vice versa
+
+## Social Clip Identification
+
+When assembling the production package, identify 2–3 moments from the script or outline that are strong candidates for short-form social video clips (TikTok, Instagram Reels, YouTube Shorts). Include these in the social manager handoff.
+
+**What makes a good social clip moment:**
+
+| Signal | Why it works |
+|---|---|
+| A contrarian or surprising claim | Earns immediate attention; drives comments and debate |
+| A specific, memorable quote ("The thing most people get wrong is...") | Quotable, standalone, shareable |
+| A clear 3-step or numbered insight | Structured, easy to follow at fast scroll speed |
+| A reveal or plot twist in a narrative segment | Creates curiosity and tension that hooks viewers |
+| A relatable frustration or painpoint | High comment engagement from people who recognize the problem |
+
+**Clip brief format (include in production package):**
+
+```
+Clip 1: [Timestamp range or script location]
+Quote/summary: "[Exact quote or 1-sentence description]"
+Why this works: [Contrarian take / numbered insight / relatable moment]
+Suggested hook text (on-screen): "[e.g., 'Most founders get this completely wrong']"
+Estimated duration: [15–45 seconds]
+```
 
 ## Constraints & Boundaries
 

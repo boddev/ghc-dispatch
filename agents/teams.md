@@ -216,11 +216,11 @@ This team is best suited for content goals that span multiple disciplines — a 
 | Agent | Specialization | Key Strengths |
 |---|---|---|
 | `@content-media-team-lead-d370fcb1` | Editorial coordination & strategy | Content calendar planning, delegation, workflow sequencing, synthesis, brand voice oversight |
-| `@content-media-blog-writer-editor-d3115369` | Writing & editing | Long-form and short-form blog articles, editing, CMS-ready formatting, brand voice calibration |
-| `@content-media-podcast-producer-eca4c308` | Podcast production | Episode scripting (full/semi-scripted/outline), show notes, guest briefing documents, clean transcripts, chapter markers, RSS-ready episode metadata packages |
-| `@content-media-seo-discoverability-specialist-4bf7a7d9` | SEO & discoverability | Keyword research, on-page optimization, schema markup, content gap analysis, podcast SEO |
-| `@content-media-social-media-community-manager-e06af256` | Social media & community | Platform-specific social copy, distribution calendars, community engagement, content repurposing |
-| `@content-media-visual-content-creator-044f361e` | Visual content creation | Featured images, infographics, social graphics, podcast cover art, alt text, brand consistency |
+| `@content-media-blog-writer-editor-d3115369` | Writing & editing | Long-form and short-form blog articles, editing, CMS-ready formatting, brand voice calibration, podcast-to-blog repurposing |
+| `@content-media-podcast-producer-eca4c308` | Podcast production | Episode scripting (full/semi-scripted/outline), show notes, guest briefing documents, clean transcripts, chapter markers, RSS-ready metadata packages, social clip identification |
+| `@content-media-seo-discoverability-specialist-4bf7a7d9` | SEO & discoverability | Keyword research, on-page optimization, schema markup, content gap analysis, podcast SEO, short-form video SEO (TikTok, Reels, Shorts) |
+| `@content-media-social-media-community-manager-e06af256` | Social media & community | Platform-specific social copy (Twitter/X, LinkedIn, Instagram, TikTok, Facebook), distribution calendars, content repurposing templates, campaign planning, analytics and performance review |
+| `@content-media-visual-content-creator-044f361e` | Visual content creation | Featured images, infographics, social graphics, podcast cover art, TikTok/Reels thumbnails, alt text, brand consistency, AI-assisted image production |
 
 #### Operating Model
 
@@ -230,8 +230,8 @@ This team is best suited for content goals that span multiple disciplines — a 
 | Writing & Editing | `@content-media-blog-writer-editor-d3115369` | Researches topics, drafts long-form and short-form articles, edits for clarity and brand voice, packages content for CMS |
 | Podcast Production | `@content-media-podcast-producer-eca4c308` | Plans episode structure (all formats: solo, interview, panel, narrative), writes full scripts or semi-scripted guides, prepares guest briefing documents with ranked questions, drafts show notes to required standards (summary, takeaways, timestamps, bio, links, CTA), produces episode metadata packages (3 title options, short ≤200 char and long descriptions, chapter markers in HH:MM:SS format), cleans transcripts with speaker labels |
 | SEO & Discoverability | `@content-media-seo-discoverability-specialist-4bf7a7d9` | Delivers keyword briefs before writing begins, reviews drafts for on-page signals, adds schema markup, audits published content performance |
-| Social & Community | `@content-media-social-media-community-manager-e06af256` | Repurposes published content into platform-native social posts, plans distribution calendars, drafts community engagement prompts |
-| Visual Content | `@content-media-visual-content-creator-044f361e` | Produces featured images, infographics, social graphics, podcast artwork, and alt text for all visual assets |
+| Social & Community | `@content-media-social-media-community-manager-e06af256` | Repurposes published content into platform-native social posts for Twitter/X, LinkedIn, Instagram, TikTok, and Facebook using content repurposing templates; plans multi-platform distribution calendars; drafts campaign briefs with KPIs; reports analytics and performance recommendations |
+| Visual Content | `@content-media-visual-content-creator-044f361e` | Produces featured images, infographics, social graphics, podcast artwork, TikTok/Reels thumbnails, carousel slides, and audiogram stills; writes alt text for all assets; applies brand guidelines; supports AI-assisted image production with appropriate constraints |
 
 The team lead creates parallel member tasks when work streams are independent. For example, `@content-media-blog-writer-editor-d3115369` can draft an article while `@content-media-seo-discoverability-specialist-4bf7a7d9` prepares the keyword brief simultaneously — the writer incorporates keyword targets, not the other way around. Visual assets and social copy are produced after the article is approved; only genuinely dependent phases are serialized.
 
@@ -254,21 +254,22 @@ The team lead creates parallel member tasks when work streams are independent. F
 
 #### Strengths
 
-- **Full content lifecycle coverage** — from keyword research and briefs through writing, optimization, visual production, and social distribution
+- **Full content lifecycle coverage** — from keyword research and briefs through writing, optimization, visual production, and multi-platform social distribution including TikTok and short-form video
 - **Domain-aware routing** — the team lead routes based on content type and phase, not availability
 - **Parallel execution** — independent work streams (keyword research + drafting, visual production + social planning) run simultaneously, reducing time to publication
-- **Multi-format output** — produces blog articles, podcast episodes, social posts, and visual assets from a single content goal
+- **Multi-format output** — produces blog articles, podcast episodes, social posts, TikTok/Reels scripts, and visual assets from a single content goal
+- **Cross-format repurposing** — podcast episodes become blog companion posts; articles become Twitter threads, LinkedIn posts, and short-form video scripts; maximizes content ROI across the full distribution funnel
 - **Attribution-ready distribution** — UTM parameters flow from SEO specialist through social manager so every distributed link is correctly traffic-tracked from day one
 - **Content cluster architecture** — SEO specialist builds topical authority across related articles (pillar + clusters), not just optimizing individual posts in isolation
 - **Traceable handoffs** — each specialist's output includes decisions, assets, and assumptions, giving the team lead enough context to synthesize accurately
 
 #### Ideal Use Cases
 
-- **New blog series launch**: keyword strategy + content cluster map (`@content-media-seo-discoverability-specialist-4bf7a7d9`) + article drafts (`@content-media-blog-writer-editor-d3115369`) + featured images (`@content-media-visual-content-creator-044f361e`) + social launch campaign (`@content-media-social-media-community-manager-e06af256`) — all coordinated by the team lead
-- **Podcast episode production**: scripting + show notes (`@content-media-podcast-producer-eca4c308`) → episode SEO + UTM parameters (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → episode artwork (`@content-media-visual-content-creator-044f361e`) → UTM-linked social promotion (`@content-media-social-media-community-manager-e06af256`)
-- **Content repurposing**: transcript from podcast episode → companion blog post (`@content-media-blog-writer-editor-d3115369`) → SEO optimization → social distribution
+- **New blog series launch**: keyword strategy + content cluster map (`@content-media-seo-discoverability-specialist-4bf7a7d9`) + article drafts (`@content-media-blog-writer-editor-d3115369`) + featured images (`@content-media-visual-content-creator-044f361e`) + social launch campaign with TikTok scripts (`@content-media-social-media-community-manager-e06af256`) — all coordinated by the team lead
+- **Podcast episode production**: scripting + show notes + social clip identification (`@content-media-podcast-producer-eca4c308`) → episode SEO + UTM parameters (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → episode artwork + Reels thumbnail (`@content-media-visual-content-creator-044f361e`) → UTM-linked social promotion + TikTok scripts (`@content-media-social-media-community-manager-e06af256`)
+- **Content repurposing**: transcript from podcast episode → companion blog post (`@content-media-blog-writer-editor-d3115369`) → SEO optimization → social distribution + TikTok clip scripts from identified social clip moments
 - **Monthly content calendar execution**: team lead sequences a full month of blog and podcast content across all specialists in parallel
-- **SEO content refresh**: gap analysis + refresh recommendation (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → updated drafts (`@content-media-blog-writer-editor-d3115369`) → updated visuals if needed
+- **SEO content refresh**: gap analysis + refresh recommendation (`@content-media-seo-discoverability-specialist-4bf7a7d9`) → updated drafts (`@content-media-blog-writer-editor-d3115369`) → updated visuals and social reshare if needed
 - **Content cluster buildout**: pillar page + 3–5 cluster articles produced sequentially, with bidirectional internal links established across the cluster before any piece publishes
 
 #### Anti-patterns

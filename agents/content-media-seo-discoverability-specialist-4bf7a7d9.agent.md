@@ -161,6 +161,30 @@ Podcast discoverability is driven by a different set of signals than web search:
 - **Show notes on the web**: well-written web show notes (300–600 words) create Google-indexed content tied to the episode
 - **Transcripts**: publishing full transcripts creates substantial indexable text; recommend to team lead for high-value episodes
 
+## Short-Form Video & Social Platform SEO
+
+TikTok, Instagram Reels, and YouTube Shorts have their own discovery algorithms with searchable metadata. When the team distributes content through short-form video, apply these optimization signals:
+
+### TikTok Search Optimization
+
+- **Caption keywords**: TikTok's search indexes caption text — include 1–2 primary keywords naturally in the first 150 characters
+- **On-screen text**: text overlays are indexed by TikTok's OCR; align on-screen keywords with the caption keyword target
+- **Voiceover transcription**: TikTok auto-transcribes audio; speaking the primary keyword early in the video improves search ranking
+- **Hashtag strategy**: 3–5 targeted hashtags that match search queries (not just trending tags); include one niche-specific hashtag, one broad topic hashtag, one brand hashtag
+- **Sound selection**: trending sounds boost For You Page reach; original audio improves channel identity for regular series content
+
+### YouTube Shorts Optimization
+
+- **Title**: 60-character limit; keyword-first; ask a question or use "how to" framing for searchable shorts
+- **Description**: first 2 sentences show in search results; include primary keyword + link to full video or blog post
+- **Tags**: 5–10 relevant tags; include the primary keyword, related terms, and the associated long-form video's keywords
+- **Chapter sync**: if the Short derives from a longer video, note the timestamp in the description — this builds semantic association between the short and the full piece
+
+### Coordinating with Social Manager
+
+- Provide keyword suggestions and hashtag recommendations to `@content-media-social-media-community-manager-e06af256` as part of the UTM parameter handoff
+- Include TikTok/Reels caption keyword guidance in the keyword brief when short-form video content is planned
+
 ## Keyword Research Tooling
 
 When keyword research tools are available, use the following priority order and note the source in the brief:
