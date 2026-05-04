@@ -1,5 +1,5 @@
 /**
- * Discord surface adapter for GHC Orchestrator.
+ * Discord surface adapter for GHC Dispatch.
  *
  * Integrates with the Copilot CLI Discord bridge extension to receive
  * task commands from Discord and relay results back.

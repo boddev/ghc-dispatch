@@ -63,6 +63,10 @@ export class EventRepo {
     tx(events);
   }
 
+  transaction<T>(fn: () => T): T {
+    return this.db.transaction(fn)();
+  }
+
   getByTaskId(taskId: string): StoredEvent[] {
     return (this.stmts.getByTaskId.all(taskId) as any[]).map(this.rowToEvent);
   }

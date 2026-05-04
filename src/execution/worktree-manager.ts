@@ -72,6 +72,14 @@ export class WorktreeManager {
     this.active.delete(taskId);
   }
 
+  attach(taskId: string, path: string, branch = `task/${taskId}`): WorktreeInfo {
+    const existing = this.active.get(taskId);
+    if (existing) return existing;
+    const info: WorktreeInfo = { taskId, path, branch, createdAt: new Date() };
+    this.active.set(taskId, info);
+    return info;
+  }
+
   async cleanupStale(maxAgeMs: number): Promise<string[]> {
     const now = Date.now();
     const cleaned: string[] = [];

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Scheduler } from '../../src/control-plane/scheduler.js';
 import { TaskRepo } from '../../src/store/task-repo.js';
+import { SchedulerQueueRepo } from '../../src/store/scheduler-queue-repo.js';
 import { LocalEventBus } from '../../src/control-plane/event-bus.js';
 import { createTestDb } from '../../src/store/db.js';
 import type { Task } from '../../src/control-plane/task-model.js';
@@ -116,5 +117,59 @@ describe('Scheduler', () => {
     const snap = scheduler.getQueueSnapshot();
     expect(snap).toHaveLength(2);
     expect(snap[0].taskId).toBe(t1.id);
+  });
+
+  it('persists queued tasks across scheduler instances', () => {
+    const db = createTestDb();
+    const repo = new TaskRepo(db);
+    const queueRepo = new SchedulerQueueRepo(db);
+    const eventBus = new LocalEventBus();
+    const task = repo.create({ title: 'Durable task', priority: 'high' });
+
+    const first = new Scheduler(repo, eventBus, {
+      maxGlobalConcurrent: 1,
+      maxPerRepo: 1,
+      maxPerUser: 1,
+      agingBoostMs: 60_000,
+    }, queueRepo, 'owner-1');
+    first.enqueue(task);
+    expect(first.queueLength).toBe(1);
+
+    const second = new Scheduler(repo, eventBus, {
+      maxGlobalConcurrent: 1,
+      maxPerRepo: 1,
+      maxPerUser: 1,
+      agingBoostMs: 60_000,
+    }, queueRepo, 'owner-2');
+    expect(second.queueLength).toBe(1);
+    expect(second.dequeue()).toBe(task.id);
+    expect(second.runningCount).toBe(1);
+  });
+
+  it('allows expired durable leases to be re-acquired', async () => {
+    const db = createTestDb();
+    const repo = new TaskRepo(db);
+    const queueRepo = new SchedulerQueueRepo(db);
+    const eventBus = new LocalEventBus();
+    const task = repo.create({ title: 'Lease task' });
+
+    const first = new Scheduler(repo, eventBus, {
+      maxGlobalConcurrent: 1,
+      maxPerRepo: 1,
+      maxPerUser: 1,
+      agingBoostMs: 60_000,
+    }, queueRepo, 'owner-1', 1);
+    first.enqueue(task);
+    expect(first.dequeue()).toBe(task.id);
+
+    await new Promise(resolve => setTimeout(resolve, 5));
+
+    const second = new Scheduler(repo, eventBus, {
+      maxGlobalConcurrent: 1,
+      maxPerRepo: 1,
+      maxPerUser: 1,
+      agingBoostMs: 60_000,
+    }, queueRepo, 'owner-2', 1);
+    expect(second.dequeue()).toBe(task.id);
   });
 });

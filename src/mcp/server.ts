@@ -9,6 +9,7 @@ import type { ApprovalManager } from '../control-plane/approval-manager.js';
 import type { Scheduler } from '../control-plane/scheduler.js';
 import type { SessionPool } from '../execution/session-pool.js';
 import type { AgentLoader } from '../execution/agent-loader.js';
+import { agentHandle } from '../execution/agent-loader.js';
 
 export interface McpDeps {
   taskManager: TaskManager;
@@ -20,7 +21,7 @@ export interface McpDeps {
 
 export function createMcpServer(deps: McpDeps): Server {
   const server = new Server(
-    { name: 'ghc-orchestrator', version: '0.1.0' },
+    { name: 'ghc-dispatch', version: '0.1.0' },
     { capabilities: { tools: {} } },
   );
 
@@ -209,7 +210,7 @@ export function createMcpServer(deps: McpDeps): Server {
 
         case 'list_agents': {
           const agents = deps.agentLoader.list();
-          const lines = agents.map(a => `@${a.name.toLowerCase().replace(/\s+/g, '-')} — ${a.description} (model: ${a.model})`);
+          const lines = agents.map(a => `${agentHandle(a.name)} — ${a.description} (model: ${a.model})`);
           return { content: [{ type: 'text', text: lines.join('\n') || 'No agents loaded' }] };
         }
 
@@ -220,7 +221,7 @@ export function createMcpServer(deps: McpDeps): Server {
           const sessions = deps.sessionPool.size;
           const pending = deps.approvalManager.getPending().length;
           const text = [
-            'GHC Orchestrator Status',
+            'GHC Dispatch Status',
             `  Queue: ${queue} task(s) waiting`,
             `  Running: ${running} task(s)`,
             `  Sessions: ${sessions}/${deps.sessionPool.available + sessions}`,

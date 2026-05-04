@@ -29,6 +29,13 @@ const EMOJI: Record<string, string> = {
   failed: '❌', cancelled: '🚫', paused: '⏸️',
 };
 
+function shortDescription(description?: string): string {
+  const text = (description ?? '').replace(/\s+/g, ' ').trim();
+  if (!text) return 'No description';
+  const firstSentence = text.match(/^.*?[.!?](?:\s|$)/)?.[0]?.trim() ?? text;
+  return firstSentence.length > 72 ? `${firstSentence.slice(0, 69)}...` : firstSentence;
+}
+
 // --- API Client ---
 async function api<T = any>(method: string, path: string, body?: any): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -215,6 +222,33 @@ const COMMANDS: Record<string, { desc: string; usage?: string; handler: (args: s
         console.log(`  ${C.cyan}${a.name}${C.reset}  ${a.model}  ${C.dim}${a.description}${C.reset}`);
       }
       console.log();
+    },
+  },
+
+  teams: {
+    desc: 'List teams and their agents',
+    handler: async () => {
+      const [teams, agents]: [any[], any[]] = await Promise.all([
+        api('GET', '/api/teams'),
+        api('GET', '/api/agents'),
+      ]);
+      const agentMap = new Map(agents.map(a => [a.name, a]));
+      if (teams.length === 0) { console.log(`  ${C.dim}No teams configured.${C.reset}`); return; }
+
+      for (const team of teams) {
+        console.log(`\n  ${C.bold}${team.name}${C.reset} ${C.dim}${team.id}${C.reset}`);
+        if (team.description) console.log(`    ${shortDescription(team.description)}`);
+        const lead = agentMap.get(team.leadAgent);
+        console.log(`    Lead: ${C.cyan}${team.leadAgent}${C.reset} ${C.dim}${shortDescription(lead?.description)}${C.reset}`);
+        if (team.memberAgents.length > 0) {
+          console.log('    Members:');
+          for (const member of team.memberAgents) {
+            const agent = agentMap.get(member);
+            console.log(`      - ${C.cyan}${member}${C.reset} ${C.dim}${shortDescription(agent?.description)}${C.reset}`);
+          }
+        }
+      }
+      console.log(`\n  ${C.dim}${teams.length} team(s)${C.reset}\n`);
     },
   },
 

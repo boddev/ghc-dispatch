@@ -1,10 +1,10 @@
 {
   "servers": {
-    "ghc-orchestrator": {
+    "ghc-dispatch": {
       "type": "stdio",
       "command": "node",
-      "args": ["${workspaceFolder}/../dist/mcp-server.js"],
-      "description": "GHC Orchestrator MCP server — task management, scheduling, and observability"
+      "args": ["${workspaceFolder}/../dist/mcp/server.js"],
+      "description": "GHC Dispatch MCP server — task management, scheduling, and observability"
     }
   }
 }

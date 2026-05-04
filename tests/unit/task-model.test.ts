@@ -47,6 +47,10 @@ describe('Task State Machine', () => {
       expect(canTransition('failed', 'queued')).toBe(true);
     });
 
+    it('allows cancelled → queued (retry)', () => {
+      expect(canTransition('cancelled', 'queued')).toBe(true);
+    });
+
     it('disallows completed → anything', () => {
       expect(canTransition('completed', 'pending')).toBe(false);
       expect(canTransition('completed', 'queued')).toBe(false);
@@ -54,9 +58,8 @@ describe('Task State Machine', () => {
       expect(canTransition('completed', 'cancelled')).toBe(false);
     });
 
-    it('disallows cancelled → anything', () => {
+    it('disallows cancelled → states other than queued retry', () => {
       expect(canTransition('cancelled', 'pending')).toBe(false);
-      expect(canTransition('cancelled', 'queued')).toBe(false);
       expect(canTransition('cancelled', 'running')).toBe(false);
     });
 

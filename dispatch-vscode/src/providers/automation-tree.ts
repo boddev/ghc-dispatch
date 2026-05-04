@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import { DispatchClient } from '../client';
+import { DispatchClient, DispatchHttpError } from '../client';
 
 export class AutomationTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
   private _onDidChange = new vscode.EventEmitter<vscode.TreeItem | undefined>();
   readonly onDidChangeTreeData = this._onDidChange.event;
+  private cachedItems: vscode.TreeItem[] = [];
 
   constructor(private client: DispatchClient) {}
 
@@ -14,12 +15,16 @@ export class AutomationTreeProvider implements vscode.TreeDataProvider<vscode.Tr
   async getChildren(): Promise<vscode.TreeItem[]> {
     try {
       const jobs: any[] = await this.client.get('/api/automation');
-      if (jobs.length === 0) return [new vscode.TreeItem('No automation jobs')];
+      if (jobs.length === 0) {
+        this.cachedItems = [new vscode.TreeItem('No automation jobs')];
+        return this.cachedItems;
+      }
 
-      return jobs.map(j => {
-        const typeIcon = j.type === 'cron' ? '$(clock)' : j.type === 'webhook' ? '$(globe)' : '$(zap)';
+      this.cachedItems = jobs.map(j => {
+        const typeIcon = j.type === 'cron' ? 'clock' : j.type === 'webhook' ? 'globe' : 'zap';
         const enabled = j.enabled ? '' : ' (disabled)';
-        const item = new vscode.TreeItem(`${typeIcon} ${j.name}${enabled}`, vscode.TreeItemCollapsibleState.None);
+        const item = new vscode.TreeItem(`${j.name}${enabled}`, vscode.TreeItemCollapsibleState.None);
+        item.iconPath = new vscode.ThemeIcon(typeIcon);
         item.description = `${j.type} · runs: ${j.runCount}`;
         item.tooltip = [
           j.name, `Type: ${j.type}`,
@@ -31,8 +36,12 @@ export class AutomationTreeProvider implements vscode.TreeDataProvider<vscode.Tr
         ].filter(Boolean).join('\n');
         return item;
       });
-    } catch {
-      return [new vscode.TreeItem('Cannot connect to dispatch daemon')];
+      return this.cachedItems;
+    } catch (err) {
+      if (this.cachedItems.length > 0) return this.cachedItems;
+      return [new vscode.TreeItem(err instanceof DispatchHttpError && err.statusCode === 429
+        ? 'Dispatch daemon rate limited; waiting to retry'
+        : 'Cannot connect to dispatch daemon')];
     }
   }
 }

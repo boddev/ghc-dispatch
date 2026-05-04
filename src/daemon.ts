@@ -1,5 +1,5 @@
 /**
- * GHC Orchestrator Daemon
+ * GHC Dispatch Daemon
  *
  * Main process that starts:
  * - SQLite database
@@ -13,6 +13,9 @@ import { join } from 'node:path';
 import { getDb, closeDb } from './store/db.js';
 import { TaskRepo } from './store/task-repo.js';
 import { EventRepo } from './store/event-repo.js';
+import { CheckpointRepo } from './store/checkpoint-repo.js';
+import { SchedulerQueueRepo } from './store/scheduler-queue-repo.js';
+import { TeamRepo } from './store/team-repo.js';
 import { TaskManager } from './control-plane/task-manager.js';
 import { LocalEventBus } from './control-plane/event-bus.js';
 import { Scheduler } from './control-plane/scheduler.js';
@@ -20,16 +23,18 @@ import { PolicyEngine } from './control-plane/policy-engine.js';
 import { ApprovalManager } from './control-plane/approval-manager.js';
 import { MockCopilotAdapter, CopilotSdkAdapter } from './execution/copilot-adapter.js';
 import { SessionPool } from './execution/session-pool.js';
-import { AgentLoader } from './execution/agent-loader.js';
+import { agentHandle, AgentLoader } from './execution/agent-loader.js';
 import { WorktreeManager } from './execution/worktree-manager.js';
 import { ArtifactCollector } from './execution/artifact-collector.js';
 import { SessionRunner } from './execution/session-runner.js';
+import { TaskRuntimeConfigManager } from './execution/task-runtime-config.js';
 import { ConversationRepo } from './store/conversation-repo.js';
 import { WikiManager } from './wiki/wiki-manager.js';
 import { MemoryManager } from './memory/memory-manager.js';
 import { SkillManager } from './skills/skill-manager.js';
 import { AutomationScheduler } from './automation/automation-scheduler.js';
 import { ModelManager } from './execution/model-manager.js';
+import { ExecutionSettingsManager } from './execution/execution-settings.js';
 import { DiscordBot } from './surfaces/discord-bot.js';
 import { ProactiveCheckIn } from './automation/proactive-checkin.js';
 import { GitHubEventHandler } from './automation/github-events.js';
@@ -42,50 +47,65 @@ import { paths, ensureDataDirs } from './paths.js';
 export async function startDaemon(): Promise<void> {
   ensureDataDirs();
   const config = loadConfig();
+  const executionSettings = new ExecutionSettingsManager(paths.executionSettingsPath, {
+    maxConcurrentSessions: config.maxConcurrentSessions,
+    taskSessionIdleTimeoutMs: 300_000,
+  });
+  const effectiveExecutionSettings = executionSettings.get();
+  const effectiveMaxSessions = effectiveExecutionSettings.maxConcurrentSessions;
 
-  console.log('🚀 GHC Orchestrator starting...');
+  console.log('🚀 GHC Dispatch starting...');
   console.log(`   Data dir: ${paths.dataDir}`);
   console.log(`   API port: ${config.apiPort}`);
-  console.log(`   Max sessions: ${config.maxConcurrentSessions}`);
+  console.log(`   Max sessions: ${effectiveMaxSessions}`);
+  console.log(`   Task idle timeout: ${effectiveExecutionSettings.taskSessionIdleTimeoutMs}ms`);
 
   // --- Database ---
   const db = getDb();
   const taskRepo = new TaskRepo(db);
   const eventRepo = new EventRepo(db);
+  const checkpointRepo = new CheckpointRepo(db);
+  const schedulerQueueRepo = new SchedulerQueueRepo(db);
+  const teamRepo = new TeamRepo(db);
 
   // --- Control Plane ---
   const eventBus = new LocalEventBus();
-  const taskManager = new TaskManager(taskRepo, eventRepo, eventBus);
+  const taskManager = new TaskManager(taskRepo, eventRepo, eventBus, checkpointRepo);
   const scheduler = new Scheduler(taskRepo, eventBus, {
-    maxGlobalConcurrent: config.maxConcurrentSessions,
-    maxPerRepo: Math.max(1, Math.floor(config.maxConcurrentSessions / 2)),
-    maxPerUser: config.maxConcurrentSessions,
+    maxGlobalConcurrent: effectiveMaxSessions,
+    maxPerRepo: Math.max(1, Math.floor(effectiveMaxSessions / 2)),
+    maxPerUser: effectiveMaxSessions,
     agingBoostMs: 60_000,
-  });
+  }, schedulerQueueRepo);
   const policyEngine = new PolicyEngine();
   const approvalManager = new ApprovalManager(db, eventRepo, eventBus);
 
   // --- Execution Plane ---
   const useMock = process.env.GHC_MOCK_COPILOT === '1' || process.env.NODE_ENV === 'test';
-  const copilotAdapter = useMock ? new MockCopilotAdapter() : new CopilotSdkAdapter();
+  let copilotAdapter: MockCopilotAdapter | CopilotSdkAdapter =
+    useMock ? new MockCopilotAdapter() : new CopilotSdkAdapter();
 
   try {
     await copilotAdapter.start();
     console.log(`   Copilot: ${useMock ? 'mock' : 'SDK'} adapter started`);
   } catch (err: any) {
     console.warn(`   ⚠️  Copilot SDK failed to start, falling back to mock: ${err.message}`);
-    const fallback = new MockCopilotAdapter();
-    await fallback.start();
+    copilotAdapter = new MockCopilotAdapter();
+    await copilotAdapter.start();
   }
 
-  const sessionPool = new SessionPool(copilotAdapter, { maxConcurrent: config.maxConcurrentSessions });
+  const sessionPool = new SessionPool(copilotAdapter, {
+    maxConcurrent: effectiveMaxSessions,
+    defaultRemote: config.copilotDefaultRemote,
+  });
+  console.log(`   Copilot remote default: ${config.copilotDefaultRemote ? 'on (/remote prepended)' : 'off'}`);
 
   const bundledAgentsDir = join(import.meta.dirname ?? '.', '..', 'agents');
   const agentLoader = new AgentLoader([bundledAgentsDir, paths.agentsDir]);
-  console.log(`   Agents: ${agentLoader.list().map(a => `@${a.name.toLowerCase().replace(/\s+/g, '-')}`).join(', ')}`);
+  console.log(`   Agents: ${agentLoader.list().map(a => agentHandle(a.name)).join(', ')}`);
 
   const worktreeManager = new WorktreeManager(paths.worktreesDir);
-  const artifactCollector = new ArtifactCollector(join(paths.dataDir, 'artifacts'));
+  const artifactCollector = new ArtifactCollector(paths.artifactsDir);
 
   // --- Memory System ---
   const conversationRepo = new ConversationRepo(db);
@@ -100,6 +120,8 @@ export async function startDaemon(): Promise<void> {
   const skillCount = skillManager.listAll().length;
   const systemSkills = skillManager.listSystemCreated().length;
   console.log(`   Skills: ${skillCount} installed (${systemSkills} system-created)`);
+  const taskRuntimeConfig = new TaskRuntimeConfigManager(paths.taskRuntimeConfigPath);
+  console.log(`   Task runtime: ${taskRuntimeConfig.get().mode} (${taskRuntimeConfig.path})`);
 
   // --- Automation ---
   const automationScheduler = new AutomationScheduler(db, eventBus, taskManager);
@@ -113,7 +135,7 @@ export async function startDaemon(): Promise<void> {
 
   const sessionRunner = new SessionRunner(
     taskManager, agentLoader, sessionPool, worktreeManager,
-    artifactCollector, eventBus, config, modelManager,
+    artifactCollector, eventBus, config, modelManager, skillManager, taskRuntimeConfig, teamRepo, executionSettings,
   );
 
   // --- Proactive Check-Ins ---
@@ -139,7 +161,79 @@ export async function startDaemon(): Promise<void> {
   ]);
   hotReloader.start();
 
+  // --- Workspace recovery + durable queue restore ---
+  // Queued tasks are idempotently present in the durable scheduler table.
+  const queuedOnStartup = taskRepo.listByStatus('queued');
+  for (const t of queuedOnStartup) scheduler.enqueue(t);
+  if (queuedOnStartup.length > 0) {
+    console.log(`   Scheduler: restored ${queuedOnStartup.length} queued task(s) from durable state`);
+  }
+
+  // Running tasks mean the previous daemon exited mid-run. Preserve their
+  // worktree/checkpoint/event context and pause them for explicit recovery.
+  const interruptedRunning = taskRepo.listByStatus('running');
+  for (const t of interruptedRunning) {
+    if (t.workingDirectory) {
+      worktreeManager.attach(t.id, t.workingDirectory);
+    }
+    scheduler.cancel(t.id);
+    const latestCheckpoint = checkpointRepo.getLatestByTask(t.id);
+    const events = eventRepo.getByTaskId(t.id);
+    taskManager.prepareRecovery(t.id, {
+      interruptedAt: new Date().toISOString(),
+      workingDirectory: t.workingDirectory ?? null,
+      latestCheckpoint: latestCheckpoint ?? null,
+      eventCount: events.length,
+      options: ['resume', 'restart', 'abandon'],
+    });
+  }
+  if (interruptedRunning.length > 0) {
+    console.log(`   Recovery: paused ${interruptedRunning.length} interrupted running task(s)`);
+  }
+
   // --- Scheduler Loop ---
+  eventBus.on('task.completed', (event) => {
+    if (!('taskId' in event)) return;
+    const task = taskManager.getTask(event.taskId);
+    if (task?.metadata.teamRole !== 'lead') return;
+
+    for (const subtask of taskManager.getSubtasks(task.id)) {
+      if (subtask.status !== 'pending' || !taskManager.areDependenciesMet(subtask)) continue;
+      if (subtask.metadata.preApproved === true || subtask.metadata.preApproved === 'true') {
+        taskManager.enqueueTask(subtask.id);
+        continue;
+      }
+      const existingApproval = approvalManager.getByTask(subtask.id).find(a =>
+        a.type === 'custom' && a.description.startsWith('Approve execution for task')
+      );
+      if (existingApproval?.status === 'approved') {
+        taskManager.enqueueTask(subtask.id);
+        continue;
+      }
+      if (!existingApproval) {
+        approvalManager.create({
+          taskId: subtask.id,
+          type: 'custom',
+          description: `Approve execution for task "${subtask.title}"`,
+          evidence: [
+            `Team: ${subtask.metadata.teamName ?? 'unknown'}`,
+            `Lead task completed: ${task.id}`,
+          ],
+        });
+      }
+    }
+  });
+
+  eventBus.on('approval.decided', (event) => {
+    if (event.type !== 'approval.decided' || event.decision !== 'approved') return;
+    const approval = approvalManager.getById(event.approvalId);
+    if (!approval || approval.type !== 'custom' || !approval.description.startsWith('Approve execution for task')) return;
+
+    const task = taskManager.getTask(approval.taskId);
+    if (!task || task.status !== 'pending' || !taskManager.areDependenciesMet(task)) return;
+    taskManager.enqueueTask(task.id);
+  });
+
   const schedulerInterval = setInterval(() => {
     const taskId = scheduler.dequeue();
     if (taskId) {
@@ -148,6 +242,10 @@ export async function startDaemon(): Promise<void> {
       });
     }
   }, 1000);
+
+  const schedulerHeartbeatInterval = setInterval(() => {
+    scheduler.heartbeatActiveLeases();
+  }, 60_000);
 
   // --- Periodic GC ---
   const gcInterval = setInterval(() => {
@@ -199,14 +297,22 @@ export async function startDaemon(): Promise<void> {
     taskManager, approvalManager, scheduler,
     sessionPool, agentLoader, sessionRunner, eventBus,
     memoryManager, skillManager, automationScheduler, modelManager,
-    checkIn, githubEvents, browserEngine, hotReloader,
+    checkIn, githubEvents, browserEngine, hotReloader, artifactCollector, teamRepo, taskRuntimeConfig, executionSettings,
   });
 
   const server = api.listen(config.apiPort, () => {
-    console.log(`\n✅ GHC Orchestrator running on http://localhost:${config.apiPort}`);
+    console.log(`\n✅ GHC Dispatch running on http://localhost:${config.apiPort}`);
     console.log(`   API: http://localhost:${config.apiPort}/api`);
     console.log(`   SSE: http://localhost:${config.apiPort}/api/events/stream`);
     console.log(`   Health: http://localhost:${config.apiPort}/api/health`);
+  });
+  server.maxConnections = 128;
+  server.keepAliveTimeout = 1000;
+  server.headersTimeout = 5000;
+  server.requestTimeout = 30_000;
+  server.on('connection', (socket) => {
+    socket.setNoDelay(true);
+    socket.setKeepAlive(false);
   });
 
   // --- Discord Bot ---
@@ -214,7 +320,7 @@ export async function startDaemon(): Promise<void> {
   if (config.discordBotToken) {
     discordBot = new DiscordBot({
       taskManager, approvalManager, sessionRunner,
-      skillManager, memoryManager, eventBus, modelManager, config,
+      skillManager, memoryManager, eventBus, modelManager, agentLoader, teamRepo, config,
     });
     try {
       await discordBot.start();
@@ -232,6 +338,7 @@ export async function startDaemon(): Promise<void> {
   const shutdown = async () => {
     console.log('\n🛑 Shutting down...');
     clearInterval(schedulerInterval);
+    clearInterval(schedulerHeartbeatInterval);
     clearInterval(gcInterval);
     memoryManager.stopBackgroundProcessing();
     automationScheduler.stopAll();

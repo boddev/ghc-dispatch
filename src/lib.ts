@@ -15,6 +15,9 @@ export type { Task, TaskResult, Checkpoint, OrchestratorEvent } from './control-
 // Store
 export { TaskRepo } from './store/task-repo.js';
 export { EventRepo } from './store/event-repo.js';
+export { CheckpointRepo } from './store/checkpoint-repo.js';
+export { SchedulerQueueRepo } from './store/scheduler-queue-repo.js';
+export { TeamRepo } from './store/team-repo.js';
 export { ConversationRepo } from './store/conversation-repo.js';
 export { getDb, closeDb, createTestDb } from './store/db.js';
 

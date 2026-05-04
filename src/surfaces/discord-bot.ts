@@ -23,6 +23,9 @@ import type { SkillManager } from '../skills/skill-manager.js';
 import type { MemoryManager } from '../memory/memory-manager.js';
 import type { EventBus } from '../control-plane/event-bus.js';
 import type { ModelManager } from '../execution/model-manager.js';
+import type { AgentLoader } from '../execution/agent-loader.js';
+import { agentHandle } from '../execution/agent-loader.js';
+import type { TeamRepo } from '../store/team-repo.js';
 import type { Config } from '../config.js';
 
 export interface DiscordBotDeps {
@@ -33,6 +36,8 @@ export interface DiscordBotDeps {
   memoryManager: MemoryManager;
   eventBus: EventBus;
   modelManager: ModelManager;
+  agentLoader: AgentLoader;
+  teamRepo: TeamRepo;
   config: Config;
 }
 
@@ -41,6 +46,7 @@ export class DiscordBot {
   private deps: DiscordBotDeps;
   private prefix: string;
   private allowedChannels: Set<string>;
+  private adminUsers: Set<string>;
   private notifyChannelId: string | null = null;
 
   constructor(deps: DiscordBotDeps) {
@@ -48,6 +54,9 @@ export class DiscordBot {
     this.prefix = deps.config.discordCommandPrefix || '!dispatch';
     this.allowedChannels = new Set(
       (deps.config.discordAllowedChannels || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    this.adminUsers = new Set(
+      (deps.config.discordAdminUsers || '').split(',').map(s => s.trim()).filter(Boolean)
     );
 
     this.client = new Client({
@@ -150,6 +159,9 @@ export class DiscordBot {
           break;
         case 'agents':
           await this.cmdAgents(msg);
+          break;
+        case 'teams':
+          await this.cmdTeams(msg);
           break;
         case 'skills':
           await this.cmdSkills(msg);
@@ -349,14 +361,39 @@ export class DiscordBot {
   }
 
   private async cmdAgents(msg: Message): Promise<void> {
-    const agents = this.deps.skillManager ? [] : []; // placeholder
-    // Get agents from agent loader indirectly via task manager
-    const lines = ['**Available Agents:**'];
-    lines.push('`@orchestrator` — Routes tasks and manages workflows');
-    lines.push('`@coder` — Software engineering specialist');
-    lines.push('`@designer` — UI/UX design specialist');
-    lines.push('`@general-purpose` — Research, docs, general tasks');
+    const agents = this.deps.agentLoader.list();
+    if (agents.length === 0) { await msg.reply('No agents loaded.'); return; }
+    const lines = ['**Available Agents:**', ...agents.map(a => {
+      const handle = agentHandle(a.name);
+      return `\`${handle}\` (model: ${a.model}) — ${a.description.slice(0, 120)}`;
+    })];
     await msg.reply(lines.join('\n'));
+  }
+
+  private shortDescription(description?: string): string {
+    const text = (description ?? '').replace(/\s+/g, ' ').trim();
+    if (!text) return 'No description';
+    const firstSentence = text.match(/^.*?[.!?](?:\s|$)/)?.[0]?.trim() ?? text;
+    return firstSentence.length > 72 ? `${firstSentence.slice(0, 69)}...` : firstSentence;
+  }
+
+  private async cmdTeams(msg: Message): Promise<void> {
+    const teams = this.deps.teamRepo.listAll();
+    if (teams.length === 0) { await msg.reply('No teams configured.'); return; }
+
+    const lines = ['**Teams:**'];
+    for (const team of teams) {
+      lines.push(`**${team.name}** — ${this.shortDescription(team.description)}`);
+      lines.push(`Lead: \`${team.leadAgent}\` — ${this.shortDescription(this.deps.agentLoader.get(team.leadAgent)?.description)}`);
+      if (team.memberAgents.length > 0) {
+        lines.push(`Members: ${team.memberAgents.map(agent =>
+          `\`${agent}\` — ${this.shortDescription(this.deps.agentLoader.get(agent)?.description)}`
+        ).join('; ')}`);
+      }
+      lines.push('');
+    }
+
+    await msg.reply(lines.join('\n').slice(0, 1900));
   }
 
   private async cmdSkills(msg: Message): Promise<void> {
@@ -515,6 +552,7 @@ export class DiscordBot {
   }
 
   private async cmdRestart(msg: Message): Promise<void> {
+    if (!(await this.ensureAdmin(msg, 'restart'))) return;
     await msg.reply('🔄 Restarting dispatch daemon...');
     try {
       await fetch('http://localhost:7878/api/restart', { method: 'POST' });
@@ -524,6 +562,7 @@ export class DiscordBot {
   }
 
   private async cmdUpdate(msg: Message): Promise<void> {
+    if (!(await this.ensureAdmin(msg, 'update'))) return;
     await msg.reply('🔄 Checking for updates...');
     try {
       const resp = await fetch('http://localhost:7878/api/update', { method: 'POST' });
@@ -589,6 +628,7 @@ export class DiscordBot {
         ].join('\n') },
         { name: 'Info & Memory', value: [
           `\`${p} agents\` — list available agents`,
+          `\`${p} teams\` — list teams and their agents`,
           `\`${p} skills\` — list installed skills`,
           `\`${p} stats\` — system statistics`,
           `\`${p} recall <topic>\` — search memory for a topic`,
@@ -669,5 +709,17 @@ export class DiscordBot {
   private extractFlag(input: string, flag: string): string | undefined {
     const regex = new RegExp(`${flag}\\s+(\\S+)`);
     return input.match(regex)?.[1];
+  }
+
+  private async ensureAdmin(msg: Message, action: string): Promise<boolean> {
+    if (this.adminUsers.has(msg.author.id) || this.adminUsers.has(msg.author.username)) {
+      return true;
+    }
+
+    await msg.reply(
+      `🔒 The \`${action}\` command is restricted. Add your Discord user ID or username to ` +
+      '`DISCORD_ADMIN_USERS` to allow it.'
+    );
+    return false;
   }
 }

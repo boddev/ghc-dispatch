@@ -1,6 +1,7 @@
 import type { Task, TaskStatus } from './task-model.js';
 import type { TaskRepo } from '../store/task-repo.js';
 import type { EventBus } from './event-bus.js';
+import type { SchedulerQueueRepo, SchedulerQueueEntry } from '../store/scheduler-queue-repo.js';
 
 export interface SchedulerConfig {
   maxGlobalConcurrent: number;
@@ -32,9 +33,17 @@ export class Scheduler {
     private taskRepo: TaskRepo,
     private eventBus: EventBus,
     private config: SchedulerConfig,
+    private queueRepo?: SchedulerQueueRepo,
+    private leaseOwner = `scheduler-${process.pid}-${Date.now()}`,
+    private leaseMs = 5 * 60_000,
   ) {}
 
   enqueue(task: Task): number {
+    if (this.queueRepo) {
+      this.queueRepo.enqueue(task.id, PRIORITY_WEIGHTS[task.priority] ?? 2);
+      return this.getQueueSnapshot().findIndex(e => e.taskId === task.id);
+    }
+
     const entry: QueueEntry = {
       taskId: task.id,
       priority: PRIORITY_WEIGHTS[task.priority] ?? 2,
@@ -46,8 +55,15 @@ export class Scheduler {
   }
 
   dequeue(): string | null {
+    if (this.queueRepo) return this.dequeueDurable();
+
     if (this.queue.length === 0) return null;
     if (this.totalRunning >= this.config.maxGlobalConcurrent) return null;
+
+    // Re-sort so aging boost actually advances long-waiting tasks; without
+    // this, the sort order is frozen at enqueue time and starvation is
+    // possible when high-priority tasks keep arriving.
+    this.sortQueue();
 
     for (let i = 0; i < this.queue.length; i++) {
       const entry = this.queue[i];
@@ -64,6 +80,11 @@ export class Scheduler {
   }
 
   markCompleted(task: Task): void {
+    if (this.queueRepo) {
+      this.queueRepo.delete(task.id);
+      return;
+    }
+
     this.totalRunning = Math.max(0, this.totalRunning - 1);
 
     if (task.repo) {
@@ -75,28 +96,70 @@ export class Scheduler {
   }
 
   cancel(taskId: string): boolean {
+    if (this.queueRepo) return this.queueRepo.delete(taskId);
+
     const idx = this.queue.findIndex(e => e.taskId === taskId);
     if (idx >= 0) { this.queue.splice(idx, 1); return true; }
     return false;
   }
 
   get queueLength(): number {
+    if (this.queueRepo) return this.queueRepo.countQueued();
     return this.queue.length;
   }
 
   get runningCount(): number {
+    if (this.queueRepo) return this.queueRepo.countRunning();
     return this.totalRunning;
   }
 
   getQueueSnapshot(): Array<{ taskId: string; position: number; priority: string }> {
+    if (this.queueRepo) {
+      const now = Date.now();
+      return this.sortDurableEntries(this.queueRepo.listAvailable(now), now).map((e, i) => ({
+        taskId: e.taskId,
+        position: i,
+        priority: this.priorityName(e.priority),
+      }));
+    }
+
     return this.queue.map((e, i) => ({
       taskId: e.taskId,
       position: i,
-      priority: Object.entries(PRIORITY_WEIGHTS).find(([, v]) => v === e.priority)?.[0] ?? 'normal',
+      priority: this.priorityName(e.priority),
     }));
   }
 
+  heartbeatActiveLeases(): number {
+    if (!this.queueRepo) return 0;
+    return this.queueRepo.heartbeatOwner(this.leaseOwner, this.leaseMs);
+  }
+
+  getLeaseOwner(): string {
+    return this.leaseOwner;
+  }
+
+  setConcurrency(maxGlobalConcurrent: number): void {
+    if (maxGlobalConcurrent < this.runningCount) {
+      throw new Error(`Cannot set max concurrency to ${maxGlobalConcurrent}; ${this.runningCount} task(s) are currently running`);
+    }
+    this.config = {
+      ...this.config,
+      maxGlobalConcurrent,
+      maxPerRepo: Math.max(1, Math.floor(maxGlobalConcurrent / 2)),
+      maxPerUser: maxGlobalConcurrent,
+    };
+  }
+
   private canAdmit(task: Task): boolean {
+    if (this.queueRepo) {
+      const running = this.queueRepo.listRunning().map(e => this.taskRepo.getById(e.taskId)).filter(Boolean) as Task[];
+      if (running.length >= this.config.maxGlobalConcurrent) return false;
+      if (task.repo && running.filter(t => t.repo === task.repo).length >= this.config.maxPerRepo) return false;
+      if (running.filter(t => t.createdBy === task.createdBy).length >= this.config.maxPerUser) return false;
+      return true;
+    }
+
     if (this.totalRunning >= this.config.maxGlobalConcurrent) return false;
 
     if (task.repo) {
@@ -132,5 +195,34 @@ export class Scheduler {
       const effectiveB = b.priority - ageB;
       return effectiveA - effectiveB;
     });
+  }
+
+  private dequeueDurable(): string | null {
+    const now = Date.now();
+    if (this.queueRepo!.countQueued(now) === 0) return null;
+    if (this.queueRepo!.countRunning(now) >= this.config.maxGlobalConcurrent) return null;
+
+    for (const entry of this.sortDurableEntries(this.queueRepo!.listAvailable(now), now)) {
+      const task = this.taskRepo.getById(entry.taskId);
+      if (!task) { this.queueRepo!.delete(entry.taskId); continue; }
+
+      if (this.canAdmit(task) && this.queueRepo!.acquire(task.id, this.leaseOwner, this.leaseMs, now)) {
+        return task.id;
+      }
+    }
+
+    return null;
+  }
+
+  private sortDurableEntries(entries: SchedulerQueueEntry[], now: number): SchedulerQueueEntry[] {
+    return [...entries].sort((a, b) => {
+      const effectiveA = a.priority - ((now - a.enqueuedAt) / this.config.agingBoostMs);
+      const effectiveB = b.priority - ((now - b.enqueuedAt) / this.config.agingBoostMs);
+      return effectiveA - effectiveB;
+    });
+  }
+
+  private priorityName(priority: number): string {
+    return Object.entries(PRIORITY_WEIGHTS).find(([, v]) => v === priority)?.[0] ?? 'normal';
   }
 }

@@ -1,4 +1,4 @@
-# GHC Orchestrator
+# GHC Dispatch
 
 A Copilot-native agent orchestration platform. Orchestrate GitHub Copilot — don't replace it.
 

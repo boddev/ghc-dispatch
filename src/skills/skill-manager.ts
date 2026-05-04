@@ -6,8 +6,9 @@
  * as user-installed vs system-created.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync, cpSync, mkdtempSync } from 'node:fs';
+import { join, basename, dirname } from 'node:path';
+import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
 import type Database from 'better-sqlite3';
 
@@ -40,6 +41,14 @@ export interface SkillSearchResult {
   url: string;
   downloadCount?: number;
 }
+
+interface ResolvedSkillSource {
+  repoUrl: string;
+  skillName?: string;
+  sourceUrl: string;
+}
+
+const SKILLS_SH_ORIGIN = 'registry';
 
 export class SkillManager {
   private stmts: ReturnType<typeof this.prepareStatements>;
@@ -95,68 +104,96 @@ export class SkillManager {
     }
   }
 
+  /** Install a skill from skills.sh by URL, owner/repo/skill spec, or install command. */
+  async installFromSkillsSh(source: string): Promise<SkillRecord> {
+    const resolved = await this.resolveSkillsShSource(source);
+    const skill = await this.installFromGitHub(resolved.repoUrl, resolved.skillName, {
+      origin: SKILLS_SH_ORIGIN,
+      source: 'skills.sh',
+      sourceUrl: resolved.sourceUrl,
+      requireSkillFile: true,
+    });
+    if (!skill) {
+      throw new Error(`Failed to install skills.sh skill from ${source}`);
+    }
+    return skill;
+  }
+
   /** Install a skill from skills.sh registry */
   async installFromRegistry(skillName: string): Promise<SkillRecord | null> {
-    const targetDir = join(this.skillsDir, skillName);
-    mkdirSync(targetDir, { recursive: true });
-
     try {
-      // Try npx skills-sh or git-based install
-      const registryUrl = `https://github.com/skills-sh/${skillName}`;
-      execSync(`git clone --depth 1 "${registryUrl}" "${targetDir}"`, {
-        stdio: 'pipe', timeout: 60_000,
-      });
+      return await this.installFromSkillsSh(skillName);
     } catch {
-      // Fallback: search GitHub for skills.sh skill repos
-      try {
-        const searchUrl = `https://skills.sh/${skillName}`;
-        // Create a stub SKILL.md if clone fails
-        if (!existsSync(join(targetDir, 'SKILL.md'))) {
-          writeFileSync(join(targetDir, 'SKILL.md'), `# ${skillName}\n\nSkill installed from skills.sh registry.\nConfigure and customize as needed.\n`, 'utf-8');
-        }
-      } catch {
-        rmSync(targetDir, { recursive: true, force: true });
-        return null;
-      }
+      return null;
     }
-
-    const content = this.parseSkillFile(join(targetDir, 'SKILL.md'));
-    return this.registerSkill(skillName, content.name || skillName, content.description, 'registry', 'skills.sh', `https://skills.sh`, targetDir);
   }
 
   /** Install a skill from a GitHub repository */
-  async installFromGitHub(repoUrl: string, skillName?: string): Promise<SkillRecord | null> {
-    const name = skillName ?? repoUrl.split('/').pop()?.replace('.git', '') ?? 'unknown';
-    const targetDir = join(this.skillsDir, name);
+  async installFromGitHub(
+    repoUrl: string,
+    skillName?: string,
+    options: {
+      origin?: SkillOrigin;
+      source?: string;
+      sourceUrl?: string;
+      requireSkillFile?: boolean;
+    } = {},
+  ): Promise<SkillRecord | null> {
+    const normalizedRepoUrl = this.normalizeGitHubRepoUrl(repoUrl);
+    const repoName = normalizedRepoUrl.split('/').pop()?.replace('.git', '') ?? 'unknown';
+    const id = this.skillId(skillName ?? repoName);
+    const targetDir = join(this.skillsDir, id);
+    const cloneDir = mkdtempSync(join(tmpdir(), 'dispatch-skill-'));
 
     if (existsSync(targetDir)) {
       rmSync(targetDir, { recursive: true, force: true });
     }
 
     try {
-      execSync(`git clone --depth 1 "${repoUrl}" "${targetDir}"`, {
+      execSync(`git clone --depth 1 "${normalizedRepoUrl}" "${cloneDir}"`, {
         stdio: 'pipe', timeout: 120_000,
       });
     } catch (err: any) {
+      rmSync(cloneDir, { recursive: true, force: true });
       return null;
     }
 
-    // Find SKILL.md in the cloned repo
-    const skillMd = this.findSkillMd(targetDir);
-    if (!skillMd) {
+    const skillDir = this.findSkillDir(cloneDir, skillName);
+    if (!skillDir) {
+      if (options.requireSkillFile) {
+        rmSync(cloneDir, { recursive: true, force: true });
+        throw new Error(`No SKILL.md found for ${skillName ?? repoName} in ${normalizedRepoUrl}`);
+      }
+      cpSync(cloneDir, targetDir, { recursive: true });
+    } else {
+      cpSync(skillDir, targetDir, { recursive: true });
+    }
+
+    rmSync(cloneDir, { recursive: true, force: true });
+
+    const skillMd = join(targetDir, 'SKILL.md');
+    if (!existsSync(skillMd)) {
       // No SKILL.md — create a minimal one from README
       const readmePath = [join(targetDir, 'README.md'), join(targetDir, 'readme.md')].find(existsSync);
       const readmeContent = readmePath ? readFileSync(readmePath, 'utf-8').slice(0, 2000) : '';
-      writeFileSync(join(targetDir, 'SKILL.md'), `# ${name}\n\n${readmeContent}\n`, 'utf-8');
+      writeFileSync(join(targetDir, 'SKILL.md'), `# ${id}\n\n${readmeContent}\n`, 'utf-8');
     }
 
-    const content = this.parseSkillFile(skillMd ?? join(targetDir, 'SKILL.md'));
-    return this.registerSkill(name, content.name || name, content.description, 'github', repoUrl, repoUrl, targetDir);
+    const content = this.parseSkillFile(skillMd);
+    return this.registerSkill(
+      id,
+      content.name || skillName || repoName,
+      content.description,
+      options.origin ?? 'github',
+      options.source ?? normalizedRepoUrl,
+      options.sourceUrl ?? normalizedRepoUrl,
+      targetDir,
+    );
   }
 
   /** Create a skill by researching CLI tools (self-learning) */
   createSkill(name: string, description: string, instructions: string): SkillRecord {
-    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const id = this.skillId(name);
     const targetDir = join(this.skillsDir, id);
     mkdirSync(targetDir, { recursive: true });
 
@@ -276,6 +313,113 @@ export class SkillManager {
       }
     } catch {}
     return null;
+  }
+
+  private findSkillDir(dir: string, skillName?: string): string | null {
+    const requested = skillName ? this.skillId(skillName) : undefined;
+    const skillFiles = this.findSkillFiles(dir);
+    if (skillFiles.length === 0) return null;
+
+    if (requested) {
+      const match = skillFiles.find(skillFile => this.skillId(basename(dirname(skillFile))) === requested)
+        ?? skillFiles.find(skillFile => this.skillId(this.parseSkillFile(skillFile).name) === requested);
+      if (match) return dirname(match);
+      return null;
+    }
+
+    const direct = this.findSkillMd(dir);
+    if (direct) return dirname(direct);
+    return dirname(skillFiles[0]);
+  }
+
+  private findSkillFiles(dir: string): string[] {
+    const results: string[] = [];
+    const visit = (current: string) => {
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+          if (entry.name === '.git' || entry.name === 'node_modules') continue;
+          visit(join(current, entry.name));
+          continue;
+        }
+        if (entry.isFile() && entry.name.toLowerCase() === 'skill.md') {
+          results.push(join(current, entry.name));
+        }
+      }
+    };
+    visit(dir);
+    return results;
+  }
+
+  private async resolveSkillsShSource(source: string): Promise<ResolvedSkillSource> {
+    const trimmed = source.trim();
+    const command = this.parseSkillsCliCommand(trimmed);
+    if (command) return command;
+
+    if (trimmed.includes('skills.sh')) {
+      const sourceUrl = trimmed.startsWith('http') ? trimmed : `https://${trimmed.replace(/^\/+/, '')}`;
+      const pageCommand = await this.fetchSkillsShInstallCommand(sourceUrl);
+      if (pageCommand) return { ...pageCommand, sourceUrl };
+      return this.parseSkillsShPath(sourceUrl, sourceUrl);
+    }
+
+    return this.parseSkillsShPath(`https://skills.sh/${trimmed.replace(/^\/+/, '')}`, `https://skills.sh/${trimmed.replace(/^\/+/, '')}`);
+  }
+
+  private parseSkillsCliCommand(command: string): ResolvedSkillSource | null {
+    const match = command.match(/(?:npx\s+)?skills\s+add\s+([^\s"'\\<]+)(?:.*?(?:--skill|-s)\s+([^\s"'\\<]+))?/);
+    if (!match) return null;
+    const repoUrl = this.normalizeGitHubRepoUrl(match[1]);
+    const skillName = match[2];
+    return { repoUrl, skillName, sourceUrl: skillName ? `https://skills.sh/${this.githubSlug(repoUrl)}/${skillName}` : `https://skills.sh/${this.githubSlug(repoUrl)}` };
+  }
+
+  private async fetchSkillsShInstallCommand(sourceUrl: string): Promise<ResolvedSkillSource | null> {
+    const response = await fetch(sourceUrl);
+    if (!response.ok) {
+      throw new Error(`skills.sh returned ${response.status} for ${sourceUrl}`);
+    }
+    const html = await response.text();
+    return this.parseSkillsCliCommand(html);
+  }
+
+  private parseSkillsShPath(source: string, sourceUrl: string): ResolvedSkillSource {
+    let pathPart = source;
+    try {
+      const url = new URL(source);
+      pathPart = url.pathname;
+    } catch {
+      // Treat source as an owner/repo[/skill] path.
+    }
+    const [owner, repo, skillName] = pathPart.replace(/^\/+|\/+$/g, '').split('/');
+    if (!owner || !repo) {
+      throw new Error('skills.sh source must be a skills.sh URL, install command, or owner/repo[/skill] spec');
+    }
+    return {
+      repoUrl: `https://github.com/${owner}/${repo}`,
+      skillName,
+      sourceUrl,
+    };
+  }
+
+  private normalizeGitHubRepoUrl(input: string): string {
+    const trimmed = input.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('git@')) {
+      return trimmed.replace(/\/$/, '');
+    }
+    const [owner, repo] = trimmed.replace(/^\/+|\/+$/g, '').split('/');
+    if (!owner || !repo) {
+      throw new Error(`Invalid GitHub repository: ${input}`);
+    }
+    return `https://github.com/${owner}/${repo.replace(/\.git$/, '')}`;
+  }
+
+  private githubSlug(repoUrl: string): string {
+    const match = repoUrl.match(/github\.com[:/](.+?)(?:\.git)?$/);
+    return match?.[1]?.replace(/\/$/, '') ?? repoUrl;
+  }
+
+  private skillId(name: string): string {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'skill';
   }
 
   private rowToSkill(row: any): SkillRecord {

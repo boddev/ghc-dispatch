@@ -11,6 +11,33 @@
 export interface SessionOptions {
   model?: string;
   workingDirectory?: string;
+  enableConfigDiscovery?: boolean;
+  mcpServers?: Record<string, unknown>;
+  customAgents?: Array<{
+    name: string;
+    displayName?: string;
+    description?: string;
+    tools?: string[] | null;
+    prompt: string;
+    mcpServers?: Record<string, unknown>;
+  }>;
+  agent?: string;
+  skillDirectories?: string[];
+  disabledSkills?: string[];
+  availableTools?: string[];
+  excludedTools?: string[];
+  infiniteSessions?: {
+    enabled?: boolean;
+    backgroundCompactionThreshold?: number;
+    bufferExhaustionThreshold?: number;
+  };
+  tools?: Array<{
+    name: string;
+    description?: string;
+    parameters?: Record<string, unknown>;
+    handler: (args: unknown) => Promise<unknown> | unknown;
+    skipPermission?: boolean;
+  }>;
   onPermissionRequest?: (request: PermissionRequest) => Promise<boolean>;
   onEvent?: (event: SessionEvent) => void;
 }
@@ -44,6 +71,16 @@ export interface CopilotAdapter {
   stop(): Promise<void>;
   createSession(options: SessionOptions): Promise<CopilotSession>;
   isRunning(): boolean;
+}
+
+export type CopilotRuntimePermissionResponse =
+  | { kind: 'approve-once' }
+  | { kind: 'reject'; feedback: string };
+
+export function toCopilotRuntimePermissionResponse(approved: boolean): CopilotRuntimePermissionResponse {
+  return approved
+    ? { kind: 'approve-once' }
+    : { kind: 'reject', feedback: 'Denied by Dispatch runtime configuration.' };
 }
 
 /**
@@ -82,13 +119,26 @@ export class CopilotSdkAdapter implements CopilotAdapter {
     const session = await this.client.createSession({
       model: options.model,
       workingDirectory: options.workingDirectory,
+      enableConfigDiscovery: options.enableConfigDiscovery,
+      mcpServers: options.mcpServers,
+      customAgents: options.customAgents,
+      agent: options.agent,
+      skillDirectories: options.skillDirectories,
+      disabledSkills: options.disabledSkills,
+      availableTools: options.availableTools,
+      excludedTools: options.excludedTools,
+      infiniteSessions: options.infiniteSessions,
+      tools: options.tools,
       onPermissionRequest: options.onPermissionRequest
-        ? async (req: any) => options.onPermissionRequest!({
-            type: req.type ?? 'unknown',
-            description: req.description ?? '',
-            details: req,
-          })
-        : undefined,
+        ? async (req: any) => {
+            const approved = await options.onPermissionRequest!({
+              type: req.kind ?? req.type ?? 'unknown',
+              description: req.description ?? req.toolName ?? req.fullCommandText ?? '',
+              details: req,
+            });
+            return toCopilotRuntimePermissionResponse(approved);
+          }
+        : async () => toCopilotRuntimePermissionResponse(true),
     });
 
     const sessionId = `session-${Date.now()}`;

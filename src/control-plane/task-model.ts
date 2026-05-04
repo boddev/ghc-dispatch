@@ -68,6 +68,7 @@ export const CreateTaskInput = z.object({
   agent: z.string().default('@general-purpose'),
   model: z.string().optional(),
   repo: z.string().optional(),
+  workingDirectory: z.string().optional(),
   parentTaskId: z.string().optional(),
   dependsOn: z.array(z.string()).default([]),
   createdBy: z.string().default('cli'),
@@ -75,6 +76,20 @@ export const CreateTaskInput = z.object({
   metadata: z.record(z.unknown()).default({}),
 });
 export type CreateTaskInput = z.infer<typeof CreateTaskInput>;
+
+export const UpdateTaskInput = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  priority: Priority.optional(),
+  agent: z.string().optional(),
+  model: z.string().optional().nullable(),
+  repo: z.string().optional().nullable(),
+  workingDirectory: z.string().optional().nullable(),
+  dependsOn: z.array(z.string()).optional(),
+  maxRetries: z.number().int().min(0).max(10).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type UpdateTaskInput = z.infer<typeof UpdateTaskInput>;
 
 // --- Approval ---
 
@@ -103,11 +118,13 @@ export const OrchestratorEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('task.completed'), taskId: z.string(), result: TaskResultSchema }),
   z.object({ type: z.literal('task.failed'), taskId: z.string(), error: z.string() }),
   z.object({ type: z.literal('task.cancelled'), taskId: z.string(), reason: z.string() }),
+  z.object({ type: z.literal('task.deleted'), taskId: z.string(), deletedTaskIds: z.array(z.string()) }),
+  z.object({ type: z.literal('task.updated'), taskId: z.string(), data: z.record(z.unknown()) }),
   z.object({ type: z.literal('task.paused'), taskId: z.string(), reason: z.string() }),
   z.object({ type: z.literal('task.resumed'), taskId: z.string() }),
   z.object({ type: z.literal('task.retrying'), taskId: z.string(), attempt: z.number() }),
   z.object({ type: z.literal('approval.requested'), approvalId: z.string(), taskId: z.string() }),
-  z.object({ type: z.literal('approval.decided'), approvalId: z.string(), decision: z.string() }),
+  z.object({ type: z.literal('approval.decided'), approvalId: z.string(), taskId: z.string(), decision: z.string() }),
   z.object({ type: z.literal('session.created'), sessionId: z.string(), model: z.string() }),
   z.object({ type: z.literal('session.destroyed'), sessionId: z.string(), reason: z.string() }),
   z.object({ type: z.literal('artifact.captured'), taskId: z.string(), path: z.string() }),
@@ -123,7 +140,7 @@ const VALID_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   paused:    ['queued', 'cancelled'],
   completed: [],
   failed:    ['queued'],  // retry re-queues
-  cancelled: [],
+  cancelled: ['queued'],  // retry re-queues
 };
 
 export function canTransition(from: TaskStatus, to: TaskStatus): boolean {

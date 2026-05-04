@@ -3,6 +3,7 @@
  *
  * Manages runtime model selection for dispatch. Supports:
  * - Global default model (persisted)
+ * - Dispatch Chat model override
  * - Per-agent model (from .agent.md)
  * - Per-task model override (from task creation)
  * - Runtime switching via API/CLI/Discord (/model command)
@@ -40,6 +41,7 @@ const KNOWN_MODELS: ModelInfo[] = [
 
 export class ModelManager {
   private defaultModel: string;
+  private chatModel: string | undefined;
   private agentOverrides = new Map<string, string>();
   private stmts: ReturnType<typeof this.prepareStatements> | null = null;
 
@@ -77,6 +79,9 @@ export class ModelManager {
     const defaultRow = this.stmts!.get.get('default_model') as { value: string } | undefined;
     if (defaultRow) this.defaultModel = defaultRow.value;
 
+    const chatRow = this.stmts!.get.get('chat_model') as { value: string } | undefined;
+    if (chatRow) this.chatModel = chatRow.value;
+
     const rows = this.stmts!.getAll.all() as { key: string; value: string }[];
     for (const row of rows) {
       if (row.key.startsWith('agent:')) {
@@ -94,6 +99,30 @@ export class ModelManager {
   setDefault(model: string): void {
     this.defaultModel = model;
     this.persist('default_model', model);
+  }
+
+  /** Get the model Dispatch Chat uses. Falls back to the global default. */
+  getChatModel(): string {
+    return this.chatModel ?? this.defaultModel;
+  }
+
+  /** Get the explicit Dispatch Chat override, if one is configured. */
+  getChatModelOverride(): string | undefined {
+    return this.chatModel;
+  }
+
+  /** Set the model Dispatch Chat uses, persisted across restarts. */
+  setChatModel(model: string): void {
+    this.chatModel = model;
+    this.persist('chat_model', model);
+  }
+
+  /** Clear the Dispatch Chat override so it follows the global default model. */
+  clearChatModel(): void {
+    this.chatModel = undefined;
+    if (this.stmts) {
+      this.db!.prepare('DELETE FROM model_config WHERE key = ?').run('chat_model');
+    }
   }
 
   /** Set a runtime model override for a specific agent */
@@ -170,11 +199,15 @@ export class ModelManager {
   getStatus(): {
     defaultModel: string;
     agentOverrides: Record<string, string>;
+    chatModel: string;
+    chatModelOverride?: string;
     availableModels: number;
   } {
     return {
       defaultModel: this.defaultModel,
       agentOverrides: this.getAgentOverrides(),
+      chatModel: this.getChatModel(),
+      chatModelOverride: this.getChatModelOverride(),
       availableModels: KNOWN_MODELS.length,
     };
   }

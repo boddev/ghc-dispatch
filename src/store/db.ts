@@ -29,8 +29,17 @@ export function createTestDb(): Database.Database {
   return testDb;
 }
 
-function runMigrations(database: Database.Database): void {
-  database.exec(`
+interface Migration {
+  version: number;
+  name: string;
+  sql: string;
+}
+
+const MIGRATIONS: Migration[] = [
+  {
+    version: 1,
+    name: 'initial-schema',
+    sql: `
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
@@ -187,5 +196,76 @@ function runMigrations(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_auto_enabled ON automation_jobs(enabled);
     CREATE INDEX IF NOT EXISTS idx_auto_next_run ON automation_jobs(next_run_at);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_auto_webhook ON automation_jobs(webhook_path) WHERE webhook_path IS NOT NULL;
+    `,
+  },
+  {
+    version: 2,
+    name: 'durable-scheduler-queue',
+    sql: `
+    CREATE TABLE IF NOT EXISTS scheduler_queue (
+      task_id TEXT PRIMARY KEY,
+      priority INTEGER NOT NULL,
+      enqueued_at INTEGER NOT NULL,
+      lease_owner TEXT,
+      lease_expires_at INTEGER,
+      heartbeat_at INTEGER,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_scheduler_queue_available
+      ON scheduler_queue(lease_owner, lease_expires_at, priority, enqueued_at);
+    CREATE INDEX IF NOT EXISTS idx_scheduler_queue_lease
+      ON scheduler_queue(lease_owner, lease_expires_at);
+    `,
+  },
+  {
+    version: 3,
+    name: 'agent-teams',
+    sql: `
+    CREATE TABLE IF NOT EXISTS agent_teams (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      lead_agent TEXT NOT NULL,
+      member_agents TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      metadata TEXT NOT NULL DEFAULT '{}'
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_agent_teams_name ON agent_teams(name);
+    CREATE INDEX IF NOT EXISTS idx_agent_teams_lead ON agent_teams(lead_agent);
+    `,
+  },
+];
+
+function runMigrations(database: Database.Database): void {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      applied_at TEXT NOT NULL
+    );
   `);
+
+  const hasMigration = database.prepare('SELECT 1 FROM schema_migrations WHERE version = ?');
+  const recordMigration = database.prepare(`
+    INSERT INTO schema_migrations (version, name, applied_at)
+    VALUES (@version, @name, @appliedAt)
+  `);
+
+  for (const migration of MIGRATIONS) {
+    if (hasMigration.get(migration.version)) continue;
+    const tx = database.transaction(() => {
+      database.exec(migration.sql);
+      recordMigration.run({
+        version: migration.version,
+        name: migration.name,
+        appliedAt: new Date().toISOString(),
+      });
+    });
+    tx();
+  }
 }

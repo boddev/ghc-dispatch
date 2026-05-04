@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
@@ -10,6 +10,14 @@ const AgentFrontmatter = z.object({
   skills: z.array(z.string()).default([]),
   tools: z.array(z.string()).default([]),
   mcpServers: z.array(z.string()).default([]),
+  domain: z.string().optional(),
+  teamType: z.string().optional(),
+  teamRoles: z.array(z.string()).default([]),
+  preferredTasks: z.array(z.string()).default([]),
+  antiTasks: z.array(z.string()).default([]),
+  handoffStyle: z.string().optional(),
+  leadershipStyle: z.string().optional(),
+  allowedPeers: z.array(z.string()).default([]),
 });
 
 export type AgentDefinition = z.infer<typeof AgentFrontmatter> & {
@@ -17,14 +25,39 @@ export type AgentDefinition = z.infer<typeof AgentFrontmatter> & {
   filePath: string;
 };
 
+export interface CreateAgentInput {
+  name: string;
+  description: string;
+  model?: string;
+  skills?: string[];
+  tools?: string[];
+  mcpServers?: string[];
+  systemPrompt: string;
+}
+
+export function agentSlug(name: string): string {
+  return name
+    .replace(/^@/, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+export function agentHandle(name: string): string {
+  const slug = agentSlug(name);
+  if (!slug) throw new Error('Agent name must contain at least one letter or number');
+  return `@${slug}`;
+}
+
 export function parseAgentFile(filePath: string): AgentDefinition {
   const raw = readFileSync(filePath, 'utf-8');
   return parseAgentContent(raw, filePath);
 }
 
 export function parseAgentContent(content: string, filePath = '<inline>'): AgentDefinition {
+  const normalizedContent = content.replace(/^\uFEFF/, '');
   const fmRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
-  const match = content.match(fmRegex);
+  const match = normalizedContent.match(fmRegex);
   if (!match) {
     throw new Error(`Invalid agent file (no YAML frontmatter): ${filePath}`);
   }
@@ -62,19 +95,18 @@ export class AgentLoader {
   }
 
   reload(): void {
-    this.agents.clear();
+    const nextAgents = new Map<string, AgentDefinition>();
     for (const dir of this.dirs) {
       const defs = loadAgentsFromDir(dir);
       for (const def of defs) {
-        const key = `@${def.name.toLowerCase().replace(/\s+/g, '-')}`;
-        this.agents.set(key, def);
+        nextAgents.set(agentHandle(def.name), def);
       }
     }
+    this.agents = nextAgents;
   }
 
   get(agentName: string): AgentDefinition | undefined {
-    const key = agentName.startsWith('@') ? agentName.toLowerCase() : `@${agentName.toLowerCase()}`;
-    return this.agents.get(key);
+    return this.agents.get(agentHandle(agentName));
   }
 
   list(): AgentDefinition[] {
@@ -83,6 +115,47 @@ export class AgentLoader {
 
   has(agentName: string): boolean {
     return this.get(agentName) !== undefined;
+  }
+
+  create(input: CreateAgentInput): AgentDefinition {
+    const content = [
+      '---',
+      `name: ${input.name}`,
+      `description: ${input.description}`,
+      `model: ${input.model ?? 'auto'}`,
+      `skills: ${JSON.stringify(input.skills ?? [])}`,
+      `tools: ${JSON.stringify(input.tools ?? [])}`,
+      `mcpServers: ${JSON.stringify(input.mcpServers ?? [])}`,
+      '---',
+      input.systemPrompt.trim(),
+      '',
+    ].join('\n');
+
+    return this.createFromContent(content);
+  }
+
+  createFromContent(content: string): AgentDefinition {
+    const userDir = this.dirs.at(-1) ?? this.dirs[0];
+    if (!userDir) throw new Error('No agent directory configured');
+
+    mkdirSync(userDir, { recursive: true });
+    const parsed = parseAgentContent(content);
+    const slug = agentSlug(parsed.name);
+    const handle = agentHandle(parsed.name);
+
+    const filePath = join(userDir, `${slug}.agent.md`);
+    if (existsSync(filePath)) {
+      this.reload();
+      const existing = this.get(handle);
+      if (existing) return existing;
+      throw new Error(`Agent already exists but could not be loaded: ${handle}`);
+    }
+
+    writeFileSync(filePath, content.endsWith('\n') ? content : `${content}\n`, 'utf-8');
+    this.reload();
+    const created = this.get(handle);
+    if (!created) throw new Error(`Agent was written but could not be loaded: ${handle}`);
+    return created;
   }
 
   getDefault(): AgentDefinition {

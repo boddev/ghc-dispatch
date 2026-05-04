@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { parseAgentContent, AgentLoader } from '../../src/execution/agent-loader.js';
 import { join } from 'node:path';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 
 describe('Agent Loader', () => {
   describe('parseAgentContent', () => {
@@ -41,6 +43,18 @@ Do simple things.`;
       expect(agent.mcpServers).toEqual([]);
     });
 
+    it('accepts UTF-8 BOM before frontmatter', () => {
+      const content = `\uFEFF---
+name: BOM Agent
+description: Includes byte order mark
+---
+Do simple things.`;
+
+      const agent = parseAgentContent(content);
+      expect(agent.name).toBe('BOM Agent');
+      expect(agent.systemPrompt).toBe('Do simple things.');
+    });
+
     it('throws on missing frontmatter', () => {
       expect(() => parseAgentContent('no frontmatter here')).toThrow('no YAML frontmatter');
     });
@@ -69,6 +83,27 @@ Do simple things.`;
     it('handles non-existent directory gracefully', () => {
       const loader = new AgentLoader(['/nonexistent/path']);
       expect(loader.list()).toEqual([]);
+    });
+
+    it('keeps existing agents if a reload fails', () => {
+      const dir = mkdtempSync(join(tmpdir(), 'ghc-agent-loader-'));
+      try {
+        const agentPath = join(dir, 'good.agent.md');
+        writeFileSync(agentPath, `---
+name: Good
+description: Valid agent
+---
+Prompt.`);
+
+        const loader = new AgentLoader([dir]);
+        expect(loader.has('@good')).toBe(true);
+
+        writeFileSync(agentPath, 'invalid content');
+        expect(() => loader.reload()).toThrow('no YAML frontmatter');
+        expect(loader.has('@good')).toBe(true);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
     });
   });
 });

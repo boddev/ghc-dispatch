@@ -1,5 +1,5 @@
 {
-  "name": "ghc-orchestrator",
+  "name": "ghc-dispatch",
   "description": "Copilot-native agent orchestration platform with task management, scheduling, and observability",
   "version": "0.1.0",
   "author": "bodonnell",

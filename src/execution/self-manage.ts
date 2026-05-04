@@ -25,7 +25,7 @@ export function selfUpdate(projectRoot: string): UpdateResult {
 
   // Try npm update first
   try {
-    const output = execSync('npm update -g ghc-orchestrator 2>&1', {
+    const output = execSync('npm update -g ghc-dispatch 2>&1', {
       encoding: 'utf-8', timeout: 120_000,
     });
     const newVersion = getCurrentVersion(projectRoot);

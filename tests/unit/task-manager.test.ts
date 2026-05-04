@@ -3,6 +3,7 @@ import { TaskManager } from '../../src/control-plane/task-manager.js';
 import { LocalEventBus } from '../../src/control-plane/event-bus.js';
 import { TaskRepo } from '../../src/store/task-repo.js';
 import { EventRepo } from '../../src/store/event-repo.js';
+import { CheckpointRepo } from '../../src/store/checkpoint-repo.js';
 import { createTestDb } from '../../src/store/db.js';
 import type { OrchestratorEvent } from '../../src/control-plane/task-model.js';
 
@@ -15,10 +16,11 @@ describe('TaskManager', () => {
     const db = createTestDb();
     const taskRepo = new TaskRepo(db);
     const eventRepo = new EventRepo(db);
+    const checkpointRepo = new CheckpointRepo(db);
     eventBus = new LocalEventBus();
     emitted = [];
     eventBus.onAny((e) => emitted.push(e));
-    tm = new TaskManager(taskRepo, eventRepo, eventBus);
+    tm = new TaskManager(taskRepo, eventRepo, eventBus, checkpointRepo);
   });
 
   describe('createTask', () => {
@@ -129,6 +131,28 @@ describe('TaskManager', () => {
       expect(retried.retryCount).toBe(1);
     });
 
+    it('retries a cancelled task', () => {
+      const task = tm.createTask({ title: 'Retry cancelled' });
+      tm.cancelTask(task.id, 'Changed my mind');
+
+      const retried = tm.retryTask(task.id);
+
+      expect(retried.status).toBe('queued');
+      expect(retried.retryCount).toBe(1);
+    });
+
+    it('retries a paused task', () => {
+      const task = tm.createTask({ title: 'Retry paused' });
+      tm.enqueueTask(task.id);
+      tm.transitionTask(task.id, 'running', { sessionId: 'sess-1' });
+      tm.transitionTask(task.id, 'paused', { reason: 'Interrupted' });
+
+      const retried = tm.retryTask(task.id);
+
+      expect(retried.status).toBe('queued');
+      expect(retried.retryCount).toBe(1);
+    });
+
     it('throws when max retries exceeded', () => {
       const task = tm.createTask({ title: 'Retry limit', maxRetries: 1 });
       tm.enqueueTask(task.id);
@@ -143,9 +167,100 @@ describe('TaskManager', () => {
       expect(() => tm.retryTask(task.id)).toThrow('Max retries');
     });
 
-    it('throws when retrying non-failed task', () => {
+    it('throws when retrying a non-retryable task', () => {
       const task = tm.createTask({ title: 'Not failed' });
-      expect(() => tm.retryTask(task.id)).toThrow('Can only retry failed tasks');
+      expect(() => tm.retryTask(task.id)).toThrow('Can only retry failed, cancelled, or paused tasks');
+    });
+  });
+
+  describe('deleteTask', () => {
+    it('deletes a non-running task and emits task.deleted', () => {
+      const task = tm.createTask({ title: 'Delete me' });
+
+      const result = tm.deleteTask(task.id);
+
+      expect(result.deletedTaskIds).toEqual([task.id]);
+      expect(tm.getTask(task.id)).toBeUndefined();
+      expect(emitted.at(-1)).toEqual({
+        type: 'task.deleted',
+        taskId: task.id,
+        deletedTaskIds: [task.id],
+      });
+    });
+
+    it('requires recursive deletion for subtasks', () => {
+      const parent = tm.createTask({ title: 'Parent' });
+      const child = tm.createTask({ title: 'Child', parentTaskId: parent.id });
+
+      expect(() => tm.deleteTask(parent.id)).toThrow('subtask');
+      expect(tm.getTask(parent.id)).toBeDefined();
+      expect(tm.getTask(child.id)).toBeDefined();
+    });
+
+    it('recursively deletes subtasks', () => {
+      const parent = tm.createTask({ title: 'Parent' });
+      const child = tm.createTask({ title: 'Child', parentTaskId: parent.id });
+
+      const result = tm.deleteTask(parent.id, { recursive: true });
+
+      expect(result.deletedTaskIds).toEqual([parent.id, child.id]);
+      expect(tm.getTask(parent.id)).toBeUndefined();
+      expect(tm.getTask(child.id)).toBeUndefined();
+    });
+
+    it('does not delete running tasks', () => {
+      const task = tm.createTask({ title: 'Running' });
+      tm.enqueueTask(task.id);
+      tm.transitionTask(task.id, 'running', { sessionId: 'sess-1' });
+
+      expect(() => tm.deleteTask(task.id)).toThrow('running task');
+      expect(tm.getTask(task.id)).toBeDefined();
+    });
+
+    it('removes deleted task references from remaining dependencies', () => {
+      const dependency = tm.createTask({ title: 'Dependency' });
+      const dependent = tm.createTask({ title: 'Dependent', dependsOn: [dependency.id] });
+
+      tm.deleteTask(dependency.id);
+
+      expect(tm.getTask(dependent.id)?.dependsOn).toEqual([]);
+    });
+  });
+
+  describe('updateTask', () => {
+    it('updates editable fields and stores model metadata', () => {
+      const task = tm.createTask({ title: 'Editable' });
+
+      const updated = tm.updateTask(task.id, {
+        title: 'Edited',
+        description: 'Updated description',
+        priority: 'high',
+        agent: '@coder',
+        model: 'gpt-5.5',
+        workingDirectory: 'C:\\work',
+        maxRetries: 2,
+        metadata: { preApproved: true },
+      });
+
+      expect(updated).toMatchObject({
+        title: 'Edited',
+        description: 'Updated description',
+        priority: 'high',
+        agent: '@coder',
+        workingDirectory: 'C:\\work',
+        maxRetries: 2,
+      });
+      expect(updated.metadata).toMatchObject({ model: 'gpt-5.5', preApproved: true });
+      expect(emitted.at(-1)).toMatchObject({ type: 'task.updated', taskId: task.id });
+    });
+
+    it('does not update running tasks', () => {
+      const task = tm.createTask({ title: 'Running' });
+      tm.enqueueTask(task.id);
+      tm.transitionTask(task.id, 'running', { sessionId: 'sess-1' });
+
+      expect(() => tm.updateTask(task.id, { title: 'Should fail' })).toThrow('running task');
+      expect(tm.getTask(task.id)?.title).toBe('Running');
     });
   });
 
@@ -240,6 +355,47 @@ describe('TaskManager', () => {
         'task.output',
         'task.completed',
       ]);
+    });
+  });
+
+  describe('recovery durability', () => {
+    it('records checkpoints and exposes the latest checkpoint', () => {
+      const task = tm.createTask({ title: 'Checkpointed task' });
+      const checkpoint = {
+        id: 'checkpoint-1',
+        taskId: task.id,
+        timestamp: new Date().toISOString(),
+        description: 'Before risky step',
+        sessionState: 'state',
+        artifacts: ['artifact.log'],
+      };
+
+      tm.recordCheckpoint(checkpoint);
+
+      expect(tm.getLatestCheckpoint(task.id)).toEqual(checkpoint);
+      const events = tm.getTaskEvents(task.id);
+      expect(events.at(-1)?.payload.type).toBe('task.checkpoint');
+    });
+
+    it('pauses interrupted running tasks for explicit recovery action', () => {
+      const task = tm.createTask({ title: 'Interrupted task' });
+      tm.enqueueTask(task.id);
+      tm.transitionTask(task.id, 'running', { sessionId: 's1' });
+
+      const recovered = tm.prepareRecovery(task.id, {
+        workingDirectory: 'C:\\worktrees\\task',
+        options: ['resume', 'restart', 'abandon'],
+      });
+
+      expect(recovered.status).toBe('paused');
+      expect(recovered.metadata.recovery).toMatchObject({
+        workingDirectory: 'C:\\worktrees\\task',
+      });
+
+      const resumed = tm.resumeRecoveredTask(task.id, 'resume');
+      expect(resumed.status).toBe('queued');
+      const types = tm.getTaskEvents(task.id).map(e => e.payload.type);
+      expect(types).toContain('task.resumed');
     });
   });
 });

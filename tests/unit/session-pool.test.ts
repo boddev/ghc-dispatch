@@ -62,4 +62,64 @@ describe('SessionPool', () => {
     expect(entries[0].taskId).toBe('task-1');
     expect(entries[1].taskId).toBe('task-2');
   });
+
+  describe('defaultRemote', () => {
+    it('prepends /remote to the first send by default', async () => {
+      const sent: string[] = [];
+      const recordingAdapter: any = {
+        async start() {},
+        async stop() {},
+        isRunning: () => true,
+        async createSession() {
+          return {
+            id: 'rec-1',
+            model: 'test',
+            async send(prompt: string) { sent.push(prompt); },
+            async disconnect() {},
+            isActive: () => true,
+          };
+        },
+      };
+      const remotePool = new SessionPool(recordingAdapter, { maxConcurrent: 1 });
+      const session = await remotePool.acquire('t', { model: 'test' });
+
+      await session.send('Hello');
+      await session.send('World');
+
+      expect(sent).toEqual(['/remote\nHello', 'World']);
+    });
+
+    it('does not prepend /remote when disabled', async () => {
+      const sent: string[] = [];
+      const recordingAdapter: any = {
+        async start() {},
+        async stop() {},
+        isRunning: () => true,
+        async createSession() {
+          return {
+            id: 'rec-2',
+            model: 'test',
+            async send(prompt: string) { sent.push(prompt); },
+            async disconnect() {},
+            isActive: () => true,
+          };
+        },
+      };
+      const localPool = new SessionPool(recordingAdapter, { maxConcurrent: 1, defaultRemote: false });
+      const session = await localPool.acquire('t', { model: 'test' });
+
+      await session.send('Hello');
+      await session.send('World');
+
+      expect(sent).toEqual(['Hello', 'World']);
+    });
+
+    it('still releases sessions when defaultRemote is on (id matches inner session)', async () => {
+      const remotePool = new SessionPool(adapter, { maxConcurrent: 1, defaultRemote: true });
+      const session = await remotePool.acquire('task-x', { model: 'test' });
+      expect(remotePool.size).toBe(1);
+      await remotePool.release(session.id);
+      expect(remotePool.size).toBe(0);
+    });
+  });
 });

@@ -1,8 +1,8 @@
-# GHC Orchestrator
+# GHC Dispatch
 
 **A Copilot-native agent orchestration platform.**
 
-Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orchestration, background automation, MCP-based extensibility, and VS Code Agents App observability on top of the GitHub Copilot SDK, preserving the full quality of Copilot's internal agent loop.
+Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orchestration, background automation, MCP-based extensibility, and VS Code Agents App observability on top of the GitHub Copilot SDK, preserving the full quality of Copilot's internal agent loop all managed through a VS Code Extension or CLI.
 
 ```
 ❌  Generic agent → Copilot (model)            ← degrades quality
@@ -13,31 +13,49 @@ Orchestrate GitHub Copilot — don't replace it. GHC Dispatch adds workflow orch
 
 ## Table of Contents
 
+**Overview**
 - [Why](#why)
 - [Architecture](#architecture)
 - [Quick Start](#quick-start)
+
+**Interfaces**
 - [CLI Reference](#cli-reference)
+- [TUI (Interactive Terminal)](#tui-interactive-terminal)
 - [HTTP API](#http-api)
 - [MCP Server](#mcp-server)
+
+**Core Concepts**
 - [Agents](#agents)
 - [Teams](#teams)
 - [Task Lifecycle](#task-lifecycle)
+- [DAG Execution](#dag-execution)
+
+**Control Plane**
 - [Scheduler & Admission Control](#scheduler--admission-control)
 - [Policy Engine](#policy-engine)
 - [Approval Workflows](#approval-workflows)
-- [DAG Execution](#dag-execution)
+
+**Execution & Coordination**
 - [Multi-Repo Coordination](#multi-repo-coordination)
+- [Browser Automation](#browser-automation)
+- [Model Switching](#model-switching)
+
+**Memory & Knowledge**
 - [Wiki Memory](#wiki-memory)
 - [Memory System](#memory-system)
 - [Skills](#skills)
+
+**Automation & Events**
 - [Automation](#automation)
 - [Proactive Check-Ins](#proactive-check-ins)
 - [GitHub Events](#github-events)
 - [Email & Calendar](#email--calendar)
-- [Browser Automation](#browser-automation)
-- [Model Switching](#model-switching)
+
+**User Surfaces**
 - [VS Code Integration](#vs-code-integration)
 - [Discord Integration](#discord-integration)
+
+**Operations & Reference**
 - [Event Store & Observability](#event-store--observability)
 - [Configuration](#configuration)
 - [Project Structure](#project-structure)
@@ -117,8 +135,8 @@ GHC Dispatch takes a different approach: **keep Copilot as the execution brain**
 ### Install
 
 ```bash
-git clone https://github.com/your-org/ghc-orchestrator.git
-cd ghc-orchestrator
+git clone https://github.com/your-org/ghc-dispatch.git
+cd ghc-dispatch
 npm install
 npm run build
 npm link          # Makes 'dispatch' available globally in your terminal
@@ -137,14 +155,14 @@ GHC_MOCK_COPILOT=1 dispatch --start
 Output:
 
 ```
-🚀 GHC Orchestrator starting...
-   Data dir: ~/.ghc-orchestrator
+🚀 GHC Dispatch starting...
+   Data dir: ~/.ghc-dispatch
    API port: 7878
    Max sessions: 4
    Copilot: SDK adapter started
    Agents: @coder, @designer, @general-purpose, @orchestrator
 
-✅ GHC Orchestrator running on http://localhost:7878
+✅ GHC Dispatch running on http://localhost:7878
    API: http://localhost:7878/api
    SSE: http://localhost:7878/api/events/stream
    Health: http://localhost:7878/api/health
@@ -232,6 +250,47 @@ dispatch --start
 
 ---
 
+## TUI (Interactive Terminal)
+
+Running `dispatch` with **no arguments** launches an interactive readline TUI that connects to a running daemon (and offers to start one for you if it isn't running). It streams real-time events over SSE, accepts `/slash` commands for instant actions, and treats any other input as natural-language task creation.
+
+```text
+⚡ Dispatch TUI
+  Connected to http://localhost:7878
+  Type /help for commands, or type naturally to create tasks.
+
+  ✓ Daemon v0.1.0 — uptime 42s
+
+> /list
+> /status 01KQ3...
+> /create "Refactor auth"  @coder  !high
+> Refactor the auth module to drop session cookies     ← natural language → task
+```
+
+### Slash commands
+
+| Command | Purpose |
+|---------|---------|
+| `/help` | Show all commands |
+| `/list [running\|queued\|...]` | List tasks, optionally filtered by status |
+| `/status <id>` | Show task details |
+| `/create "title" [@agent] [!priority]` | Create a task |
+| `/cancel <id>` / `/retry <id>` / `/enqueue <id>` / `/execute <id>` | Task actions |
+| `/events <id>` | Stream the event history of one task |
+| `/agents` / `/teams` / `/skills` | Inspect what's loaded |
+| `/stats` | Task counts, queue, sessions, memory stats |
+| `/model [<name>]` / `/models` | Show/switch default model, list available models |
+| `/recall <topic>` | Cross-channel memory search |
+| `/approvals` / `/approve <id>` / `/reject <id>` | Manage pending approvals |
+| `/checkin` | Run a proactive check-in on demand |
+| `/automation` | List automation jobs |
+| `/reload` / `/restart` / `/update` | Daemon control |
+| `/quit` | Exit the TUI (the daemon keeps running) |
+
+Anything that doesn't start with `/` is sent as a free-form prompt; dispatch creates a task assigned to `@general-purpose` with that text as the title.
+
+---
+
 ## HTTP API
 
 The daemon exposes a REST API on the configured port (default `7878`).
@@ -241,11 +300,13 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/tasks` | Create a new task |
+| `POST` | `/api/tasks/preview` | Resolve a task's agent / model / working directory **without persisting** (powers the VS Code "Dry run" checkbox and CLI `--dry-run`) |
 | `GET` | `/api/tasks` | List tasks (`?status=running&limit=20`) |
 | `GET` | `/api/tasks/:id` | Get task details |
 | `POST` | `/api/tasks/:id/enqueue` | Queue a pending task |
 | `POST` | `/api/tasks/:id/execute` | Enqueue and immediately dispatch |
-| `POST` | `/api/tasks/:id/cancel` | Cancel a task |
+| `POST` | `/api/tasks/:id/cancel` | Cancel a task (`{reason}` optional) |
+| `POST` | `/api/tasks/:id/cancellation-reason` | Set or update the cancellation reason after a task is cancelled (`{reason}`); 409s if task isn't `cancelled` |
 | `POST` | `/api/tasks/:id/retry` | Retry a failed task |
 | `GET` | `/api/tasks/:id/events` | Get event history |
 | `GET` | `/api/tasks/:id/subtasks` | Get child tasks |
@@ -258,13 +319,35 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | `POST` | `/api/approvals/:id/approve` | Approve a request |
 | `POST` | `/api/approvals/:id/reject` | Reject a request |
 
+### Recovery (paused-after-restart)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/tasks/:id/recovery` | Read recovery hints for a task that was paused because the daemon was interrupted mid-run |
+| `POST` | `/api/tasks/:id/recovery` | `{action: "resume"}` re-queues the task against its existing worktree; `{action: "restart"}` clears the worktree and starts fresh; `{action: "abandon", reason?}` cancels |
+
 ### Agents & Health
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/agents` | List loaded agent definitions |
+| `GET` | `/api/agents/:name/content` | Read the raw `.agent.md` source for one agent |
+| `POST` | `/api/agents` | Create or upsert an agent from a Markdown body |
+| `POST` | `/api/agents/generate` | Generate a new agent from a role description (uses Copilot) |
 | `GET` | `/api/stats` | Task stats, queue depth, session count |
 | `GET` | `/api/health` | Health check (status, version, uptime) |
+| `GET` | `/api/features` | Feature catalog used by the VS Code Features panel |
+
+### Runtime Configuration
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/task-runtime/config` | Per-session runtime defaults (allowed/blocked tools, MCP servers, infinite-session knobs) |
+| `POST` | `/api/task-runtime/config` | Update runtime defaults |
+| `POST` | `/api/task-runtime/config/reset` | Reset runtime defaults to factory values |
+| `GET` | `/api/execution/settings` | Read concurrency + idle-timeout settings |
+| `POST` | `/api/execution/settings` | Update `maxConcurrentSessions` and/or `taskSessionIdleTimeoutMs`; mirrored into the VS Code extension |
+| `POST` | `/api/integrations/workiq` | Persist Microsoft 365 / WorkIQ integration settings |
 
 ### Models
 
@@ -274,6 +357,16 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | `GET` | `/api/models/current` | Get current default model |
 | `POST` | `/api/models/switch` | Switch default or per-agent model (`{model, agent?}`) |
 | `POST` | `/api/models/reset` | Clear agent model override (`{agent}`) |
+| `GET` | `/api/chat/model` | Get the Dispatch Chat model (default or override) |
+| `POST` | `/api/chat/model` | Switch the Dispatch Chat model (`{model}`) |
+
+### Dispatch Chat
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/chat` | Send a message to the planner-style Dispatch Chat session (`{message, sessionKey?}`) |
+| `GET` | `/api/chat/session` | Inspect the current chat session metadata |
+| `DELETE` | `/api/chat/session` | Reset the Dispatch Chat session (drops session memory) |
 
 ### Conversations
 
@@ -334,6 +427,16 @@ The daemon exposes a REST API on the configured port (default `7878`).
 | `DELETE` | `/api/teams/:id` | Delete a team |
 | `POST` | `/api/teams/:id/run` | Dispatch a task to the full team (`title`, `description?`, `repo?`, `preApproved?`) |
 
+### Daemon Control
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/reload` | Hot-reload agents and skills without restarting |
+| `GET` | `/api/reload/status` | Last reload timestamp and counts |
+| `POST` | `/api/restart` | Spawn a replacement daemon and exit the current one |
+| `POST` | `/api/update` | Pull updates and restart |
+| `GET` | `/api/checkin` | Trigger a proactive check-in on demand |
+
 ### SSE Event Stream
 
 ```bash
@@ -358,7 +461,7 @@ curl -X POST http://localhost:7878/api/tasks/$TASK_ID/execute
 
 ## MCP Server
 
-GHC Orchestrator exposes itself as a **Model Context Protocol (MCP) server**, making it accessible from VS Code, Copilot CLI, Claude, and any MCP-compatible client.
+GHC Dispatch exposes itself as a **Model Context Protocol (MCP) server**, making it accessible from VS Code, Copilot CLI, Claude, and any MCP-compatible client.
 
 ### Available Tools
 
@@ -386,10 +489,10 @@ Add to your `.vscode/mcp.json` or VS Code settings:
 ```json
 {
   "servers": {
-    "ghc-orchestrator": {
+    "ghc-dispatch": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tsx", "/path/to/ghc-orchestrator/src/mcp/server.ts"]
+      "args": ["tsx", "/path/to/ghc-dispatch/src/mcp/server.ts"]
     }
   }
 }
@@ -415,7 +518,7 @@ Agents are specialist Copilot sessions, each with their own model, system prompt
 
 ### Agent Definition Format
 
-Create a `.agent.md` file in `~/.ghc-orchestrator/agents/` or the project's `agents/` directory:
+Create a `.agent.md` file in `~/.ghc-dispatch/agents/` or the project's `agents/` directory:
 
 ```markdown
 ---
@@ -548,6 +651,18 @@ Failed tasks can be retried up to `maxRetries` times (default: 3). Each retry us
 ```
 delay = retryBackoffMs × 2^attempt
 ```
+
+### Recovery After Daemon Restart
+
+If the daemon is killed mid-run, any tasks that were `running` are automatically transitioned to `paused` on next startup with a `recovery` payload describing the prior session, working directory, and last checkpoint. Operators (or the VS Code Approvals view, or `dispatch --status`) can then choose:
+
+| Action | Effect |
+|--------|--------|
+| **Resume** | Re-queue the paused task against the same git worktree so partial work is preserved. |
+| **Restart** | Clear the worktree and re-run from scratch. |
+| **Abandon** | Cancel the task with an optional reason. |
+
+Endpoints: `GET /api/tasks/:id/recovery` for the recovery hints, `POST /api/tasks/:id/recovery` with `{action: "resume" \| "restart" \| "abandon", reason?}` to act on it. The MCP `dispatch_recover_task` and CLI's task detail surface the same options.
 
 ---
 
@@ -727,7 +842,7 @@ Each repository gets an isolated git worktree per task (`git worktree add`), so 
 
 ## Wiki Memory
 
-GHC Orchestrator includes a wiki-based memory system. It stores knowledge as interlinked markdown pages — organized like a personal Obsidian vault.
+GHC Dispatch includes a wiki-based memory system. It stores knowledge as interlinked markdown pages — organized like a personal Obsidian vault.
 
 ### Features
 
@@ -740,14 +855,14 @@ GHC Orchestrator includes a wiki-based memory system. It stores knowledge as int
 
 ### Location
 
-Wiki pages are stored in `~/.ghc-orchestrator/wiki/pages/`.
+Wiki pages are stored in `~/.ghc-dispatch/wiki/pages/`.
 
 ### API
 
 ```typescript
 import { WikiManager } from './src/wiki/wiki-manager.js';
 
-const wiki = new WikiManager('~/.ghc-orchestrator/wiki');
+const wiki = new WikiManager('~/.ghc-dispatch/wiki');
 
 // Remember facts about entities
 wiki.remember('Burke', 'Prefers TypeScript', ['person']);
@@ -1101,11 +1216,13 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 Both skills are SKILL.md files in `skills/` — Copilot agents learn to use them automatically when loaded into a session.
 
-### Browser Automation
+---
+
+## Browser Automation
 
 Dispatch includes a full Playwright-powered browser engine that supports natural language commands. In addition to the AI-driven browsing available through Copilot agent sessions, dispatch provides deterministic, scriptable browser automation.
 
-#### Natural Language Commands
+### Natural Language Commands
 
 ```bash
 # Navigate with natural language
@@ -1139,7 +1256,7 @@ curl -X POST http://localhost:7878/api/browser/command \
   -d '{"command":"take a screenshot"}'
 ```
 
-#### Supported Natural Language Patterns
+### Supported Natural Language Patterns
 
 | Pattern | Example |
 |---------|---------|
@@ -1154,7 +1271,7 @@ curl -X POST http://localhost:7878/api/browser/command \
 | `screenshot` | "take a screenshot" |
 | `press <key>` | "press Enter" |
 
-#### Direct API
+### Direct API
 
 For precise control, use the direct browser endpoints:
 
@@ -1257,6 +1374,8 @@ GHC Dispatch integrates with VS Code through three mechanisms: a dedicated **VS 
 
 ### 1. VS Code Extension (`dispatch-vscode/`)
 
+📺 **Visual walkthrough:** see [`docs/VSCODE-EXTENSION-WALKTHROUGH.md`](./docs/VSCODE-EXTENSION-WALKTHROUGH.md) for a screen-by-screen tour of every panel and feature.
+
 A full extension that adds a "Dispatch" icon to the activity bar with 5 sidebar panels:
 
 | Panel | Contents |
@@ -1266,6 +1385,10 @@ A full extension that adds a "Dispatch" icon to the activity bar with 5 sidebar 
 | **Skills** | Skills grouped by User-Installed vs System-Created. Right-click to enable/disable. |
 | **Automation** | Cron jobs, webhooks, and event triggers with run counts |
 | **Approvals** | Pending approval requests with Approve/Reject context actions |
+
+**Create Task webview** includes a **Dry run (preview only)** checkbox next to **Pre-approved**. Tick it before clicking Create to see the resolved agent handle, model (after agent/per-task overrides), priority, repo, and working directory without persisting the task. Untick and click Create to actually create.
+
+**Task Detail webview** for cancelled tasks shows a **Cancellation reason** input pre-filled from `metadata.cancellationReason` (or the latest `task.cancelled` event reason — so reasons set via `dispatch --cancel <id> --reason "..."` are visible). Edit the text and click **Save reason** to update the task.
 
 **Commands** (Command Palette):
 - `Dispatch: Create Task` — input wizard for title, agent, priority
@@ -1277,7 +1400,17 @@ A full extension that adds a "Dispatch" icon to the activity bar with 5 sidebar 
 
 **Real-time**: SSE connection to the daemon pushes live task state changes. VS Code notifications fire for task completion/failure and approval requests (with Approve/Reject buttons).
 
-**Setup**: Start the daemon (`dispatch --start`), install the extension, the Dispatch icon appears in the activity bar.
+**Setup**: Install the extension and click the Dispatch icon in the activity bar. If `dispatch.autoStartDaemon` is enabled (default), the extension runs `dispatch --start` automatically when the daemon isn't already responding on `dispatch.apiUrl` — a progress notification tracks readiness. Set `dispatch.autoStartDaemon` to `false` if you'd rather start the daemon yourself.
+
+**Extension settings**:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `dispatch.apiUrl` | `http://localhost:7878` | Dispatch daemon API URL |
+| `dispatch.autoRefreshInterval` | `5000` | Auto-refresh interval in ms (`0` to disable) |
+| `dispatch.autoStartDaemon` | `true` | If the daemon isn't responding when the extension activates, run `dispatch --start` automatically (requires the `dispatch` CLI on your PATH) |
+| `dispatch.maxConcurrentSessions` | `4` | Synced to the daemon's session pool |
+| `dispatch.taskSessionIdleTimeoutMinutes` | `15` | Synced to the daemon's idle timeout |
 
 ### 2. Agent Plugin
 
@@ -1411,6 +1544,7 @@ Configuration is loaded from environment variables with sensible defaults:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `COPILOT_MODEL` | `claude-sonnet-4.6` | Default LLM model for the orchestrator |
+| `COPILOT_DEFAULT_REMOTE` | `1` | When `1`/`true` (default), every Copilot CLI session is steered into remote mode by prepending `/remote` to its first prompt. Set to `0` to keep sessions local. |
 | `API_PORT` | `7878` | HTTP API port |
 | `MAX_CONCURRENT_SESSIONS` | `4` | Maximum simultaneous Copilot sessions |
 | `MAX_RETRIES_PER_TASK` | `3` | Default retry limit for failed tasks |
@@ -1423,10 +1557,10 @@ Create a `.env` file in the project root or set variables in your shell.
 
 ### Data Directory
 
-All persistent data lives in `~/.ghc-orchestrator/`:
+All persistent data lives in `~/.ghc-dispatch/`:
 
 ```
-~/.ghc-orchestrator/
+~/.ghc-dispatch/
 ├── orchestrator.db     # SQLite database (tasks, events, approvals)
 ├── agents/             # Custom agent definitions
 ├── worktrees/          # Task-isolated git worktrees
@@ -1440,7 +1574,7 @@ All persistent data lives in `~/.ghc-orchestrator/`:
 ## Project Structure
 
 ```
-ghc-orchestrator/
+ghc-dispatch/
 ├── package.json
 ├── tsconfig.json
 ├── vitest.config.ts

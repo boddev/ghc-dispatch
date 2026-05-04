@@ -23,35 +23,77 @@
         { "id": "dispatch.tasks", "name": "Tasks" },
         { "id": "dispatch.agents", "name": "Agents" },
         { "id": "dispatch.skills", "name": "Skills" },
+        { "id": "dispatch.features", "name": "Features" },
         { "id": "dispatch.automation", "name": "Automation" },
         { "id": "dispatch.approvals", "name": "Approvals" }
       ]
     },
     "commands": [
-      { "command": "dispatch.createTask", "title": "Dispatch: Create Task" },
-      { "command": "dispatch.showStats", "title": "Dispatch: Show Stats" },
-      { "command": "dispatch.recall", "title": "Dispatch: Recall Memory" },
-      { "command": "dispatch.refreshTasks", "title": "Dispatch: Refresh Tasks", "icon": "$(refresh)" },
+      { "command": "dispatch.createTask", "title": "Create Task" },
+      { "command": "dispatch.openFeatureCatalog", "title": "Feature Catalog" },
+      { "command": "dispatch.openFeatureDetail", "title": "Open Feature Detail" },
+      { "command": "dispatch.openChat", "title": "Open Chat" },
+      { "command": "dispatch.openSettings", "title": "Open Settings" },
+      { "command": "dispatch.configureTaskRuntime", "title": "Configure Task Runtime" },
+      { "command": "dispatch.configureExecutionSettings", "title": "Configure Execution Settings" },
+      { "command": "dispatch.configureWorkIQ", "title": "Configure WorkIQ" },
+      { "command": "dispatch.showStats", "title": "Show Stats" },
+      { "command": "dispatch.recall", "title": "Recall Memory" },
+      { "command": "dispatch.refreshTasks", "title": "Refresh Tasks", "icon": "$(refresh)" },
+      { "command": "dispatch.switchModel", "title": "Switch Model" },
+      { "command": "dispatch.resetAgentModel", "title": "Reset Model Override" },
+      { "command": "dispatch.reload", "title": "Reload Agents and Skills" },
+      { "command": "dispatch.restartDaemon", "title": "Restart Daemon" },
+      { "command": "dispatch.updateDaemon", "title": "Update Dispatch" },
+      { "command": "dispatch.createAgent", "title": "Create Agent" },
+      { "command": "dispatch.openAgentConfig", "title": "Open Agent Config" },
+      { "command": "dispatch.createAgentTeam", "title": "Create Agent Team" },
+      { "command": "dispatch.openTeamConfig", "title": "Open Team Config" },
+      { "command": "dispatch.runAgentTeam", "title": "Run Agent Team" },
+      { "command": "dispatch.openSkillConfig", "title": "Open Skill Config" },
+      { "command": "dispatch.installSkillFromGitHub", "title": "Install Skill" },
+      { "command": "dispatch.installSkillFromRegistry", "title": "Install Skill from skills.sh" },
+      { "command": "dispatch.createSkill", "title": "Create Skill" },
+      { "command": "dispatch.createAutomationJob", "title": "Create Automation Job" },
+      { "command": "dispatch.runBrowserCommand", "title": "Run Browser Command" },
+      { "command": "dispatch.showCheckIn", "title": "Show Proactive Check-In" },
       { "command": "dispatch.openTaskDetail", "title": "View Task Detail" },
+      { "command": "dispatch.editTask", "title": "Edit Task" },
       { "command": "dispatch.cancelTask", "title": "Cancel Task" },
+      { "command": "dispatch.deleteTask", "title": "Delete Task" },
       { "command": "dispatch.retryTask", "title": "Retry Task" },
       { "command": "dispatch.enqueueTask", "title": "Enqueue Task" },
       { "command": "dispatch.approveApproval", "title": "Approve" },
       { "command": "dispatch.rejectApproval", "title": "Reject" },
       { "command": "dispatch.enableSkill", "title": "Enable Skill" },
       { "command": "dispatch.disableSkill", "title": "Disable Skill" },
-      { "command": "dispatch.openMemory", "title": "Dispatch: Memory Explorer" }
+      { "command": "dispatch.openMemory", "title": "Memory Explorer" }
     ],
     "menus": {
       "view/title": [
+        { "command": "dispatch.openFeatureCatalog", "when": "view == dispatch.features", "group": "navigation" },
+        { "command": "dispatch.refreshTasks", "when": "view == dispatch.features", "group": "navigation" },
         { "command": "dispatch.refreshTasks", "when": "view == dispatch.tasks", "group": "navigation" },
-        { "command": "dispatch.createTask", "when": "view == dispatch.tasks", "group": "navigation" }
+        { "command": "dispatch.createTask", "when": "view == dispatch.tasks", "group": "navigation" },
+        { "command": "dispatch.openChat", "when": "view == dispatch.tasks", "group": "navigation" },
+        { "command": "dispatch.createAgent", "when": "view == dispatch.agents", "group": "navigation" },
+        { "command": "dispatch.createAgentTeam", "when": "view == dispatch.agents", "group": "navigation" },
+        { "command": "dispatch.installSkillFromGitHub", "when": "view == dispatch.skills", "group": "navigation" },
+        { "command": "dispatch.createSkill", "when": "view == dispatch.skills", "group": "navigation" },
+        { "command": "dispatch.createAutomationJob", "when": "view == dispatch.automation", "group": "navigation" }
       ],
       "view/item/context": [
-        { "command": "dispatch.openTaskDetail", "when": "viewItem == task" },
-        { "command": "dispatch.cancelTask", "when": "viewItem == task-cancellable" },
-        { "command": "dispatch.retryTask", "when": "viewItem == task-retryable" },
-        { "command": "dispatch.enqueueTask", "when": "viewItem == task-enqueuable" },
+        { "command": "dispatch.openFeatureDetail", "when": "viewItem == dispatch-feature" },
+        { "command": "dispatch.openAgentConfig", "when": "viewItem == agent" },
+        { "command": "dispatch.openTeamConfig", "when": "viewItem == agent-team" },
+        { "command": "dispatch.runAgentTeam", "when": "viewItem == agent-team" },
+        { "command": "dispatch.openSkillConfig", "when": "viewItem == skill-enabled || viewItem == skill-disabled" },
+        { "command": "dispatch.openTaskDetail", "when": "viewItem == task-pending || viewItem == task-queued || viewItem == task-running || viewItem == task-paused || viewItem == task-failed || viewItem == task-completed || viewItem == task-cancelled" },
+        { "command": "dispatch.editTask", "when": "viewItem == task-pending || viewItem == task-queued || viewItem == task-paused || viewItem == task-failed || viewItem == task-completed || viewItem == task-cancelled" },
+        { "command": "dispatch.cancelTask", "when": "viewItem == task-queued || viewItem == task-running || viewItem == task-paused" },
+        { "command": "dispatch.deleteTask", "when": "viewItem == task-pending || viewItem == task-queued || viewItem == task-paused || viewItem == task-failed || viewItem == task-completed || viewItem == task-cancelled" },
+        { "command": "dispatch.retryTask", "when": "viewItem == task-failed || viewItem == task-cancelled || viewItem == task-paused" },
+        { "command": "dispatch.enqueueTask", "when": "viewItem == task-pending" },
         { "command": "dispatch.approveApproval", "when": "viewItem == approval-pending" },
         { "command": "dispatch.rejectApproval", "when": "viewItem == approval-pending" },
         { "command": "dispatch.enableSkill", "when": "viewItem == skill-disabled" },
@@ -70,6 +112,25 @@
           "type": "number",
           "default": 5000,
           "description": "Auto-refresh interval in milliseconds (0 to disable)"
+        },
+        "dispatch.maxConcurrentSessions": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Maximum number of Dispatch task sessions that can run concurrently. Explicit changes sync to the Dispatch daemon."
+        },
+        "dispatch.taskSessionIdleTimeoutMinutes": {
+          "type": "number",
+          "default": 15,
+          "minimum": 1,
+          "maximum": 120,
+          "description": "Minutes a Dispatch task session can run without becoming idle before Dispatch marks it failed. Explicit changes sync to the Dispatch daemon."
+        },
+        "dispatch.autoStartDaemon": {
+          "type": "boolean",
+          "default": true,
+          "description": "When the extension activates, automatically run `dispatch --start` if the daemon isn't already responding on `dispatch.apiUrl`. Requires the dispatch CLI to be installed and on your PATH (e.g. via `npm link` in the ghc-dispatch repo)."
         }
       }
     }

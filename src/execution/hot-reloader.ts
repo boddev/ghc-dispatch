@@ -2,11 +2,12 @@
  * Hot Reload Watcher
  *
  * Watches skill and agent directories for changes and reloads them
- * without restarting the daemon. Uses Node.js fs.watch for efficiency.
+ * without restarting the daemon. Uses chokidar so recursive watching works
+ * consistently across Windows, macOS, and Linux.
  */
 
-import { watch, type FSWatcher } from 'node:fs';
-import { join } from 'node:path';
+import chokidar, { type FSWatcher } from 'chokidar';
+import { relative } from 'node:path';
 import { existsSync } from 'node:fs';
 import type { AgentLoader } from '../execution/agent-loader.js';
 import type { SkillManager } from '../skills/skill-manager.js';
@@ -54,11 +55,20 @@ export class HotReloader {
       if (!existsSync(dir)) continue;
 
       try {
-        const watcher = watch(dir, { recursive: true }, (eventType, filename) => {
-          if (!filename) return;
-          const fullPath = join(dir, filename);
-          this.handleChange(dir, fullPath, filename);
+        const watcher = chokidar.watch(dir, {
+          ignoreInitial: true,
+          persistent: true,
         });
+
+        const onChange = (fullPath: string) => {
+          const filename = relative(dir, fullPath);
+          if (!filename) return;
+          this.handleChange(dir, fullPath, filename);
+        };
+
+        watcher.on('add', onChange);
+        watcher.on('change', onChange);
+        watcher.on('unlink', onChange);
 
         this.watchers.push(watcher);
       } catch {
@@ -74,7 +84,7 @@ export class HotReloader {
   /** Stop watching */
   stop(): void {
     for (const watcher of this.watchers) {
-      watcher.close();
+      void watcher.close();
     }
     this.watchers = [];
     for (const timer of this.debounceTimers.values()) {
@@ -119,19 +129,27 @@ export class HotReloader {
 
       if (filename.endsWith('.agent.md')) {
         if (this.config.watchAgents) {
-          this.agentLoader.reload();
-          this.reloadCount++;
-          this.lastReload = new Date();
-          console.log(`🔄 Hot reload: agents reloaded (${filename})`);
-          this.notifyHandlers('agent', fullPath);
+          try {
+            this.agentLoader.reload();
+            this.reloadCount++;
+            this.lastReload = new Date();
+            console.log(`🔄 Hot reload: agents reloaded (${filename})`);
+            this.notifyHandlers('agent', fullPath);
+          } catch (err: any) {
+            console.error(`Hot reload: failed to reload agents after ${filename}: ${err.message ?? String(err)}`);
+          }
         }
       } else if (filename.includes('SKILL.md') || filename.endsWith('.md')) {
         if (this.config.watchSkills) {
-          this.skillManager.syncFilesystem();
-          this.reloadCount++;
-          this.lastReload = new Date();
-          console.log(`🔄 Hot reload: skills reloaded (${filename})`);
-          this.notifyHandlers('skill', fullPath);
+          try {
+            this.skillManager.syncFilesystem();
+            this.reloadCount++;
+            this.lastReload = new Date();
+            console.log(`🔄 Hot reload: skills reloaded (${filename})`);
+            this.notifyHandlers('skill', fullPath);
+          } catch (err: any) {
+            console.error(`Hot reload: failed to reload skills after ${filename}: ${err.message ?? String(err)}`);
+          }
         }
       }
     }, this.config.debounceMs));

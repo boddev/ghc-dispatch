@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DispatchClient } from '../client';
+import { DispatchClient, DispatchHttpError } from '../client';
 
 export class ApprovalTreeProvider implements vscode.TreeDataProvider<ApprovalItem> {
   private _onDidChange = new vscode.EventEmitter<ApprovalItem | undefined>();
@@ -27,8 +27,10 @@ export class ApprovalTreeProvider implements vscode.TreeDataProvider<ApprovalIte
         item.contextValue = 'approval-pending';
         return item;
       });
-    } catch {
-      return [new ApprovalItem('Cannot connect to dispatch daemon', '', '')];
+    } catch (err) {
+      return [new ApprovalItem(err instanceof DispatchHttpError && err.statusCode === 429
+        ? 'Dispatch daemon rate limited; waiting to retry'
+        : 'Cannot connect to dispatch daemon', '', '')];
     }
   }
 }

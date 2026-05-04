@@ -2,6 +2,14 @@ import type { CopilotAdapter, CopilotSession, SessionOptions } from './copilot-a
 
 export interface PoolOptions {
   maxConcurrent: number;
+  /**
+   * When true, every newly acquired Copilot CLI session is steered into the
+   * remote (cloud) runner by prepending `/remote\n` to its first prompt.
+   * Subsequent sends on the same session are passed through unchanged.
+   * Defaults to true so dispatched work runs on Copilot's remote agent runtime
+   * by default.
+   */
+  defaultRemote?: boolean;
 }
 
 interface PoolEntry {
@@ -10,15 +18,41 @@ interface PoolEntry {
   acquiredAt: Date;
 }
 
+/**
+ * Wraps a session so the first call to `send` is prefixed with `/remote\n`.
+ * Slash commands are interpreted by the Copilot CLI before the prompt is
+ * dispatched to the model, so this switches the session into remote mode
+ * without requiring per-call-site changes.
+ */
+function wrapWithRemoteSlashCommand(inner: CopilotSession): CopilotSession {
+  let primed = false;
+  return {
+    id: inner.id,
+    model: inner.model,
+    async send(prompt: string) {
+      if (!primed) {
+        primed = true;
+        await inner.send(`/remote\n${prompt}`);
+        return;
+      }
+      await inner.send(prompt);
+    },
+    disconnect: () => inner.disconnect(),
+    isActive: () => inner.isActive(),
+  };
+}
+
 export class SessionPool {
   private active = new Map<string, PoolEntry>();
   private maxConcurrent: number;
+  private defaultRemote: boolean;
 
   constructor(
     private adapter: CopilotAdapter,
     options: PoolOptions,
   ) {
     this.maxConcurrent = options.maxConcurrent;
+    this.defaultRemote = options.defaultRemote ?? true;
   }
 
   get size(): number {
@@ -27,6 +61,17 @@ export class SessionPool {
 
   get available(): number {
     return this.maxConcurrent - this.active.size;
+  }
+
+  get limit(): number {
+    return this.maxConcurrent;
+  }
+
+  setMaxConcurrent(maxConcurrent: number): void {
+    if (maxConcurrent < this.active.size) {
+      throw new Error(`Cannot set max sessions to ${maxConcurrent}; ${this.active.size} session(s) are currently active`);
+    }
+    this.maxConcurrent = maxConcurrent;
   }
 
   isFull(): boolean {
@@ -41,8 +86,11 @@ export class SessionPool {
       );
     }
 
-    const session = await this.adapter.createSession(options);
-    this.active.set(session.id, { session, taskId, acquiredAt: new Date() });
+    const rawSession = await this.adapter.createSession(options);
+    const session = this.defaultRemote
+      ? wrapWithRemoteSlashCommand(rawSession)
+      : rawSession;
+    this.active.set(rawSession.id, { session: rawSession, taskId, acquiredAt: new Date() });
     return session;
   }
 

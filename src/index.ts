@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * dispatch — GHC Orchestrator CLI
+ * dispatch — GHC Dispatch CLI
  *
  * Usage:
  *   dispatch --create <title> [--agent @coder] [--priority high] [--repo path]
@@ -58,7 +58,7 @@ function printTaskDetail(task: any): void {
 }
 
 const HELP_TEXT = `
-  dispatch — GHC Orchestrator CLI
+  dispatch — GHC Dispatch CLI
 
   Usage: dispatch --<command> [arguments] [options]
 
@@ -69,6 +69,7 @@ const HELP_TEXT = `
         --model <model>          Model to use for this task (overrides agent default)
         --repo <path>            Target repository path
         --description <text>     Task description
+        --dry-run                Print resolved agent/model/workdir without creating
 
     --status <task-id>         Show task details
     --list                     List all tasks
@@ -241,6 +242,29 @@ async function main() {
       const model = getFlag(args, '--model');
       const repo = getFlag(args, '--repo');
       const description = getFlag(args, '--description') ?? '';
+      if (hasFlag(args, '--dry-run')) {
+        const { agentHandle, AgentLoader } = await import('./execution/agent-loader.js');
+        const { ModelManager } = await import('./execution/model-manager.js');
+        const { join } = await import('node:path');
+        const { paths: p } = await import('./paths.js');
+        const bundledDir = join(import.meta.dirname ?? '.', '..', 'agents');
+        const agentLoader = new AgentLoader([bundledDir, p.agentsDir]);
+        const agentDefinition = agentLoader.get(agent) ?? agentLoader.getDefault();
+        const resolvedAgent = agentHandle(agentDefinition.name);
+        const modelManager = new ModelManager(loadConfig().copilotModel, getDb());
+        const resolvedModel = modelManager.resolveModel(model, resolvedAgent, agentDefinition.model);
+
+        console.log('\n  Dry run: task would be created with:');
+        console.log(`    Title: ${title}`);
+        console.log(`    Description: ${description || '(none)'}`);
+        console.log(`    Agent: ${resolvedAgent}`);
+        console.log(`    Priority: ${priority}`);
+        console.log(`    Model: ${resolvedModel}`);
+        console.log(`    Repo: ${repo ?? '(none)'}`);
+        console.log(`    Working directory: ${repo ? `${p.worktreesDir}\\<task-id>` : '(none)'}`);
+        console.log();
+        return;
+      }
       const task = tm.createTask({ title, description, agent, priority, model, repo });
       console.log(`✅ Task created: ${task.id}`);
       printTaskDetail(task);

@@ -12,7 +12,7 @@ export class LocalEventBus implements EventBus {
   private emitter = new EventEmitter();
 
   constructor() {
-    this.emitter.setMaxListeners(50);
+    this.emitter.setMaxListeners(5000);
   }
 
   emit(event: OrchestratorEvent): void {

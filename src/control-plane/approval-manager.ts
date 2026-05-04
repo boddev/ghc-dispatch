@@ -102,7 +102,7 @@ export class ApprovalManager {
     if (changes === 0) return null;
 
     const approval = this.getById(approvalId)!;
-    const event = { type: 'approval.decided' as const, approvalId, decision: status };
+    const event = { type: 'approval.decided' as const, approvalId, taskId: approval.taskId, decision: status };
     this.eventRepo.append(event);
     this.eventBus.emit(event);
 
