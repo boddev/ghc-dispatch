@@ -106,6 +106,9 @@ $RECYCLE.BIN/
 COMPARISON.md
 Feature_Enhancements.md
 
+# --- Local-only agents (kept on disk for the daemon, not tracked in git) ---
+agents/education-*.agent.md
+
 # --- Misc ---
 *.bak
 *.orig
