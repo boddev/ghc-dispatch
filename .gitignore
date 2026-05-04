@@ -107,7 +107,15 @@ COMPARISON.md
 Feature_Enhancements.md
 
 # --- Local-only agents (kept on disk for the daemon, not tracked in git) ---
-agents/education-*.agent.md
+# Only the 4 core bundled agents (coder, designer, general-purpose, orchestrator)
+# are version-controlled. Anything else dropped into agents/ is treated as a
+# local user template and stays out of git. User-created agents live in
+# ~/.ghc-dispatch/agents/ and are never tracked here.
+agents/*.agent.md
+!agents/coder.agent.md
+!agents/designer.agent.md
+!agents/general-purpose.agent.md
+!agents/orchestrator.agent.md
 
 # --- Misc ---
 *.bak

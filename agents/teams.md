@@ -109,7 +109,7 @@ The Orchestrator creates parallel member tasks when work streams are independent
 
 ## Community Teams
 
-Teams beyond the built-in set are created by operators via the API. One example team is pre-configured in this instance:
+Teams beyond the built-in set are operator-installed via the API or the VS Code extension. Their member agents are written to the **user agents directory** (`~/.ghc-dispatch/agents/`) and are not bundled with the repo. The example below documents one such community team — install its agents (via `dispatch_install_skill_*`, `Create Agent`, or by copying `.agent.md` files into your user agents directory) before running the team.
 
 ### Blog & Podcast Studio
 
