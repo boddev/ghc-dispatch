@@ -52,7 +52,6 @@ You'll need:
 Reload VS Code after installing the extension. Everything below assumes
 `dispatch.autoStartDaemon` is left at its default of `true`.
 
-📷 _Optional cover image / hero shot:_
 
 ![Dispatch in VS Code — hero](./walkthrough-media/00-hero.png)
 
@@ -67,8 +66,6 @@ Dispatch view), the extension health-checks
 daemon…"** progress notification while polling for readiness (up to 30s). Once
 the daemon is up, the views populate automatically.
 
-🎞 _Suggested capture:_ a short GIF showing the icon click, the progress
-notification, and the views populating.
 
 ![Auto-start daemon on first launch](./walkthrough-media/01-autostart-daemon.gif)
 
@@ -92,8 +89,6 @@ The Dispatch icon adds a dedicated container with **six tree views**:
 
 A **status bar** item at the bottom-left shows live `running / queued` counts.
 
-📷 _Suggested capture:_ wide screenshot of the whole activity bar + sidebar +
-status bar. Annotate each view if you like.
 
 ![Dispatch sidebar layout](./walkthrough-media/02-sidebar-layout.png)
 
@@ -107,9 +102,6 @@ links to the underlying API endpoints, and "Configure" / "Use" buttons for
 each feature. Right-clicking a feature in the **Features** sidebar opens its
 detail page.
 
-📷 _Suggested capture:_ the catalog page open in the editor with the sidebar
-visible.
-
 ![Feature catalog](./walkthrough-media/03-feature-catalog.png)
 
 ---
@@ -120,9 +112,6 @@ The **Tasks** view groups tasks by status with colour-coded badges. Hover for
 metadata; click to open the detail panel. The status bar at the bottom of VS
 Code mirrors the live counts and clicks through to **Show Stats**.
 
-🎞 _Suggested capture:_ a GIF of a task moving from queued → running →
-completed, with the status bar updating in real time. The extension uses an SSE
-stream so updates should be near-instant.
 
 ![Tasks view live updates](./walkthrough-media/04-tasks-live-updates.gif)
 
@@ -143,11 +132,6 @@ The form has two checkboxes side-by-side at the bottom:
   (after agent / per-task overrides), priority, repo, and working directory in
   a panel above the form. Untick and click **Create** to actually create.
 
-🎞 _Suggested capture:_ a GIF showing (a) opening the form, (b) ticking
-**Dry run** and clicking Create, (c) the preview rendering, (d) un-ticking
-and creating the task for real.
-
-![Create task with dry run](./walkthrough-media/05-create-task-dryrun.gif)
 
 ---
 
@@ -167,7 +151,7 @@ Clicking a task in the Tasks view opens a webview with:
 📷 _Suggested capture:_ a tall screenshot of a completed task showing the
 result block, artifacts, and a full event timeline.
 
-![Task detail panel](./walkthrough-media/06-task-detail.png)
+![Task detail panel](./walkthrough-media/06-task-detail.gif)
 
 ---
 
@@ -181,11 +165,6 @@ input appears below the action buttons, pre-filled from
 automatically). Edit and click **Save reason** to update the task — the
 extension posts to `POST /api/tasks/:id/cancellation-reason`.
 
-🎞 _Suggested capture:_ GIF of clicking Cancel, the reason input appearing,
-typing a reason, and saving.
-
-![Add cancellation reason](./walkthrough-media/07-cancellation-reason.gif)
-
 ---
 
 ## 8. Approvals view — approve / reject inline
@@ -196,10 +175,6 @@ notification fires with **Approve** / **Reject** buttons. You can also
 approve / reject from the right-click context menu in the Approvals view, or
 from inside the task detail panel.
 
-🎞 _Suggested capture:_ GIF of an approval request landing as a notification,
-then being approved from the sidebar.
-
-![Approvals workflow](./walkthrough-media/08-approvals.gif)
 
 ---
 
@@ -211,9 +186,6 @@ in an editor tab so you can edit it) and **Create Agent** in the title bar
 launches a wizard that calls `POST /api/agents/generate` to scaffold a new
 agent from a role description.
 
-📷 _Suggested capture:_ the Agents tree expanded with a context menu open.
-
-![Agents view](./walkthrough-media/09-agents-view.png)
 
 ---
 
@@ -223,10 +195,6 @@ Teams (created via **Create Agent Team**) group a lead agent with one or more
 member agents. **Run Agent Team** dispatches a lead task and spawns member
 sub-tasks under it.
 
-🎞 _Suggested capture:_ GIF of creating a team, then running it and watching
-the lead + member tasks appear in the Tasks view.
-
-![Teams](./walkthrough-media/10-teams.gif)
 
 ---
 
@@ -241,10 +209,6 @@ Title-bar actions:
 
 Right-click a skill for **Enable** / **Disable** / **Open Skill Config**.
 
-🎞 _Suggested capture:_ GIF of installing a skill from the registry, then
-toggling it off and back on.
-
-![Skills install and toggle](./walkthrough-media/11-skills.gif)
 
 ---
 
@@ -254,10 +218,6 @@ The **Automation** view lists every job with its trigger type and run count.
 Use **Create Automation Job** in the title bar to add a cron, webhook, or
 event-triggered job that produces a task each time it fires.
 
-📷 _Suggested capture:_ the Automation list with at least one of each trigger
-type.
-
-![Automation jobs](./walkthrough-media/12-automation.png)
 
 ---
 
@@ -268,10 +228,7 @@ a planner-style chat panel. The chat session uses Dispatch tools to inspect
 agents/teams/skills, create tasks, query memory, and more. You can switch the
 chat model directly from the panel.
 
-🎞 _Suggested capture:_ a short GIF asking Dispatch Chat to list running tasks
-and create a follow-up.
 
-![Dispatch Chat](./walkthrough-media/13-dispatch-chat.gif)
 
 ---
 
@@ -282,9 +239,7 @@ target — **Default model**, **Dispatch Chat**, or any specific **Agent
 override** — then a second QuickPick lists every available model with provider
 and tier. **Reset Model Override** clears chat / per-agent overrides.
 
-🎞 _Suggested capture:_ GIF of switching the chat model from the QuickPick.
 
-![Switch model](./walkthrough-media/14-switch-model.gif)
 
 ---
 
@@ -295,10 +250,7 @@ and tier. **Reset Model Override** clears chat / per-agent overrides.
 - **Memory Explorer** — a webview to browse facts, entities, episodes, and
   recent conversations grouped by channel.
 
-📷 _Suggested capture:_ side-by-side screenshots of Recall results and the
-Memory Explorer webview.
 
-![Memory Explorer](./walkthrough-media/15-memory-explorer.png)
 
 ---
 
@@ -310,10 +262,7 @@ recovery hints (prior session, working directory, last checkpoint) and gives
 you **Retry** (re-queue against the existing worktree) or **Cancel** (with a
 reason) — backed by `POST /api/tasks/:id/recovery`.
 
-🎞 _Suggested capture:_ GIF showing a paused task, opening the detail panel,
-and resuming it.
 
-![Recover paused task](./walkthrough-media/16-recover-paused.gif)
 
 ---
 
@@ -329,9 +278,7 @@ and resuming it.
 | `dispatch.maxConcurrentSessions` | `4` | Synced to the daemon's session pool when changed |
 | `dispatch.taskSessionIdleTimeoutMinutes` | `15` | Synced to the daemon's idle-timeout when changed |
 
-📷 _Suggested capture:_ the Settings UI filtered to "Dispatch".
 
-![Dispatch settings](./walkthrough-media/17-settings.png)
 
 ---
 
@@ -346,10 +293,7 @@ Code:
   (`POST /api/restart`). Confirms first.
 - **Update Dispatch** — pull updates and restart (`POST /api/update`).
 
-🎞 _Suggested capture:_ a quick GIF triggering Reload and seeing the agent
-list refresh.
 
-![Daemon control](./walkthrough-media/18-daemon-control.gif)
 
 ---
 
