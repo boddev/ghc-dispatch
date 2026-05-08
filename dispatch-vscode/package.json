@@ -3,9 +3,10 @@
   "displayName": "GHC Dispatch",
   "description": "Copilot-native agent orchestration — manage tasks, agents, skills, and automation from VS Code",
   "version": "0.1.0",
-  "publisher": "bodonnell",
+  "publisher": "BrianODonnell",
   "engines": { "vscode": "^1.115.0" },
   "categories": ["Other"],
+  "icon": "media/dispatch_logo.png",
   "activationEvents": ["onStartupFinished"],
   "main": "./out/extension.js",
   "contributes": {
